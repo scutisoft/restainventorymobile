@@ -194,10 +194,7 @@ class AddNewLabelTextField extends StatelessWidget {
           )),
         ),
         Obx(
-                ()=>isValid.value?Container():Container(
-                margin:  const EdgeInsets.only(left:20,right:20,bottom:5,),
-                child: Text(errorText.value,style: errorTS,)
-            )
+                ()=>isValid.value?Container():ValidationErrorText(title: errorText.value,)
         ),
       ],
     ):
@@ -271,10 +268,7 @@ class AddNewLabelTextField extends StatelessWidget {
           ),)
         ),
         Obx(
-                ()=>isValid.value?Container():Container(
-                margin:  const EdgeInsets.only(left:20,right:20,bottom:5,),
-                child: Text(errorText.value,style: errorTS,)
-            )
+                ()=>isValid.value?Container():ValidationErrorText(title: errorText.value,)
         ),
       ],
     );

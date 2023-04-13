@@ -172,14 +172,22 @@ class DoneBtn extends StatelessWidget {
     return GestureDetector(
       onTap: onDone,
       child: Container(
-        height: 50,
-        width: SizeConfig.screenWidth!*0.6,
+        height: ColorUtil.formContainerHeight,
+        width: 150,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          color: ColorUtil.secondary,
+          borderRadius: BorderRadius.circular(19),
+          color: ColorUtil.red2,
+          boxShadow: [
+            BoxShadow(
+                color: ColorUtil.red2.withOpacity(0.2),
+                spreadRadius: 5,
+                blurRadius: 20,
+                offset: Offset(0, 10)
+            )
+          ]
         ),
         alignment: Alignment.center,
-        child: Text(title,style: ts18(Colors.white,fontsize: 18,fontfamily: 'Med'),textAlign: TextAlign.center,),
+        child: Text(title,style: ts20M(Colors.white,fontsize: 20),textAlign: TextAlign.center,),
       ),
     );
   }

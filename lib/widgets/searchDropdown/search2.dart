@@ -813,8 +813,8 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
             Navigator.push(context, _createRouteBillHistory());
           },
           child: Container(
-            margin: MyConstants.LRPadding,
-            padding: MyConstants.LRPadding,
+            margin: ColorUtil.formMargin,
+            padding: ColorUtil.formMargin,
             height: ColorUtil.formContainerHeight,
             width: SizeConfig.screenWidth,
             decoration: ColorUtil.formContBoxDec,
@@ -865,7 +865,7 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
 
   @override
   setValue(value) {
-    console("a ${value}");
+    // console("a ${value}");
     if(HE_IsMap(value)){
       if(value.containsKey("DropDownOptionList")){
         setDataArray(value['DropDownOptionList']);
@@ -884,7 +884,8 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
 
   @override
   bool validate() {
-    return getValue()!=null && getValue()!='';
+    isValid.value=getValue()!=null && getValue()!='';
+    return isValid.value;
   }
 
 
@@ -897,6 +898,10 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
     data=dataList;
     dataNotifier.value=dataList;
     reload();
+  }
+
+  getValueMap(){
+    return selectedData.value;
   }
 
   void reload(){

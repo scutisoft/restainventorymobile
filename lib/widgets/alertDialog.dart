@@ -462,7 +462,7 @@ class CustomAlert{
                     SizedBox(height:30),
                     Container(
                       width: textWidth,
-                      child: Text(Language.deleteConfTxt,
+                      child: Text(title,
                         style:TextStyle(fontFamily:Language.regularFF,fontSize:23,color:Color(0xFF787878),letterSpacing: 0.5,
                         height: 1.5),textAlign: TextAlign.center,
                       ),

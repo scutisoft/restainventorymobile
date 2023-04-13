@@ -38,4 +38,29 @@ mixin HappyExtension{
     FlutterUtilsPlatform.instance.fillTreeDrpV1(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
         hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam);
   }
+
+  void clearAllV2(var widgets){
+    FlutterUtilsPlatform.instance.clearAllV4(widgets);
+  }
+
+  void sysSubmit(dynamic widgets,{
+    Function? successCallback,
+    String action="",
+    bool isEdit=false,
+    bool needCustomValidation=false,
+    Function? onCustomValidation,
+    bool clearFrm=true,
+    bool closeFrmOnSubmit=true,
+    DevelopmentMode developmentMode= DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,
+    bool needSuccessCb=false,RxBool? loader
+  })async{
+    FlutterUtilsPlatform.instance.sysSubmitV1(widgets,successCallback: successCallback,action: action,isEdit: isEdit,needCustomValidation: needCustomValidation,
+    onCustomValidation: onCustomValidation,clearFrm: clearFrm,closeFrmOnSubmit: closeFrmOnSubmit,developmentMode: developmentMode,traditionalParam: traditionalParam,
+    needSuccessCb: needSuccessCb,loader: loader);
+  }
+
+  void foundWidgetByKey(var widgets,String key,{bool needSetValue=false,dynamic value}){
+    FlutterUtilsPlatform.instance.foundWidgetByKeyV1(widgets, key,needSetValue: needSetValue,value: value);
+  }
 }

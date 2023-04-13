@@ -304,7 +304,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   Future<void> postUIJson(String pageIdentifier,String dataJson,String action,{Function? successCallback,
-    DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam}) async{
+    DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam,RxBool? loader}) async{
     //"N'$dataJson'"
     if(developmentMode==DevelopmentMode.json){
       //"N'$dataJson'"
@@ -340,11 +340,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
             });
           }
         }
-
-
-
-
-        await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams).then((value){
+        await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams,loader: loader).then((value){
           if(value[0]){
 
             var parsed=jsonDecode(value[1]);
@@ -368,7 +364,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     }
   }
 
-  void sysSubmit(List<dynamic> widgets,{
+  void sysSubmit(dynamic widgets,{
     Function? successCallback,
     String action="",
     bool isEdit=false,
@@ -378,7 +374,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     bool closeFrmOnSubmit=true,
     DevelopmentMode developmentMode= DevelopmentMode.traditional,
     TraditionalParam? traditionalParam,
-    bool needSuccessCb=false
+    bool needSuccessCb=false,required RxBool? loader
   }) async{
 
     void successCbHandler(e){
@@ -428,7 +424,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           traditionalParam.executableSp=isEdit?traditionalParam.updateSp:traditionalParam.insertSp;
           traditionalParam.paramList=params;
           postUIJson(getPageIdentifier(), "", "", successCallback: successCbHandler,
-              developmentMode: developmentMode, traditionalParam: traditionalParam
+              developmentMode: developmentMode, traditionalParam: traditionalParam,loader: loader
           );
         }
       }
@@ -540,7 +536,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     }
     else if(widgetType==WidgetType.map){
       for (var widget in widgets.entries){
-        widget.clearValues();
+        widget.value.clearValues();
       }
     }
   }

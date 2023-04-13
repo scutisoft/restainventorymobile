@@ -320,4 +320,28 @@ class LeftHeader extends StatelessWidget {
 }
 
 
+class CustomTapIcon extends StatelessWidget {
 
+  VoidCallback? onTap;
+  double height;
+  Widget widget;
+  Alignment alignment;
+  CustomTapIcon({this.onTap,this.height=50,required this.widget,this.alignment=Alignment.center});
+
+  @override
+  Widget build(BuildContext context) {
+    return  GestureDetector(
+      onTap: onTap,
+      child: Container(
+          height: height,
+          width: height ,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: ColorUtil.bgColor,
+          ),
+          alignment: alignment,
+          child: widget
+      ),
+    );
+  }
+}

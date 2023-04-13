@@ -90,7 +90,9 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
                 const Spacer(),
                 GridAddIcon(
                   onTap: (){
-                    fadeRoute(IndentForm());
+                    fadeRoute(IndentForm(closeCb: (e){
+                      he_listViewBody.addData(e['Table'][0]);
+                    },));
                   },
                 ),
               ],

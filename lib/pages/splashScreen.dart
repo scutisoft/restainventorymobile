@@ -73,15 +73,15 @@ class _SplashScreenState extends State<SplashScreen> {
     //await languageInit();
     navigate();
 
-    return;
+
     //await getFirebaseToken();
-    String userId=await getSharedPrefStringUtil(SP_USER_ID);
+    /*String userId=await getSharedPrefStringUtil(SP_USER_ID);
     if(userId.isEmpty){
       navigate();
     }
     else{
       getDeviceStatus(userId);
-    }
+    }*/
   }
 
   void getDeviceStatus(userId) async{

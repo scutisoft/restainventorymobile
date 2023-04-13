@@ -45,6 +45,36 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
       fillTreeDrp(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
       hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam);
   }
+
+  @override
+  void clearAllV4(widgets){
+    clearAllV2(widgets);
+  }
+
+  @override
+  void sysSubmitV1(dynamic widgets,{
+    Function? successCallback,
+    String action="",
+    bool isEdit=false,
+    bool needCustomValidation=false,
+    Function? onCustomValidation,
+    bool clearFrm=true,
+    bool closeFrmOnSubmit=true,
+    DevelopmentMode developmentMode= DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,
+    bool needSuccessCb=false, RxBool? loader
+  }) async{
+    sysSubmit(widgets,successCallback: successCallback,action: action,isEdit: isEdit,needCustomValidation: needCustomValidation,
+        onCustomValidation: onCustomValidation,clearFrm: clearFrm,closeFrmOnSubmit: closeFrmOnSubmit,developmentMode: developmentMode,traditionalParam: traditionalParam,
+        needSuccessCb: needSuccessCb,loader: loader);
+  }
+
+
+  @override
+  void foundWidgetByKeyV1(var widgets,String key,{bool needSetValue=false,dynamic value}){
+    foundWidgetByKey(widgets, key,needSetValue: needSetValue,value: value);
+  }
+
 }
 
 class ApiManger extends FlutterUtilsPlatform{

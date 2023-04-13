@@ -17,10 +17,10 @@ class ValidationErrorText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(padding: EdgeInsets.only(left: leftPadding,right: rightPadding,top:0,bottom: 5),
+    return Padding(padding: EdgeInsets.only(left: leftPadding,right: rightPadding,top:1,bottom: 0),
       child: Align(
         alignment: alignment,
-          child: Text(title.isEmpty?"* ${Language.required}":title,style: ts20(Colors.red),textAlign: TextAlign.left,)),
+          child: Text(title.isEmpty?"* ${Language.required}":title,style: ts20M(ColorUtil.red,fontsize: 15),textAlign: TextAlign.left,)),
     );
   }
 }

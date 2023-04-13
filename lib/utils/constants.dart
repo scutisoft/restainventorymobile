@@ -24,6 +24,7 @@ class MyConstants{
   static String extraParam="StoreId";
 
   static int minimumDonationAmount=1;
+  static int maximumQty=9;
 
   static String dbDateFormat="yyyy-MM-dd";
   static String decimalReg=r'^\d+\.?\d{0,3}';

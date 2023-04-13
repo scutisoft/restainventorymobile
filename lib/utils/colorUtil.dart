@@ -20,6 +20,7 @@ class ColorUtil{
   static Color text5=const Color(0xff6E6E6E);
   static Color lightBlue=const Color(0xffF4F7FC);
   static Color red=const Color(0xffDC0022);
+  static Color red2=const Color(0xffFF0022);
   static Color grey1=const Color(0xffF7F7F9);
   static TextStyle textStyle18=TextStyle(fontFamily: 'RR',fontSize: 18,color: Color(0xff2C2C2D));
   static TextStyle notiText=TextStyle(fontFamily: 'RR',color: Color(0xFFffffff),fontSize: 10);
@@ -61,6 +62,7 @@ class ColorUtil{
 
   //Animated Search Bar
   static Color asbColor=primary;
+  static Color cursorColor=primary;
   static bool asbBoxShadow=false;
   static bool asbCloseSearchOnSuffixTap=true;
   static Color asbSearchIconColor=themeWhite;

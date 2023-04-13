@@ -151,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
         try{
           setUserSessionDetail(parsed["Table"][0]);
          // accessData=parsed['Table1'];
-          Get.to(StoreSelection());
+
         }catch(e){}
       }
       else{
@@ -191,6 +191,7 @@ class LoginTextField extends StatelessWidget {
               textAlign: TextAlign.left,
               maxLines: 1,
               style: TextStyle(fontSize: 18,fontFamily:'AR',color:ColorUtil.themeBlack,letterSpacing: 1.0,),
+              scrollPadding: EdgeInsets.only(bottom: 270),
               decoration: InputDecoration(
                 fillColor: Colors.white,
                 filled: true,
@@ -203,6 +204,7 @@ class LoginTextField extends StatelessWidget {
                 //errorStyle: TextStyle(fontSize: 14,fontFamily:Language.regularFF,color:Color(0XFFBCBBCD),),
                 hintStyle:TextStyle(fontSize: 18,fontFamily:'RL',color:ColorUtil.themeBlack,fontWeight: FontWeight.w100),
               ),
+              cursorColor: ColorUtil.cursorColor,
               onChanged: (v){
                 isFilled.value=v.isNotEmpty;
               },
@@ -218,6 +220,7 @@ class LoginTextField extends StatelessWidget {
               unSelIcon: const Icon(Icons.done,color:Colors.white,size: 16,),
             )
           ),
+          const SizedBox(width: 10,)
         ],
       ),
     );

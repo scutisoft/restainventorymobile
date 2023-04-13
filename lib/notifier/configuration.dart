@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../pages/storeSelection/storeSelection.dart';
 import '../utils/utils.dart';
 
 
@@ -143,15 +144,16 @@ enum UserType{
   customer
 }
 
-void setUserSessionDetail(userDetail){
-  setSharedPrefStringUtil(userDetail["UserId"], SP_USER_ID);
-  setSharedPrefStringUtil(userDetail["Name"], SP_USERNAME);
-  setSharedPrefStringUtil(userDetail["UserEmail"], SP_USEREMAIL);
-  setSharedPrefStringUtil(userDetail["UserPassword"], SP_USERPASSWORD);
-  setSharedPrefStringUtil(userDetail["UserGroupName"], SP_USERTYPENAME);
-  setSharedPrefStringUtil(userDetail["UserGroupId"], SP_USERTYPEID);
-  setSharedPrefStringUtil(userDetail["DataBaseName"], SP_DBNAME);
-  setSharedPrefStringUtil(userDetail["UserImage"], SP_USERIMG);
+void setUserSessionDetail(userDetail) async{
+  await setSharedPrefStringUtil(userDetail["UserId"], SP_USER_ID);
+  await setSharedPrefStringUtil(userDetail["Name"], SP_USERNAME);
+  await setSharedPrefStringUtil(userDetail["UserEmail"], SP_USEREMAIL);
+  await setSharedPrefStringUtil(userDetail["UserPassword"], SP_USERPASSWORD);
+  await setSharedPrefStringUtil(userDetail["UserGroupName"], SP_USERTYPENAME);
+  await setSharedPrefStringUtil(userDetail["UserGroupId"], SP_USERTYPEID);
+  await setSharedPrefStringUtil(userDetail["DataBaseName"], SP_DBNAME);
+  await setSharedPrefStringUtil(userDetail["UserImage"], SP_USERIMG);
+  await Get.to(StoreSelection());
 }
 
 void clearUserSessionDetail(){

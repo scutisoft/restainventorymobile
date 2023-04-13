@@ -17,7 +17,7 @@ Future<List> getMasterDrp(String page,String typeName, dynamic refId,dynamic ref
   parameters.add(ParamModel(Key: "RefTypeName", Type: "String", Value: refTypeName??typeName));
   parameters.add(ParamModel(Key: "HiraricalId", Type: "String", Value: hiraricalId));
 
-  //print(jsonEncode(parameters));
+  print(jsonEncode(parameters));
   var result=[];
   try{
     await FlutterUtilsPlatform.apiInstance.getInvokeLazy(parameters).then((value) {
@@ -80,7 +80,8 @@ bool HE_IsMap(value){
       value.runtimeType.toString() =="_Map<String, Object?>" ;
 }
 bool HE_IsList(value){
-  return value.runtimeType.toString()=="List<dynamic>" || value.runtimeType.toString()=="List<Widget>";
+  return value.runtimeType.toString()=="List<dynamic>" || value.runtimeType.toString()=="List<Widget>" ||
+      value.runtimeType.toString()=="List<Map<String, dynamic>>";
 }
 bool HE_IsInt(value){
   return value.runtimeType.toString()=="int";
