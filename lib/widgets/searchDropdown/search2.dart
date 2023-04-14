@@ -792,11 +792,16 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
   List<dynamic> data;
   bool hasInput;
   bool required;
+  bool isEnable;
   SlideSearch({Key? key,required this.dataName,this.isToJson=true,this.propertyName="Text",this.propertyId="Id",
     required this.selectedValueFunc,required this.hinttext,required this.data,this.hasInput=true,this.required=true,
-  }) : super(key: key);
+    this.isEnable=true
+  }) : super(key: key){
+    isEnabled.value=isEnable;
+  }
 
   var isValid=true.obs;
+  var isEnabled=true.obs;
   var orderBy=1.obs;
   var errorText="* ${Language.required}".obs;
 
@@ -808,16 +813,16 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        GestureDetector(
-          onTap: (){
+        Obx(() => GestureDetector(
+          onTap:isEnabled.value? (){
             Navigator.push(context, _createRouteBillHistory());
-          },
-          child: Container(
+          }:null,
+          child:Container(
             margin: ColorUtil.formMargin,
             padding: ColorUtil.formMargin,
             height: ColorUtil.formContainerHeight,
             width: SizeConfig.screenWidth,
-            decoration: ColorUtil.formContBoxDec,
+            decoration: isEnabled.value? ColorUtil.formContBoxDec:ColorUtil.formContDisableBoxDec,
             child: Row(
               children: [
                 Obx(() => Text(selectedData.isEmpty?hinttext:isToJson?selectedData[propertyName]??hinttext:selectedData['value'],
@@ -827,7 +832,7 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
               ],
             ),
           ),
-        ),
+        )),
         Obx(() => Visibility(visible:!isValid.value,child: ValidationErrorText()))
       ],
     );
@@ -913,6 +918,12 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
     }
   }
 
+  void checkAndClearSearch(){
+    if(dataNotifier.length!=data.length){
+      dataNotifier.value=data;
+    }
+  }
+
   Route _createRouteBillHistory() {
     double dialogWidth=( SizeConfig.screenWidth!*0.7);
     return PageRouteBuilder(
@@ -931,7 +942,7 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
               child: Obx(() => Column(
                 children: [
                   CustomAppBar(title: hinttext,prefix: Container(),suffix: CloseBtnV1(
-                    onTap: (){Navigator.pop(context);},
+                    onTap: (){checkAndClearSearch();Navigator.pop(context);},
                   ),width:dialogWidth-100,
                   ),
                   /* !showSearch?Container():*/Container(
@@ -982,6 +993,7 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
                             selectedData.value={"value":dataNotifier[index]};
                           }
                           selectedValueFunc(dataNotifier[index]);
+                          checkAndClearSearch();
                         },
                         child: Container(
                           height: 45,

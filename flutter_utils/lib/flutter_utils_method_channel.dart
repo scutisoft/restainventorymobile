@@ -12,6 +12,10 @@ import 'model/parameterModel.dart';
 
 class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensionHelper{
 
+  MethodChannelFlutterUtils(){
+    print("MethodChannelFlutterUtils");
+  }
+
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_utils');
 
@@ -41,9 +45,9 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
 
   @override
   void fillTreeDrpV1(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam=""})async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false})async{
       fillTreeDrp(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
-      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam);
+      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable: needToDisable);
   }
 
   @override
@@ -75,9 +79,19 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
     foundWidgetByKey(widgets, key,needSetValue: needSetValue,value: value);
   }
 
+  @override
+  void clearOnDisposeV1(){
+    clearOnDispose();
+  }
+
 }
 
 class ApiManger extends FlutterUtilsPlatform{
+
+  ApiManger(){
+    print("ApiManger");
+  }
+
   int timeOut=30;
 
   onTme(RxBool loader){

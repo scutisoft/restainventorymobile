@@ -17,7 +17,7 @@ Future<List> getMasterDrp(String page,String typeName, dynamic refId,dynamic ref
   parameters.add(ParamModel(Key: "RefTypeName", Type: "String", Value: refTypeName??typeName));
   parameters.add(ParamModel(Key: "HiraricalId", Type: "String", Value: hiraricalId));
 
-  print(jsonEncode(parameters));
+  //print(jsonEncode(parameters));
   var result=[];
   try{
     await FlutterUtilsPlatform.apiInstance.getInvokeLazy(parameters).then((value) {

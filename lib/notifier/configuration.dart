@@ -4,6 +4,7 @@ import 'package:device_info/device_info.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
+import 'package:restainventorymobile/pages/login/loginPage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../pages/storeSelection/storeSelection.dart';
 import '../utils/utils.dart';
@@ -130,7 +131,7 @@ const String SP_CURRENTCALLAPPOINTMENTID="appointmentid";
 const String SP_CURRENTCALLCLIENTOUTLETID="curroutletid";
 const String SP_FIREBASETOKEN="ft";
 const String SP_NOTIFICATIONBODY="nb";
-const String SP_STOREID="si";
+const String SP_STOREID="StoreId";
 const String SP_STORENAME="sn";
 
 const String SP_DBNAME="DatabaseName";
@@ -167,7 +168,7 @@ void clearUserSessionDetail(){
   setSharedPrefStringUtil("", SP_USERIMG);
   setSharedPrefStringUtil("", SP_STOREID);
   setSharedPrefStringUtil("", SP_STORENAME);
-  //Get.off(()=>const SlideSwipe());
+  Get.off(()=>const LoginPage());
 }
 
 navigateByUserType() async{
@@ -189,4 +190,4 @@ navigateByUserType() async{
  // Get.off(()=>MyHomePage());
 }
 
-var menuSel=1.obs;
+var menuSel=2.obs;

@@ -54,6 +54,11 @@ class ColorUtil{
       borderRadius: BorderRadius.circular(8),
       border: Border.all(color: greyBorder)
   );
+  static BoxDecoration formContDisableBoxDec=BoxDecoration(
+      color: disableColor,
+      borderRadius: BorderRadius.circular(8),
+      border: Border.all(color: greyBorder.withOpacity(0.5))
+  );
 
   static Color chkBoxText=const Color(0xff452800);
   static Color disableColor=Color(0xFFe8e8e8);

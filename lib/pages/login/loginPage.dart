@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/flutter_utils_platform_interface.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
+import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:restainventorymobile/api/apiUtils.dart';
@@ -36,6 +37,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState(){
     allowAccess();
+    loadCred();
     super.initState();
   }
 
@@ -44,9 +46,12 @@ class _LoginPageState extends State<LoginPage> {
     //  final PermissionHandler _permissionHandler = PermissionHandler();
     var result = await Permission.storage.request();
     console("result ${result.isGranted}");
-    if(result == PermissionStatus.granted) {
 
-    }
+  }
+
+  void loadCred() async{
+    email.text=await getSharedPrefStringUtil(SP_USEREMAIL);
+    password.text=await getSharedPrefStringUtil(SP_USERPASSWORD);
   }
 
   @override
@@ -129,35 +134,42 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   login() async{
-    if(email.text.isEmpty){
-      CustomAlert().cupertinoAlert("${Language.enterEmail}....");
-      return;
-    }
-    if(password.text.isEmpty){
-      CustomAlert().cupertinoAlert("${Language.enterPassword}....");
-      return;
-    }
-    List<ParamModel> params=[];
-    params.add(ParamModel(Key: "SpName", Type: "String", Value: Sp.loginSp));
-    params.add(ParamModel(Key: "UserName", Type: "String", Value: email.text));
-    params.add(ParamModel(Key: "Password", Type: "String", Value: password.text));
-    params.add(ParamModel(Key: "DeviceId", Type: "String", Value: getDeviceId()));
-    params.add(ParamModel(Key: "database", Type: "String", Value: "RestaPos_UAT"));
-    FlutterUtils().getInvoke(params,url:'${GetBaseUrl()}/api/Mobile/GetInvoke',loader: showLoader).then((value){
-      console(value);
-      if(value[0]){
+    var result = await Permission.storage.request();
+    if(result == PermissionStatus.granted) {
+      await setSharedPrefStringUtil(getDeviceId(), SP_DEVICEID);
+      await setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);
+      if(email.text.isEmpty){
+        CustomAlert().cupertinoAlert("${Language.enterEmail}....");
+        return;
+      }
+      if(password.text.isEmpty){
+        CustomAlert().cupertinoAlert("${Language.enterPassword}....");
+        return;
+      }
+      List<ParamModel> params=[];
+      params.add(ParamModel(Key: "SpName", Type: "String", Value: Sp.loginSp));
+      params.add(ParamModel(Key: "UserName", Type: "String", Value: email.text));
+      params.add(ParamModel(Key: "Password", Type: "String", Value: password.text));
+      params.add(ParamModel(Key: "DeviceId", Type: "String", Value: getDeviceId()));
+      params.add(ParamModel(Key: "database", Type: "String", Value: getDataBase()));
+      FlutterUtils().getInvoke(params,url:'${GetBaseUrl()}/api/Mobile/GetInvoke',loader: showLoader).then((value){
         console(value);
-        var parsed=json.decode(value[1]);
-        try{
-          setUserSessionDetail(parsed["Table"][0]);
-         // accessData=parsed['Table1'];
+        if(value[0]){
+          console(value);
+          var parsed=json.decode(value[1]);
+          try{
+            setSharedPrefStringUtil(email.text, SP_USEREMAIL);
+            setSharedPrefStringUtil(password.text, SP_USERPASSWORD);
+            setUserSessionDetail(parsed["Table"][0]);
+            // accessData=parsed['Table1'];
 
-        }catch(e){}
-      }
-      else{
-        CustomAlert().cupertinoAlert(value[1]);
-      }
-    });
+          }catch(e){}
+        }
+        else{
+          CustomAlert().cupertinoAlert(value[1]);
+        }
+      });
+    }
   }
 }
 

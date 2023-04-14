@@ -6,18 +6,18 @@ import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
 import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
-import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:restainventorymobile/widgets/expandedSection.dart';
-import 'package:restainventorymobile/widgets/fittedText.dart';
-import 'package:restainventorymobile/widgets/loader.dart';
-import '../../api/apiUtils.dart';
-import '../../helper/language.dart';
-import '../../widgets/arrowAnimation.dart';
-import '../../widgets/swipe2/core/cell.dart';
-import '../../widgets/swipe2/core/controller.dart';
+import '/widgets/expandedSection.dart';
+import '/widgets/fittedText.dart';
+import '/widgets/loader.dart';
+import '/widgets/numberPadPopUp/numberPadPopUp.dart';
+import '/api/apiUtils.dart';
+import '/widgets/arrowAnimation.dart';
+import '/widgets/inventoryWidgets.dart';
+import '/widgets/swipe2/core/cell.dart';
+import '/widgets/swipe2/core/controller.dart';
 import '/api/sp.dart';
 import '/notifier/configuration.dart';
 import '/utils/constants.dart';
@@ -34,10 +34,12 @@ import '/utils/utilWidgets.dart';
 import '/widgets/customWidgetsForDynamicParser/searchDrp2.dart';
 import '/widgets/searchDropdown/dropdown_search.dart';
 import '/widgets/singleDatePicker.dart';
+
 class IndentForm extends StatefulWidget {
   bool isEdit;
   Function? closeCb;
-  IndentForm({Key? key,this.isEdit=false,this.closeCb}) : super(key: key);
+  String dataJson;
+  IndentForm({Key? key,this.isEdit=false,this.closeCb,this.dataJson=""}) : super(key: key);
 
   @override
   State<IndentForm> createState() => _IndentFormState();
@@ -50,7 +52,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
   Map recipeForm={};
   String page="IndentOrder";
 
-  Rxn<DateTime> donationDate=Rxn<DateTime>();
+  Rxn<DateTime> expectedDate=Rxn<DateTime>();
 
   late TabController tabController;
   double scrollPadding=10;
@@ -64,6 +66,8 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
   var isRawMatCartOpen=false.obs;
   var isRecipeCartOpen=false.obs;
   late SwipeActionController controller;
+
+  final FlutterUtils _flutterUtils=FlutterUtils();
 
   @override
   void initState(){
@@ -87,8 +91,15 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
   );
 
   var activeTab=0;
-  bool needApprovedQty=false;
+  var needApprovedQty=false.obs;
+  var approvedQtyUnit="Unit".obs;
   int selectedIndex=-1;
+
+  var recipeNumPadOpen=false.obs;
+  var recipeNumPadVal="".obs;
+  var recipeNumPadTitle="".obs;
+  var recipeNumPadSubTitle="".obs;
+  int recipeEditIndex=-1;
 
   @override
   Widget build(BuildContext context) {
@@ -96,13 +107,13 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
     return PageBody(
         body: Stack(
           children: [
-            Container(
+            SizedBox(
               height: SizeConfig.screenHeight,
               width: SizeConfig.screenWidth,
               child: Column(
                 children: [
                   CustomAppBar(
-                    title: "Add Indent Order",
+                    title: "${widget.isEdit?"Update":"Add"} Indent Order",
                     prefix: ArrowBack(
                       onTap: (){
                         Get.back();
@@ -144,7 +155,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                             onTap: () async{
                               final DateTime? picked = await showDatePicker2(
                                   context: context,
-                                  initialDate:  donationDate.value==null?DateTime.now():donationDate.value!, // Refer step 1
+                                  initialDate:  expectedDate.value==null?DateTime.now():expectedDate.value!, // Refer step 1
                                   firstDate: DateTime.now(),
                                   lastDate: DateTime(2050),
                                   builder: (BuildContext context,Widget? child){
@@ -161,68 +172,82 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                     );
                                   });
                               if (picked != null) {
-                                donationDate.value=picked;
+                                expectedDate.value=picked;
                               }
                             },
                             child: Obx(() =>  ExpectedDateContainer(
-                              text: donationDate.value ==null?"Select Date": "${DateFormat.yMMMd().format(donationDate.value!)}",
+                              text: expectedDate.value ==null?"Select Date": "${DateFormat.yMMMd().format(expectedDate.value!)}",
                             ))
                         ),
                         LeftHeader(title: "Department"),
                         widgets['DepartmentId'],
                         inBtwHei(height: 20),
-                        Container(
-                          margin: MyConstants.LRPadding,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: ColorUtil.red2),
-                            borderRadius: BorderRadius.circular(7),
-                            color: Color(0xffFCE2E2),
-                          ),
-                          child: TabBar(
-                              controller: tabController,
-                              unselectedLabelColor: ColorUtil.red2,
-                              unselectedLabelStyle: ts20M(ColorUtil.red2,fontsize: 18),
-                              labelStyle: ts20M(ColorUtil.themeWhite,fontsize: 18),
-                              onTap: (i){
-                                print("iii $i ${tabController.index}");
-                                if(i!=activeTab && materialMappingList.isNotEmpty){
-                                  CustomAlert(
-                                    callback: (){
-                                      activeTab=i;
-                                      materialMappingList.clear();
-                                    },
-                                    cancelCallback: (){
-                                      tabController.animateTo(activeTab);
+                        Stack(
+                          children: [
+                            Container(
+                              margin: MyConstants.LRPadding,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: ColorUtil.red2),
+                                borderRadius: BorderRadius.circular(7),
+                                color: Color(0xffFCE2E2),
+                              ),
+                              child: TabBar(
+                                  controller: tabController,
+                                  unselectedLabelColor: ColorUtil.red2,
+                                  unselectedLabelStyle: ts20M(ColorUtil.red2,fontsize: 18),
+                                  labelStyle: ts20M(ColorUtil.themeWhite,fontsize: 18),
+                                  onTap: (i){
+                                    if(i!=activeTab && (materialMappingList.isNotEmpty || recipeMappingList.isNotEmpty)){
+                                      CustomAlert(
+                                          callback: (){
+                                            activeTab=i;
+                                            materialMappingList.clear();
+                                            recipeMappingList.clear();
+                                            recipeInnerProductList.clear();
+                                            recipeParentList.clear();
+                                          },
+                                          cancelCallback: (){
+                                            tabController.animateTo(activeTab);
+                                          }
+                                      ).yesOrNoDialog2("assets/icons/delete.svg", "Are you sure want to leave ?", true);
                                     }
-                                  ).yesOrNoDialog2("assets/icons/delete.svg", "Are you sure want to leave ?", true);
-                                }
-                                else{
-                                  activeTab=i;
-                                }
-                                clearMaterialForm();
-                                clearRecipeForm();
-                              },
-                              indicator: BoxDecoration(
-                                  color: ColorUtil.red2,
-                                  borderRadius: BorderRadius.circular(7),
-                                  boxShadow: [
-                                    BoxShadow(
-                                        color: ColorUtil.red2.withOpacity(0.2),
-                                        spreadRadius: 5,
-                                        blurRadius: 30,
-                                        offset: Offset(0, 15)
-                                    )
+                                    else{
+                                      activeTab=i;
+                                    }
+                                    clearMaterialForm();
+                                    clearRecipeForm();
+                                  },
+                                  indicator: BoxDecoration(
+                                      color: ColorUtil.red2,
+                                      borderRadius: BorderRadius.circular(7),
+                                      boxShadow: [
+                                        BoxShadow(
+                                            color: ColorUtil.red2.withOpacity(0.2),
+                                            spreadRadius: 5,
+                                            blurRadius: 30,
+                                            offset: Offset(0, 15)
+                                        )
+                                      ]
+                                  ),
+                                  tabs: [
+                                    Tab(text: "Raw Material",iconMargin: EdgeInsets.zero,height: ColorUtil.formContainerHeight,),
+                                    Tab(text: "Recipe",iconMargin: EdgeInsets.zero,height: ColorUtil.formContainerHeight,),
                                   ]
                               ),
-
-                              tabs: [
-                                Tab(text: "Raw Material",iconMargin: EdgeInsets.zero,height: ColorUtil.formContainerHeight,),
-                                Tab(text: "Recipe",iconMargin: EdgeInsets.zero,height: ColorUtil.formContainerHeight,),
-                              ]
-                          ),
+                            ),
+                            Visibility(
+                              visible: widget.isEdit,
+                              child: Container(
+                                height: 65,
+                                width: SizeConfig.screenWidth,
+                                margin: MyConstants.LRPadding,
+                                color: Colors.red.withOpacity(0.1),
+                              ),
+                            )
+                          ],
                         ),
                         Container(
-                          height: 500,
+                          height: 570,
                           child: TabBarView(
                               controller: tabController,
                               physics: const NeverScrollableScrollPhysics(),
@@ -249,6 +274,11 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                     rawMaterialForm['MaterialBrandId'],
                                     inBtwHei(height: 10),
                                     rawMaterialForm['RequestedQuantity'],
+                                    inBtwHei(height: 10),
+                                    Obx(() => Visibility(
+                                      visible: needApprovedQty.value,
+                                      child: rawMaterialForm['ApprovedQuantity'],
+                                    )),
                                     inBtwHei(height: 30),
                                     DoneBtn(onDone: onRawMaterialAdd, title: "Add"),
                                   ],
@@ -273,6 +303,11 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                     recipeForm['RecipeId'],
                                     inBtwHei(height: 10),
                                     recipeForm['RequestedQuantity'],
+                                    inBtwHei(height: 10),
+                                    Obx(() => Visibility(
+                                      visible: needApprovedQty.value,
+                                      child: recipeForm['ApprovedQuantity'],
+                                    )),
                                     inBtwHei(height: 30),
                                     DoneBtn(onDone: onRecipeAdd, title: "Add"),
                                   ],
@@ -288,80 +323,43 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                 ],
               ),
             ),
-            Positioned(
-              bottom: 0,
-              child: Obx(() => Container(
-                margin: const EdgeInsets.only(top: 0,bottom: 0),
-                height: isKeyboardVisible.value?0:70,
-                width: SizeConfig.screenWidth,
-                color: Colors.white,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    GestureDetector(
-                      onTap: (){
-                        Get.back();
-                      },
-                      child: Container(
-                        width: SizeConfig.screenWidth!*0.4,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
-                          border: Border.all(color: ColorUtil.primary),
-                          color: ColorUtil.primary.withOpacity(0.3),
-                        ),
-                        child:Center(child: Text(Language.cancel,style: ts16(ColorUtil.primary,), )) ,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: (){
 
-
-                        sysSubmit(widgets,
-                            isEdit: widget.isEdit,
-                            needCustomValidation: true,
-                            traditionalParam: traditionalParam,
-                            loader: showLoader,
-                            onCustomValidation: (){
-                              if(activeTab==0){
-                                if(materialMappingList.isEmpty){
-                                  CustomAlert().cupertinoAlert("Select Material to raise Indent...");
-                                  return false;
-                                }
-                                foundWidgetByKey(widgets, "IndentOrderMaterialMappingListJson",needSetValue: true,value: jsonEncode(materialMappingList));
-                              }
-                              else if(activeTab==1){
-                                if(recipeMappingList.isEmpty){
-                                  CustomAlert().cupertinoAlert("Select Recipe to raise Indent...");
-                                  return false;
-                                }
-                                foundWidgetByKey(widgets, "IndentOrderMaterialMappingListJson",needSetValue: true,value: jsonEncode(recipeMappingList));
-                              }
-                              foundWidgetByKey(widgets, "IndentMaterialTypeId",needSetValue: true,value: tabController.index+1);
-                              foundWidgetByKey(widgets, "CustomDate",needSetValue: true,value: DateFormat(MyConstants.dbDateFormat).format(donationDate.value!));
-                              return true;
-                            },
-                            successCallback: (e){
-                              console("sysSubmit $e");
-                              if(widget.closeCb!=null){
-                                widget.closeCb!(e);
-                              }
-                            }
-                        );
-                      },
-                      child: Container(
-                        width: SizeConfig.screenWidth!*0.4,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(3),
-                          color: ColorUtil.primary,
-                        ),
-                        child:Center(child: Text(Language.save,style: ts16(ColorUtil.themeWhite,), )) ,
-                      ),
-                    ),
-                  ],
-                ),
-              )),
+            SaveCloseBtn(
+              isEdit: widget.isEdit,
+              isKeyboardVisible: isKeyboardVisible,
+              onSave: (){
+                sysSubmit(widgets,
+                    isEdit: widget.isEdit,
+                    needCustomValidation: true,
+                    traditionalParam: traditionalParam,
+                    loader: showLoader,
+                    onCustomValidation: (){
+                      if(activeTab==0){
+                        if(materialMappingList.isEmpty){
+                          CustomAlert().cupertinoAlert("Select Material to raise Indent...");
+                          return false;
+                        }
+                        foundWidgetByKey(widgets, "IndentOrderMaterialMappingListJson",needSetValue: true,value: jsonEncode(materialMappingList));
+                      }
+                      else if(activeTab==1){
+                        if(recipeMappingList.isEmpty){
+                          CustomAlert().cupertinoAlert("Select Recipe to raise Indent...");
+                          return false;
+                        }
+                        foundWidgetByKey(widgets, "IndentOrderMaterialMappingListJson",needSetValue: true,value: jsonEncode(recipeMappingList));
+                      }
+                      foundWidgetByKey(widgets, "IndentMaterialTypeId",needSetValue: true,value: tabController.index+1);
+                      foundWidgetByKey(widgets, "CustomDate",needSetValue: true,value: DateFormat(MyConstants.dbDateFormat).format(expectedDate.value!));
+                      return true;
+                    },
+                    successCallback: (e){
+                      console("sysSubmit $e");
+                      if(widget.closeCb!=null){
+                        widget.closeCb!(e);
+                      }
+                    }
+                );
+              },
             ),
 
 
@@ -404,20 +402,23 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                   Row(
                     children: [
                       GridTitleCard(
-                        width: col1Wid,
+                        width: needApprovedQty.value?col1Wid:col1Wid+col3Wid,
                         content: "Material Name",
                       ),
                       GridTitleCard(
                         width: col2Wid,
                         content: "Requested Qty",
                       ),
-                      GridTitleCard(
-                        width: col3Wid,
-                        content: "Approved Qty",
+                      Visibility(
+                        visible: needApprovedQty.value,
+                        child: GridTitleCard(
+                          width: col3Wid,
+                          content: "Approved Qty",
+                        ),
                       ),
                     ],
                   ),
-                  inBtwHei(height: 15),
+                  const SwipeNotes(),
                   Expanded(
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -440,23 +441,21 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                             },
                             firstActionWillCoverAllSpaceOnDeleting: false,
                             trailingActions: [
-                              SwipeAction(
-                                title: "",
-                                icon: Padding(
-                                  padding:  EdgeInsets.only(top: 11),
-                                  child: SvgPicture.asset("assets/icons/delete.svg",
-                                    color: ColorUtil.themeWhite,height: 30,),
-                                ),
-                                onTap: (handler) async {
-                                  materialMappingList.removeAt(i);
-                                  await handler(true);
-
-                                 /* updateSlideItemIndex(-1);
-                                  onProductDelete(c_orderDetail.value!.productList![index].productId);*/
-
-                                },
-                                color: ColorUtil.red2,
-                              ),
+                              swipeActionEdit((handler) async{
+                                recipeEditIndex=i;
+                                recipeNumPadOpen.value=true;
+                                recipeNumPadVal.value=needApprovedQty.value?materialMappingList[i]['ApprovedQuantity'].toString():
+                                materialMappingList[i]['RequestedQuantity'].toString();
+                                recipeNumPadVal.value=parseDouble(recipeNumPadVal.value)>0?recipeNumPadVal.value:"";
+                                recipeNumPadTitle.value=materialMappingList[i]['MaterialName'];
+                                recipeNumPadSubTitle.value=needApprovedQty.value?'Approved Quantity':'Requested Quantity';
+                                selectedIndex=-1;
+                                controller.closeAllOpenCell();
+                              }),
+                              swipeActionDelete((handler) async {
+                                materialMappingList.removeAt(i);
+                                await handler(true);
+                              }),
                             ],
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 0),
@@ -465,7 +464,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                               child: Row(
                                 children: [
                                   SizedBox(
-                                    width:col1Wid,
+                                    width:needApprovedQty.value?col1Wid:col1Wid+col2Wid-11,
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -486,56 +485,20 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                     text: "${materialMappingList[i]['RequestedQuantity']} ${materialMappingList[i]['UnitName']}",
                                     textStyle: ts20M(ColorUtil.red2,fontsize: 18),
                                   ),
-                                  FittedText(
-                                    height: 25,
-                                    width:col2Wid-11,
-                                    alignment: Alignment.centerLeft,
-                                    text: "${materialMappingList[i]['ApprovedQuantity']} ${materialMappingList[i]['UnitName']}",
-                                    textStyle: ts20M(ColorUtil.text1,fontsize: 18),
+                                  Visibility(
+                                    visible: needApprovedQty.value,
+                                    child: FittedText(
+                                      height: 25,
+                                      width:col2Wid-11,
+                                      alignment: Alignment.centerLeft,
+                                      text: "${materialMappingList[i]['ApprovedQuantity']} ${materialMappingList[i]['UnitName']}",
+                                      textStyle: ts20M(ColorUtil.text1,fontsize: 18),
+                                    ),
                                   ),
 
                                 ],
                               ),
                             ),
-                          ),
-                        );
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 5),
-                          padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                          decoration:ColorUtil.formContBoxDec,
-                          child: Row(
-                            children: [
-                              SizedBox(
-                                width:col1Wid,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text("${materialMappingList[i]['MaterialName']}",
-                                      style: ts20M(ColorUtil.themeBlack,fontsize: 18),
-                                    ),
-                                    Text("${materialMappingList[i]['MaterialBrandName']}",
-                                      style: ts20M(ColorUtil.red2,fontsize: 15),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              FittedText(
-                                height: 25,
-                                width:col2Wid-11,
-                                alignment: Alignment.centerLeft,
-                                text: "${materialMappingList[i]['RequestedQuantity']} ${materialMappingList[i]['UnitName']}",
-                                textStyle: ts20M(ColorUtil.red2,fontsize: 18),
-                              ),
-                              FittedText(
-                                height: 25,
-                                width:col2Wid-11,
-                                alignment: Alignment.centerLeft,
-                                text: "${materialMappingList[i]['ApprovedQuantity']} ${materialMappingList[i]['UnitName']}",
-                                textStyle: ts20M(ColorUtil.red2,fontsize: 18),
-                              ),
-
-                            ],
                           ),
                         );
                       },
@@ -583,23 +546,27 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                     ],
                   ),
                   inBtwHei(height: 15),
+
                   Row(
                     children: [
                       GridTitleCard(
-                        width: col1Wid,
+                        width: needApprovedQty.value?col1Wid:col1Wid+col2Wid,
                         content: "Recipe Name",
                       ),
                       GridTitleCard(
                         width: col2Wid,
                         content: "Requested Qty",
                       ),
-                      GridTitleCard(
-                        width: col3Wid,
-                        content: "Approved Qty",
+                      Visibility(
+                        visible: needApprovedQty.value,
+                        child: GridTitleCard(
+                          width: col3Wid,
+                          content: "Approved Qty",
+                        ),
                       ),
                     ],
                   ),
-                  inBtwHei(height: 15),
+                  const SwipeNotes(),
                   Expanded(
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -622,23 +589,26 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                             },
                             firstActionWillCoverAllSpaceOnDeleting: false,
                             trailingActions: [
-                              SwipeAction(
-                                title: "",
-                                icon: Padding(
-                                  padding:  EdgeInsets.only(top: 11),
-                                  child: SvgPicture.asset("assets/icons/delete.svg",
-                                    color: ColorUtil.themeWhite,height: 30,),
-                                ),
-                                onTap: (handler) async {
-                                  // recipeParentList.removeAt(i);
-                                  // await handler(true);
-
-                                  /* updateSlideItemIndex(-1);
-                                  onProductDelete(c_orderDetail.value!.productList![index].productId);*/
-
-                                },
-                                color: ColorUtil.red2,
-                              ),
+                              swipeActionEdit((handler) async{
+                                recipeEditIndex=i;
+                                recipeNumPadOpen.value=true;
+                                recipeNumPadVal.value=needApprovedQty.value?recipeParentList[i]['ApprovedQuantity'].toString():
+                                recipeParentList[i]['RequestedQuantity'].toString();
+                                recipeNumPadVal.value=parseDouble(recipeNumPadVal.value)>0?recipeNumPadVal.value:"";
+                                recipeNumPadTitle.value=recipeParentList[i]['RecipeName'];
+                                recipeNumPadSubTitle.value=needApprovedQty.value?'Approved Quantity':'Requested Quantity';
+                                selectedIndex=-1;
+                                controller.closeAllOpenCell();
+                              }),
+                              swipeActionDelete((handler) async {
+                                recipeMappingList.removeWhere((element) => element['RecipeId']==recipeParentList[i]['RecipeId']);
+                                if(selectedIndex!=-1){
+                                  selectedIndex=-1;
+                                }
+                                recipeParentList.removeAt(i);
+                                recipeInnerProductList.clear();
+                                await handler(true);
+                              }),
                             ],
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
@@ -653,17 +623,16 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                       selectedIndex=i;
                                       recipeInnerProductList.value=recipeMappingList.where((p0) => p0['ParentId'].toString()==recipeParentList[i]['ParentPrimaryId'].toString()).toList();
                                     }
-
                                     setState(() {});
                                   },
                                   child: Container(
                                     margin: const EdgeInsets.only(bottom: 0),
-                                    padding: const EdgeInsets.fromLTRB(5, 10, 5, 10),
+                                    padding: const EdgeInsets.fromLTRB(5, 12, 5, 12),
                                     decoration:ColorUtil.formContBoxDec,
                                     child: Row(
                                       children: [
                                         SizedBox(
-                                          width:col1Wid,
+                                          width:needApprovedQty.value?col1Wid:col1Wid+col2Wid-31,
                                           child: Column(
                                             mainAxisSize: MainAxisSize.min,
                                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -671,7 +640,6 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                               Text("${recipeParentList[i]['RecipeName']}",
                                                 style: ts20M(ColorUtil.themeBlack,fontsize: 18),
                                               ),
-
                                             ],
                                           ),
                                         ),
@@ -682,12 +650,15 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                           text: "${recipeParentList[i]['RequestedQuantity']} ${recipeParentList[i]['UnitName']}",
                                           textStyle: ts20M(ColorUtil.red2,fontsize: 18),
                                         ),
-                                        FittedText(
-                                          height: 25,
-                                          width:col2Wid-31,
-                                          alignment: Alignment.centerLeft,
-                                          text: "${recipeParentList[i]['ApprovedQuantity']} ${recipeParentList[i]['UnitName']}",
-                                          textStyle: ts20M(ColorUtil.text1,fontsize: 18),
+                                        Visibility(
+                                          visible: needApprovedQty.value,
+                                          child: FittedText(
+                                            height: 25,
+                                            width:col2Wid-31,
+                                            alignment: Alignment.centerLeft,
+                                            text: "${recipeParentList[i]['ApprovedQuantity']} ${recipeParentList[i]['UnitName']}",
+                                            textStyle: ts20M(ColorUtil.text1,fontsize: 18),
+                                          ),
                                         ),
                                         ArrowAnimation(
                                           openCb: (value){
@@ -712,7 +683,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                         child: Row(
                                           children: [
                                             SizedBox(
-                                              width:col1Wid,
+                                              width:needApprovedQty.value?col1Wid:col1Wid+col2Wid-31,
                                               child: Column(
                                                 mainAxisSize: MainAxisSize.min,
                                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,12 +704,15 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                               text: "${recipeInnerProductList[index]['RequestedQuantity']} ${recipeInnerProductList[index]['UnitName']}",
                                               textStyle: ts20M(ColorUtil.red2,fontsize: 18),
                                             ),
-                                            FittedText(
-                                              height: 25,
-                                              width:col2Wid-11,
-                                              alignment: Alignment.centerLeft,
-                                              text: "${recipeInnerProductList[index]['ApprovedQuantity']} ${recipeInnerProductList[index]['UnitName']}",
-                                              textStyle: ts20M(ColorUtil.text1,fontsize: 18),
+                                            Visibility(
+                                              visible: needApprovedQty.value,
+                                              child: FittedText(
+                                                height: 25,
+                                                width:col2Wid-11,
+                                                alignment: Alignment.centerLeft,
+                                                text: "${recipeInnerProductList[index]['ApprovedQuantity']} ${recipeInnerProductList[index]['UnitName']}",
+                                                textStyle: ts20M(ColorUtil.text1,fontsize: 18),
+                                              ),
                                             ),
 
                                           ],
@@ -758,6 +732,31 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
               ),
             )),
 
+            Obx(() => Blur(value: recipeNumPadOpen.value,)),
+
+            Obx(() => NumberPadPopUp(
+              isSevenInch: true,
+              isOpen: recipeNumPadOpen.value,
+              value: recipeNumPadVal.value,
+              title: recipeNumPadTitle.value,
+              subTitle: recipeNumPadSubTitle.value,
+              onCancel: (){
+                recipeNumPadOpen.value=false;
+              },
+              numberTap: (e){
+                recipeNumPadVal.value=e;
+              },
+              onDone: (){
+                if(activeTab==0){
+                  onMaterialUpdate();
+                }
+                else if(activeTab==1){
+                  onRecipeUpdate();
+                }
+
+              },
+            )),
+
             Obx(() => Loader(value: showLoader.value,)),
           ],
         )
@@ -768,12 +767,17 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
 
   @override
   void assignWidgets() async{
+    unitDropDown.onChange=(e){
+      approvedQtyUnit.value=e['Text'];
+    };
     widgets.clear();
     widgets['FromStoreId']=HiddenController(dataname: "FromStoreId");
     widgets['IndentOrderMaterialMappingListJson']=HiddenController(dataname: "IndentOrderMaterialMappingListJson");
     widgets['IndentMaterialTypeId']=HiddenController(dataname: "IndentMaterialTypeId");
     widgets['Notes']=HiddenController(dataname: "Notes");
     widgets['CustomDate']=HiddenController(dataname: "CustomDate");
+    widgets['IsApproveRejectPermission']=HiddenController(dataname: "IsApproveRejectPermission");
+    widgets['IndentOrderId']=HiddenController(dataname: "IndentOrderId");
     widgets['FromStoreName']=HE_Text(dataname: "FromStoreName", contentTextStyle: ts20M(ColorUtil.themeWhite));
     widgets['ToStoreId']=SlideSearch(dataName: "ToStoreId", selectedValueFunc: (e){}, hinttext: "Select To Store",data: [],);
     widgets['DeliveryTypeId']=SearchDrp2(map:  {"dataName":"DeliveryTypeId","hintText":"Select Delivery Type","labelText":"Delivery Type","showSearch":false,"mode":Mode.DIALOG,"dialogMargin":const EdgeInsets.all(0.0)},);
@@ -815,6 +819,28 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
       suffixIcon:unitDropDown,
       textLength: MyConstants.maximumQty,
     );
+    rawMaterialForm['ApprovedQuantity']=AddNewLabelTextField(
+      dataname: 'ApprovedQuantity',
+      hasInput: true,
+      required: false,
+      labelText: "Approved Quantity",
+      scrollPadding: 150,
+      regExp: MyConstants.decimalReg,
+      textInputType: TextInputType.number,
+      onChange: (v){},
+      onEditComplete: (){
+        FocusScope.of(context).unfocus();
+      },
+      suffixIcon:Container(
+        width: 100,
+        height: 45,
+        margin: const EdgeInsets.only(top: 10,bottom: 10,right: 5),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(50),color: ColorUtil.red),
+        alignment: Alignment.center,
+        child: Obx(() => Text("${approvedQtyUnit.value}",style: ts20M(ColorUtil.themeWhite),)),
+      ),
+      textLength: MyConstants.maximumQty,
+    );
 
     recipeForm['RecipeId']=SlideSearch(dataName: "RecipeId",
       selectedValueFunc: (e){
@@ -837,19 +863,66 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
       suffixIcon:unitDropDown,
       textLength: MyConstants.maximumQty,
     );
+    recipeForm['ApprovedQuantity']=AddNewLabelTextField(
+      dataname: 'ApprovedQuantity',
+      hasInput: true,
+      required: false,
+      labelText: "Approved Quantity",
+      scrollPadding: 150,
+      regExp: MyConstants.decimalReg,
+      textInputType: TextInputType.number,
+      onChange: (v){},
+      onEditComplete: (){
+        FocusScope.of(context).unfocus();
+      },
+      suffixIcon:Container(
+        width: 100,
+        height: 45,
+        margin: const EdgeInsets.only(top: 10,bottom: 10,right: 5),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(50),color: ColorUtil.red),
+        alignment: Alignment.center,
+        child: Obx(() => Text("${approvedQtyUnit.value}",style: ts20M(ColorUtil.themeWhite),)),
+      ),
+      textLength: MyConstants.maximumQty,
+    );
 
     if(!widget.isEdit){
       widgets['FromStoreId'].setValue(await getSharedPrefStringUtil(SP_STOREID));
       widgets['FromStoreName'].setValue(await getSharedPrefStringUtil(SP_STORENAME));
-      donationDate.value=DateTime.now();
+      expectedDate.value=DateTime.now();
+      needApprovedQty.value=false;
     }
 
-    fillTreeDrp(widgets, "ToStoreId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "");
-    fillTreeDrp(widgets, "DeliveryTypeId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "");
-    fillTreeDrp(widgets, "DepartmentId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "");
+    fillTreeDrp(widgets, "ToStoreId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
+    fillTreeDrp(widgets, "DeliveryTypeId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
+    fillTreeDrp(widgets, "DepartmentId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
 
-    fillTreeDrp(rawMaterialForm, "MaterialId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "RawMaterial");
-    fillTreeDrp(recipeForm, "RecipeId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "Recipe");
+    fillTreeDrp(rawMaterialForm, "MaterialId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "RawMaterial",clearValues: false);
+    fillTreeDrp(recipeForm, "RecipeId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "Recipe",clearValues: false);
+
+    await parseJson(widgets, "",dataJson: widget.dataJson,traditionalParam: traditionalParam,extraParam: MyConstants.extraParam,loader: showLoader,
+    resCb: (e){
+      try{
+        console("parseJson $e");
+        expectedDate.value=DateTime.parse(e['Table'][0]['CustomDate']);
+        needApprovedQty.value=e['Table'][0]['IsApproveRejectPermission'];
+        if(e['Table'][0]['IndentMaterialTypeId']==1){
+          activeTab=0;
+          materialMappingList.value=e['Table1'];
+        }
+        else if(e['Table'][0]['IndentMaterialTypeId']==2){
+          tabController.animateTo(1);
+          activeTab=1;
+          recipeMappingList.value=e['Table1'];
+          recipeMappingList.where((element) => element['ParentId'].toString()=="0").toList().forEach((element) {
+            recipeParentList.add(element);
+          });
+        }
+      }catch(e,t){
+        assignWidgetErrorToastLocal(e,t);
+      }
+
+    });
   }
 
   void onMaterialChange(e){
@@ -858,10 +931,11 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
       unitDropDown.setValue(getUnitIdNameList(e['UnitId'], e['UnitName']));
       if(unitDropDown.unitList.isNotEmpty){
         unitDropDown.setValue(unitDropDown.unitList[0]);
+        approvedQtyUnit.value= unitDropDown.selectedUnit.value['Text'];
       }
     }
     fillTreeDrp(rawMaterialForm, "MaterialBrandId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,
-        refType: "MaterialId",refId: e['MaterialId'],toggleRequired: true);
+        refType: "MaterialId",refId: e['MaterialId'],toggleRequired: true,needToDisable: true);
   }
 
   void onRawMaterialAdd() async{
@@ -873,9 +947,15 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
       var brandId=mbDrp.isEmpty?null:mbDrp['Id'];
       console(mDrp);
       console(mbDrp);
+      double aprQty=parseDouble(rawMaterialForm['ApprovedQuantity'].getValue(),);
+
       int existIndex = materialMappingList.indexWhere((e) => e['MaterialId'] == mDrp['MaterialId'] && e['MaterialBrandId'] == brandId);
       if (existIndex != -1) {
         CustomAlert().cupertinoAlert("Material Already Exists");
+        return;
+      }
+      if(needApprovedQty.value && aprQty<=0){
+        CustomAlert().cupertinoAlert("Enter Approved Quantity");
         return;
       }
       var obj = {
@@ -892,12 +972,42 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
         "RequestedQuantity": parseDouble(rawMaterialForm['RequestedQuantity'].getValue()),
         "ParentId": "0",
         "ParentPrimaryId": null,
-        "ApprovedQuantity": ""
+        "ApprovedQuantity": aprQty
       };
       print(obj);
       materialMappingList.add(obj);
       clearMaterialForm();
     }
+  }
+
+  void onMaterialUpdate(){
+    double recQty=0.0;
+    double appQty=0.0;
+    double qty=parseDouble(recipeNumPadVal.value);
+    if(needApprovedQty.value){
+      if(qty<=0){
+        CustomAlert().cupertinoAlert("Enter Approved Quantity");
+        return;
+      }
+      recQty=parseDouble(materialMappingList[recipeEditIndex]['RequestedQuantity']);
+      if(qty>recQty){
+        CustomAlert().cupertinoAlert("Approved Quantity Should be less than Requested Quantity ($recQty)...");
+        return;
+      }
+      appQty=qty;
+      materialMappingList[recipeEditIndex]['ApprovedQuantity']=appQty;
+    }
+    else{
+      if(qty<=0){
+        CustomAlert().cupertinoAlert("Enter Requested Quantity");
+        return;
+      }
+      recQty=qty;
+      materialMappingList[recipeEditIndex]['RequestedQuantity']=recQty;
+    }
+    recipeNumPadOpen.value=false;
+    recipeEditIndex=-1;
+    materialMappingList.refresh();
   }
 
   void onRecipeChange(e){
@@ -906,6 +1016,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
       unitDropDown.setValue([{"Id":e['UnitId'], "Text":e['UnitName']}]);
       if(unitDropDown.unitList.isNotEmpty){
         unitDropDown.setValue(unitDropDown.unitList[0]);
+        approvedQtyUnit.value= unitDropDown.selectedUnit.value['Text'];
       }
     }
   }
@@ -921,11 +1032,23 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
         CustomAlert().cupertinoAlert("Recipe Already Exists");
         return;
       }
+
+      double aprQty=parseDouble(recipeForm['ApprovedQuantity'].getValue(),);
+      if(needApprovedQty.value && aprQty<=0){
+        CustomAlert().cupertinoAlert("Enter Approved Quantity");
+        return;
+      }
+
+      if(needApprovedQty.value && aprQty>qty){
+        CustomAlert().cupertinoAlert("Approved Quantity Should be less than Requested Quantity...");
+        return;
+      }
+
       List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
       parameterList.add(ParamModel(Key: "RecipeId", Type: "String", Value: rDrp['RecipeId']));
       parameterList.add(ParamModel(Key: "RequestedQty", Type: "String", Value: qty));
-      parameterList.add(ParamModel(Key: "ApprovedQuantity", Type: "String", Value: null));
-      FlutterUtils().getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/IndentApi/GetRecipeDetail").then((value){
+      parameterList.add(ParamModel(Key: "ApprovedQuantity", Type: "String", Value:needApprovedQty.value?aprQty: null));
+      _flutterUtils.getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/IndentApi/GetRecipeDetail").then((value){
         if(value[0]){
           var parsed=jsonDecode(value[1]);
           List<dynamic> recipeList=parsed['Table'];
@@ -937,14 +1060,56 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
     }
   }
 
+  void onRecipeUpdate() async{
+    double recQty=0.0;
+    double appQty=0.0;
+    double qty=parseDouble(recipeNumPadVal.value);
+    if(needApprovedQty.value){
+      if(qty<=0){
+        CustomAlert().cupertinoAlert("Enter Approved Quantity");
+        return;
+      }
+      recQty=parseDouble(recipeParentList[recipeEditIndex]['RequestedQuantity']);
+      if(qty>recQty){
+        CustomAlert().cupertinoAlert("Approved Quantity Should be less than Requested Quantity ($recQty)...");
+        return;
+      }
+      appQty=qty;
+    }
+    else{
+      if(qty<=0){
+        CustomAlert().cupertinoAlert("Enter Requested Quantity");
+        return;
+      }
+      recQty=qty;
+    }
+    recipeNumPadOpen.value=false;
+    List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
+    parameterList.add(ParamModel(Key: "RecipeId", Type: "String", Value: recipeParentList[recipeEditIndex]['RecipeId']));
+    parameterList.add(ParamModel(Key: "RequestedQty", Type: "String", Value: recQty));
+    parameterList.add(ParamModel(Key: "ApprovedQuantity", Type: "String", Value:needApprovedQty.value?appQty: null));
+    _flutterUtils.getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/IndentApi/GetRecipeDetail").then((value){
+      if(value[0]){
+        var parsed=jsonDecode(value[1]);
+        List<dynamic> recipeList=parsed['Table'];
+        recipeMappingList.removeWhere((element) => element['RecipeId']==recipeParentList[recipeEditIndex]['RecipeId']);
+        recipeMappingList.addAll(recipeList);
+        recipeParentList[recipeEditIndex]=recipeList.where((element) => element['ParentId'].toString()=="0").toList()[0];
+        recipeEditIndex=-1;
+      }
+    });
+  }
+
   void clearMaterialForm(){
     clearAllV2(rawMaterialForm);
     unitDropDown.clearValues();
+    approvedQtyUnit.value="Unit";
     FocusScope.of(context).unfocus();
   }
   void clearRecipeForm(){
     clearAllV2(recipeForm);
     unitDropDown.clearValues();
+    approvedQtyUnit.value="Unit";
     FocusScope.of(context).unfocus();
   }
 
@@ -982,142 +1147,15 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
   void dispose(){
     widgets.clear();
     rawMaterialForm.clear();
+    recipeForm.clear();
+    clearOnDispose();
+    tabController.dispose();
+    recipeParentList.clear();
+    recipeInnerProductList.clear();
+    recipeMappingList.clear();
+    materialMappingList.clear();
     super.dispose();
   }
 }
 
 
-class UnitDropDown extends StatelessWidget implements ExtensionCallback{
-
-  UnitDropDown({Key? key}) : super(key: key);
-
-  var unitList=[].obs;
-  Rxn<dynamic> selectedUnit=Rxn<dynamic>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(()=>Container(
-      width: 100,
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(top: 10,bottom: 10,right: 5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
-        color:  ColorUtil.red,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(left:10.0,right: 10),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<dynamic>(
-              value: selectedUnit.value,
-              hint: Text("Unit",style: ts20M(Colors.white),),
-              style: ts20M(Colors.white),
-              icon: const Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: Colors.white,
-              ),
-              dropdownColor: ColorUtil.red,
-              items: unitList.value.map((value) {
-                return DropdownMenuItem<dynamic>(
-                  value: value,
-                  child: Text(
-                    "${value['Text']}",
-                    style: ts20M(ColorUtil.themeWhite),
-                  ),
-                );
-              }).toList(),
-              onChanged: (v) {
-                print(v);
-                selectedUnit.value=v;
-              }
-          ),
-        ),
-      ),
-    ));
-  }
-
-  @override
-  void clearValues() {
-    selectedUnit.value=null;
-    unitList.clear();
-  }
-
-  @override
-  String getDataName() {
-    // TODO: implement getDataName
-    throw UnimplementedError();
-  }
-
-  @override
-  int getOrderBy() {
-    // TODO: implement getOrderBy
-    throw UnimplementedError();
-  }
-
-  @override
-  String getType() {
-    // TODO: implement getType
-    throw UnimplementedError();
-  }
-
-  @override
-  getValue() {
-    return selectedUnit.value;
-  }
-
-  @override
-  setOrderBy(int oBy) {
-    // TODO: implement setOrderBy
-    throw UnimplementedError();
-  }
-
-  @override
-  setValue(value) {
-    if(HE_IsMap(value)){
-      selectedUnit.value=value;
-    }
-    else if(HE_IsList(value)){
-      unitList.value=value;
-    }
-
-  }
-
-  @override
-  bool validate() {
-    // TODO: implement validate
-    throw UnimplementedError();
-  }
-
-  getValueMap(){
-    return selectedUnit.value;
-  }
-}
-
-getUnitIdNameList(String id,String name){
-  List finalArr=[];
-  List idList=id.split(",");
-  List nameList=name.split(",");
-  if(idList.length==nameList.length){
-    for (int i = 0; i < idList.length; i++) {
-      finalArr.add({ "Id": idList[i], "Text": nameList[i] });
-    }
-  }
-  else{
-    CustomAlert().cupertinoAlert("Unit Name Mismatch...");
-  }
-  return finalArr;
-}
-
-class GridTitleCard extends StatelessWidget {
-  double width;
-  dynamic content;
-  GridTitleCard({Key? key,required this.width,required this.content}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: width,
-      alignment: Alignment.centerLeft,
-      child: Text("$content",style: ts20M(ColorUtil.themeBlack,fontsize: 16),),
-    );
-  }
-}

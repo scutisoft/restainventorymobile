@@ -5,6 +5,9 @@ import 'model/parameterModel.dart';
 import 'utils/extensionHelper.dart';
 
 class FlutterUtils {
+  FlutterUtils(){
+    print("FlutterUtils");
+  }
   Future<String?> getPlatformVersion() {
     return FlutterUtilsPlatform.instance.getPlatformVersion();
   }
@@ -12,8 +15,6 @@ class FlutterUtils {
   Future<List> getInvoke(List<ParamModel> parameterList,{String url="/api/Mobile/GetInvoke", RxBool? loader}){
     return  FlutterUtilsPlatform.apiInstance.getInvoke(parameterList,url: url,loader: loader);
   }
-
-
 }
 
 
@@ -26,7 +27,7 @@ mixin HappyExtension{
     FlutterUtilsPlatform.instance.setFrmValuesV1(widgets, valueArray,fromClearAll: fromClearAll);
   }
 
-  void parseJson(var widgets,String pageIdentifier,{String? dataJson,bool needToSetValue=true,
+  parseJson(var widgets,String pageIdentifier,{String? dataJson,bool needToSetValue=true,
     DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam,Function(dynamic)? resCb,
     RxBool? loader,bool fromUrl=true, String extraParam=""})async{
     FlutterUtilsPlatform.instance.parseJsonV1(widgets, pageIdentifier,dataJson: dataJson,needToSetValue: needToSetValue,developmentMode: developmentMode,traditionalParam: traditionalParam,
@@ -34,9 +35,9 @@ mixin HappyExtension{
   }
 
   void fillTreeDrp(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam=""})async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false})async{
     FlutterUtilsPlatform.instance.fillTreeDrpV1(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
-        hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam);
+        hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable:needToDisable);
   }
 
   void clearAllV2(var widgets){
@@ -62,5 +63,9 @@ mixin HappyExtension{
 
   void foundWidgetByKey(var widgets,String key,{bool needSetValue=false,dynamic value}){
     FlutterUtilsPlatform.instance.foundWidgetByKeyV1(widgets, key,needSetValue: needSetValue,value: value);
+  }
+
+  void clearOnDispose(){
+    FlutterUtilsPlatform.instance.clearOnDisposeV1();
   }
 }

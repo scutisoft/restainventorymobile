@@ -257,7 +257,6 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           }
         }
         finalParams.addAll(await getParamEssential(extraParam: extraParam));
-
         await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams,loader: loader).then((value){
           if(value[0]){
             var parsed=jsonDecode(value[1]);
@@ -340,6 +339,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
             });
           }
         }
+
         await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams,loader: loader).then((value){
           if(value[0]){
 
@@ -483,7 +483,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   fillTreeDrp(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam=""}) async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false}) async{
     var fWid=foundWidgetByKey(widgets, key);
     if(fWid!=null){
       if(clearValues){
@@ -497,6 +497,11 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           try{
             fWid.isValid.value=true;
           }catch(e){assignWidgetErrorToast("IsValid",e);}
+        }
+        if(needToDisable){
+          try{
+            fWid.isEnabled.value=value.isNotEmpty;
+          }catch(e){}
         }
       });
     }

@@ -102,6 +102,10 @@ class HE_ListViewBody extends StatelessWidget {
     widgetList.insert(0, getWidget(dataMap));
   }
 
+  void clearData(){
+    widgetList.clear();
+    data.clear();
+  }
 /*  ScrollController scrollController=ScrollController();*/
 
   @override

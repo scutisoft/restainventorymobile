@@ -18,4 +18,7 @@ String getInvokeUrl(){
   return '${GetBaseUrl()}/api/Mobile/GetInvoke';
 }
 
+String getDataBase(){
+  return "RestaPos_UAT";
+}
 

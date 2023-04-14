@@ -134,13 +134,17 @@ String getTitleCase(value){
   return value.toString().titleCase;
 }
 
+String getRupeeString(value){
+  return "${MyConstants.rupeeString} ${formatCurrency.format(parseDouble(value))}";
+}
+
 //Nested ScrollView
 double flexibleSpaceBarHeight=160.0;
 double toolBarHeight=50.0;
 double triggerOffset=60.0;
 double triggerEndOffset=80.0;
 
-void assignWidgetErrorToast(e,t){
+void assignWidgetErrorToastLocal(e,t){
   CustomAlert().cupertinoAlert("$e\n\n\n$t");
 }
 
@@ -177,10 +181,11 @@ Widget gridCardText(String title,var value,{bool isBold=false,TextOverflow? text
     padding: const EdgeInsets.only(bottom: 2),
     child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text("$title : ",style: TextStyle(color: ColorUtil.text4,fontSize: 14,fontFamily: Language.regularFF),),
+        Text("$title : ",style: TextStyle(color: ColorUtil.text1,fontSize: 15,fontFamily: 'ALO'),),
         Flexible(
-            child: Text("$value",style: TextStyle(color: ColorUtil.themeBlack,fontSize: 14,fontFamily: isBold?Language.boldFF:Language.regularFF),overflow: textOverflow,
+            child: Text("$value",style: TextStyle(color: ColorUtil.themeBlack,fontSize: 16,fontFamily: isBold?'AH':'AM'),overflow: textOverflow,
             maxLines: maxLines,)
         ),
       ],
