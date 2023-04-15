@@ -138,6 +138,10 @@ String getRupeeString(value){
   return "${MyConstants.rupeeString} ${formatCurrency.format(parseDouble(value))}";
 }
 
+String getRupeeFormat(value){
+  return formatCurrency.format(parseDouble(value));
+}
+
 //Nested ScrollView
 double flexibleSpaceBarHeight=160.0;
 double toolBarHeight=50.0;
@@ -176,7 +180,7 @@ Widget formTableHeader(String title,{bool needFittedBox=false}){
   );
 }
 
-Widget gridCardText(String title,var value,{bool isBold=false,TextOverflow? textOverflow,int? maxLines}){
+Widget gridCardText(String title,var value,{bool isBold=false,TextOverflow? textOverflow,int? maxLines,Widget? suffix}){
   return Padding(
     padding: const EdgeInsets.only(bottom: 2),
     child: Row(
@@ -188,6 +192,7 @@ Widget gridCardText(String title,var value,{bool isBold=false,TextOverflow? text
             child: Text("$value",style: TextStyle(color: ColorUtil.themeBlack,fontSize: 16,fontFamily: isBold?'AH':'AM'),overflow: textOverflow,
             maxLines: maxLines,)
         ),
+        suffix??const SizedBox.shrink()
       ],
     ),
   );
@@ -206,6 +211,23 @@ Widget gridCardText2(String title,var value,{bool isBold=false,TextOverflow? tex
             child: Text("$value",style: TextStyle(color: ColorUtil.themeBlack,fontSize: 14,fontFamily: isBold?Language.boldFF:Language.regularFF),overflow: textOverflow,)
         ),
       ],
+    ),
+  );
+}
+
+Widget flexRichText(String title,var value,{bool isBold=false,TextOverflow? textOverflow,TextAlign textAlign=TextAlign.start}){
+  return Flexible(
+    child: RichText(
+      textAlign: textAlign,
+      text: TextSpan(
+        text: '$title: ',
+        style: TextStyle(color: ColorUtil.text1,fontSize: 15,fontFamily: 'ALO'),
+        children: <TextSpan>[
+          TextSpan(text: '$value',
+              style: TextStyle(color: ColorUtil.themeBlack,fontSize: 16,fontFamily:'AM',),
+          ),
+        ],
+      ),
     ),
   );
 }

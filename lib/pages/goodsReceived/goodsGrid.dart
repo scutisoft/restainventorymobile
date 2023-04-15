@@ -5,6 +5,8 @@ import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restainventorymobile/pages/goodsReceived/goodsForm.dart';
+import '../../widgets/inventoryWidgets.dart';
 import '/pages/purchaseOrder/purchaseForm.dart';
 import '/widgets/expandedSection.dart';
 import '/api/apiUtils.dart';
@@ -15,15 +17,15 @@ import '/utils/utils.dart';
 import '/widgets/arrowAnimation.dart';
 import '/widgets/customAppBar.dart';
 
-class PurchaseGrid extends StatefulWidget {
+class GoodsGrid extends StatefulWidget {
   VoidCallback navCallback;
-  PurchaseGrid({Key? key,required this.navCallback}) : super(key: key);
+  GoodsGrid({Key? key,required this.navCallback}) : super(key: key);
 
   @override
-  State<PurchaseGrid> createState() => _PurchaseGridState();
+  State<GoodsGrid> createState() => _GoodsGridState();
 }
 
-class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension implements HappyExtensionHelperCallback{
+class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements HappyExtensionHelperCallback{
 
   Map widgets={};
   var totalCount=0.obs;
@@ -48,20 +50,15 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
       child: Column(
         children: [
           CustomAppBar(
-            title: "Purchase Order",
+            title: "Goods Received",
             onTap: widget.navCallback,
           ),
           CustomAppBar2(
-            title:  "Total Purchase Order",
-            subTitle: "Purchase Available",
+            title:  "Total Goods",
+            subTitle: "Goods Available",
             count: totalCount,
-            addCb: (){
-              fadeRoute(PurchaseForm(
-                closeCb: (e){
-                  assignWidgets();
-                },
-              ));
-            },
+            hasAdd: false,
+            addCb: (){},
           ),
           Flexible(
             child: Obx(()=>ListView.builder(
@@ -98,14 +95,22 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                             Expanded(
                               flex: 2,
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("${filterPurchaseOrders[i]['PurchaseOrder']}",style: ts20M(ColorUtil.red),),
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text("${filterPurchaseOrders[i]['GoodsReceivedNumber']}",style: ts20M(ColorUtil.text1),),
+                                      Text("    ${filterPurchaseOrders[i]['PurchaseOrderNumber']}",style: ts20M(ColorUtil.red),),
+                                    ],
+                                  ),
                                   inBtwHei(),
                                   Text("${filterPurchaseOrders[i]['StoreName']}",style: ts20M(ColorUtil.themeBlack),),
                                   inBtwHei(),
-                                  Text("${getRupeeString(filterPurchaseOrders[i]['GrandTotalAmount'])}",style: ts20M(ColorUtil.themeBlack,fontfamily: 'AH',fontsize: 22),),
+                                  Text(getRupeeString(filterPurchaseOrders[i]['GrandTotal']),style: ts20M(ColorUtil.themeBlack,fontfamily: 'AH',fontsize: 22),),
+                                  inBtwHei(),
+                                  StatusTxt(status: filterPurchaseOrders[i]['Status']),
                                 ],
                               ),
                             ),
@@ -117,12 +122,11 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    EyeIcon(),
                                     GridEditIcon(
                                       hasAccess: filterPurchaseOrders[i]['IsEdit'],
                                       onTap: (){
                                         console("edit");
-                                        fadeRoute(PurchaseForm(
+                                        fadeRoute(GoodsForm(
                                           isEdit: true,
                                           dataJson: getDataJsonForGrid({"PurchaseOrderId":filterPurchaseOrders[i]['PurchaseOrderId']}),
                                           closeCb: (e){
@@ -139,7 +143,6 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                                         // ));
                                       },
                                     ),
-                                    GridDeleteIcon(hasAccess: filterPurchaseOrders[i]['IsDelete'],),
                                     const SizedBox(width: 5,),
                                     ArrowAnimation(
                                       openCb: (value){
@@ -166,9 +169,9 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                             margin: const EdgeInsets.only(left: 20,right: 20),
                             padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                             decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(color: ColorUtil.greyBorder)
-                              )
+                                border: Border(
+                                    bottom: BorderSide(color: ColorUtil.greyBorder)
+                                )
                             ),
                             //  decoration:ColorUtil.formContBoxDec,
                             child: Column(
@@ -176,9 +179,8 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 gridCardText("Vendor",innerPurchaseOrders[index]['VendorName']),
-                                gridCardText("Total Materials",innerPurchaseOrders[index]['NoOfMaterial']),
-                                gridCardText("Total Quantity",parseDouble(innerPurchaseOrders[index]['NoOfQuantity'])),
-                                gridCardText("Grand Total",getRupeeString(innerPurchaseOrders[index]['GrandTotalAmount'])),
+                                gridCardText("Grand Total",getRupeeString(innerPurchaseOrders[index]['GrandTotal'])),
+                                StatusTxt(status: innerPurchaseOrders[index]['Status']),
                               ],
                             ),
                           );
@@ -200,7 +202,7 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
     var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
       "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
     };
-    parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Purchase_GetPurchaseOrderDetail"),needToSetValue: false,resCb: (res){
+    parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Goods_GetGoodsReceivedDetail"),needToSetValue: false,resCb: (res){
       console(res);
       try{
 

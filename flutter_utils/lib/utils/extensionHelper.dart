@@ -303,7 +303,8 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   Future<void> postUIJson(String pageIdentifier,String dataJson,String action,{Function? successCallback,
-    DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam,RxBool? loader}) async{
+    DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam,RxBool? loader
+    ,String extraParam=""}) async{
     //"N'$dataJson'"
     if(developmentMode==DevelopmentMode.json){
       //"N'$dataJson'"
@@ -330,7 +331,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
       if(traditionalParam != null && traditionalParam.executableSp!=null){
         List<ParamModel> finalParams=traditionalParam.paramList.isNotEmpty?traditionalParam.paramList:[];
         finalParams.add(ParamModel(Key: "SpName", Type: "String", Value: traditionalParam.executableSp));
-        finalParams.addAll(await getParamEssential());
+        finalParams.addAll(await getParamEssential(extraParam: extraParam));
         if(dataJson.isNotEmpty){
           var parsedDataJson=jsonDecode(dataJson);
           if(HE_IsMap(parsedDataJson)){
@@ -375,6 +376,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     DevelopmentMode developmentMode= DevelopmentMode.traditional,
     TraditionalParam? traditionalParam,
     bool needSuccessCb=false,required RxBool? loader
+    ,String extraParam=""
   }) async{
 
     void successCbHandler(e){
@@ -424,7 +426,8 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           traditionalParam.executableSp=isEdit?traditionalParam.updateSp:traditionalParam.insertSp;
           traditionalParam.paramList=params;
           postUIJson(getPageIdentifier(), "", "", successCallback: successCbHandler,
-              developmentMode: developmentMode, traditionalParam: traditionalParam,loader: loader
+              developmentMode: developmentMode, traditionalParam: traditionalParam,loader: loader,
+            extraParam: extraParam
           );
         }
       }

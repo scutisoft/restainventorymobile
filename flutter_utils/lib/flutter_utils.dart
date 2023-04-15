@@ -54,11 +54,11 @@ mixin HappyExtension{
     bool closeFrmOnSubmit=true,
     DevelopmentMode developmentMode= DevelopmentMode.traditional,
     TraditionalParam? traditionalParam,
-    bool needSuccessCb=false,RxBool? loader
+    bool needSuccessCb=false,RxBool? loader,String extraParam=""
   })async{
     FlutterUtilsPlatform.instance.sysSubmitV1(widgets,successCallback: successCallback,action: action,isEdit: isEdit,needCustomValidation: needCustomValidation,
     onCustomValidation: onCustomValidation,clearFrm: clearFrm,closeFrmOnSubmit: closeFrmOnSubmit,developmentMode: developmentMode,traditionalParam: traditionalParam,
-    needSuccessCb: needSuccessCb,loader: loader);
+    needSuccessCb: needSuccessCb,loader: loader,extraParam: extraParam);
   }
 
   void foundWidgetByKey(var widgets,String key,{bool needSetValue=false,dynamic value}){

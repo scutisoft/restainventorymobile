@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
@@ -7,6 +8,7 @@ import 'package:get/get.dart';
 import '../utils/colorUtil.dart';
 import '../utils/constants.dart';
 import 'alertDialog.dart';
+import 'circle.dart';
 
 class UnitDropDown extends StatelessWidget implements ExtensionCallback{
 
@@ -155,7 +157,57 @@ class SwipeNotes extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       alignment: Alignment.centerLeft,
-      child: Text("* Swipe Left to Edit, Delete...",style: ts20(ColorUtil.red,fontsize: 14),),
+      margin: const EdgeInsets.only(bottom: 5),
+      child: Text("* Swipe Left to Edit, Delete...",style: ts20(Colors.blue,fontsize: 14),),
     );
   }
 }
+
+Widget cartIcon({VoidCallback? onTap,int count=0}){
+  return GestureDetector(
+    onTap:onTap,
+    child: Stack(
+      children: [
+        CustomCircle(
+          hei: 50,
+          color: ColorUtil.themeWhite,
+          widget: SvgPicture.asset("assets/icons/cart.svg"),
+        ),
+        Positioned(
+          right: 8,
+          top: 0,
+          child: Container(
+            padding: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              // borderRadius: BorderRadius.circular(50),
+                color: Color(0xFF444C66),
+                shape: BoxShape.circle
+            ),
+            child: Text("$count",style: ts20(ColorUtil.themeWhite,fontsize: 12),),
+          ),
+        )
+      ],
+    ),
+  );
+}
+
+class StatusTxt extends StatelessWidget {
+  String status;
+  StatusTxt({Key? key,required this.status}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: status.toString().length*10,
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(3),
+          color: ColorUtil.bgColor
+      ),
+      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+      alignment: Alignment.center,
+      child: Text(status,style: ts20(ColorUtil.red,fontsize: 15),maxLines: 1,overflow: TextOverflow.ellipsis,),
+    );
+  }
+}
+
+

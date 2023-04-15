@@ -84,7 +84,8 @@ class CustomAppBar2 extends StatelessWidget {
   String title;
   String subTitle;
   VoidCallback? addCb;
-  CustomAppBar2({Key? key,required this.count,required this.title,required this.subTitle,this.addCb }) : super(key: key);
+  bool hasAdd;
+  CustomAppBar2({Key? key,required this.count,required this.title,required this.subTitle,this.addCb ,this.hasAdd=true}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -115,8 +116,11 @@ class CustomAppBar2 extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          GridAddIcon(
-            onTap:addCb,
+          Visibility(
+            visible: hasAdd,
+            child: GridAddIcon(
+              onTap:addCb,
+            ),
           ),
         ],
       ),

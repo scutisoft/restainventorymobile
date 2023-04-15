@@ -78,7 +78,7 @@ abstract class FlutterUtilsPlatform extends PlatformInterface {
     bool closeFrmOnSubmit=true,
     DevelopmentMode developmentMode= DevelopmentMode.traditional,
     TraditionalParam? traditionalParam,
-    bool needSuccessCb=false,RxBool? loader
+    bool needSuccessCb=false,RxBool? loader,String extraParam=""
   }) async{
     throw UnimplementedError('sysSubmitV1() has not been implemented.');
   }

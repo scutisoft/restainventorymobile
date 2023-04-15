@@ -1114,33 +1114,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
   }
 
 
-  Widget cartIcon({VoidCallback? onTap,int count=0}){
-    return GestureDetector(
-      onTap:onTap,
-      child: Stack(
-        children: [
-          CustomCircle(
-            hei: 50,
-            color: ColorUtil.themeWhite,
-            widget: SvgPicture.asset("assets/icons/cart.svg"),
-          ),
-          Positioned(
-            right: 8,
-            top: 0,
-            child: Container(
-              padding: EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                // borderRadius: BorderRadius.circular(50),
-                  color: Color(0xFF444C66),
-                  shape: BoxShape.circle
-              ),
-              child: Text("$count",style: ts20(ColorUtil.themeWhite,fontsize: 12),),
-            ),
-          )
-        ],
-      ),
-    );
-  }
+
 
 
   @override

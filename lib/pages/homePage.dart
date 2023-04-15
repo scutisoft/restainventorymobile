@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
+import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
 import 'package:restainventorymobile/pages/purchaseOrder/purchaseGrid.dart';
 import 'package:restainventorymobile/utils/constants.dart';
@@ -66,6 +67,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
     {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
     {"Title":'Indent Order',"PageNumber":2,"accessId": 100},
     {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
+    {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
   ];
 
   @override
@@ -142,6 +144,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
             navCallback: openDrawer,
           ):
           menuSel.value==3?PurchaseGrid(
+            navCallback: openDrawer,
+          ):
+          menuSel.value==4?GoodsGrid(
             navCallback: openDrawer,
           ):
               Container()

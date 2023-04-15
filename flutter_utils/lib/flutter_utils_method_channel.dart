@@ -32,7 +32,7 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
 
   @override
   void setFrmValuesV1(var widgets,List valueArray,{bool fromClearAll=false}){
-    setFrmValues(widgets, valueArray,fromClearAll: fromClearAll);
+    setFrmValuesV2(widgets, valueArray);
   }
 
   @override
@@ -66,11 +66,11 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
     bool closeFrmOnSubmit=true,
     DevelopmentMode developmentMode= DevelopmentMode.traditional,
     TraditionalParam? traditionalParam,
-    bool needSuccessCb=false, RxBool? loader
+    bool needSuccessCb=false, RxBool? loader,String extraParam=""
   }) async{
     sysSubmit(widgets,successCallback: successCallback,action: action,isEdit: isEdit,needCustomValidation: needCustomValidation,
         onCustomValidation: onCustomValidation,clearFrm: clearFrm,closeFrmOnSubmit: closeFrmOnSubmit,developmentMode: developmentMode,traditionalParam: traditionalParam,
-        needSuccessCb: needSuccessCb,loader: loader);
+        needSuccessCb: needSuccessCb,loader: loader,extraParam: extraParam);
   }
 
 

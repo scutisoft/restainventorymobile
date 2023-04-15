@@ -5,6 +5,7 @@ import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restainventorymobile/widgets/inventoryWidgets.dart';
 import '/utils/constants.dart';
 import '/utils/utils.dart';
 import '/api/apiUtils.dart';
@@ -146,16 +147,8 @@ class HE_IndentContent extends StatelessWidget implements HE_ListViewContentExte
                     inBtwHei(),
                     Text("${dataListener['Destination']}",style: ts20M(ColorUtil.themeBlack),),
                     inBtwHei(),
-                    Container(
-                      width: dataListener['Status'].toString().length*10,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(3),
-                        color: ColorUtil.bgColor
-                      ),
-                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                      alignment: Alignment.center,
-                      child: Text("${dataListener['Status']}",style: ts20(ColorUtil.red,fontsize: 15),maxLines: 1,overflow: TextOverflow.ellipsis,),
-                    )
+                    StatusTxt(status: dataListener['Status']),
+
                   ],
                 ),
               ),

@@ -447,28 +447,29 @@ class CustomAlert{
           shape: alertRadius,
           clipBehavior: Clip.antiAlias,
           child: Container(
-             height:hei,
+             //height:hei,
               width:SizeConfig.screenWidth!-40,
               decoration:BoxDecoration(
                 color:Colors.white,
               ),
               padding: pad,
               child:Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                   children:[
                     //SizedBox(height:20),
                     // SvgPicture.asset(img),
                     isSvg?SvgPicture.asset(img,height: imgHeight,):Image.asset(img,height: imgHeight,),
-                    SizedBox(height:30),
+                    const SizedBox(height:30),
                     Container(
                       width: textWidth,
                       child: Text(title,
-                        style:TextStyle(fontFamily:Language.regularFF,fontSize:23,color:Color(0xFF787878),letterSpacing: 0.5,
+                        style:const TextStyle(fontFamily:'AM',fontSize:23,color:Color(0xFF787878),letterSpacing: 0.5,
                         height: 1.5),textAlign: TextAlign.center,
                       ),
                     ),
 
-                    SizedBox(height:30),
+                    const SizedBox(height:30),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
@@ -496,7 +497,7 @@ class CustomAlert{
                             ),
                             child: Center(
                               child: Text(Language.no,
-                                style: TextStyle(fontFamily:Language.regularFF,color: Color(0xFF808080),fontSize: 16),
+                                style: TextStyle(fontFamily:'AM',color: Color(0xFF808080),fontSize: 16),
                               ),
                             ),
                           ),
@@ -527,7 +528,7 @@ class CustomAlert{
                             ),
                             child: Center(
                               child: Text(Language.yes,
-                                style: TextStyle(fontFamily:Language.regularFF,color: Colors.white,fontSize: 16),
+                                style: TextStyle(fontFamily:'AM',color: Colors.white,fontSize: 16),
                               ),
                             ),
                           ),
@@ -559,6 +560,7 @@ class CustomAlert{
               ),
 
               child:Column(
+
                   children:[
                     SizedBox(height:20),
                      SvgPicture.asset("assets/errors/error-icon.svg"),

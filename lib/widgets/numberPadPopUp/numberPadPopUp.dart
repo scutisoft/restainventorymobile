@@ -238,11 +238,13 @@ class _NumberPadPopUpState extends State<NumberPadPopUp> {
     var disVal = "";
     if (keypad == 'X') {
       disVal = widget.value!;
-      if(disVal.length==1){
-        disVal="";
-      }
-      else{
-        disVal=(disVal.substring(0, disVal.length - 1));
+      if(disVal.isNotEmpty){
+        if(disVal.length==1){
+          disVal="";
+        }
+        else{
+          disVal=(disVal.substring(0, disVal.length - 1));
+        }
       }
     }
     else if (keypad == 'C') {
