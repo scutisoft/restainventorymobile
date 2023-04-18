@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../utils/colorUtil.dart';
 
@@ -19,7 +20,7 @@ class ExpectedDateContainer extends StatelessWidget {
       decoration: ColorUtil.formContBoxDec,
       child: Row(
         children: [
-          Text(text!,style: TextStyle(fontFamily: 'RR',fontSize: 16,color: textColor),),
+          Text(text!,style: TextStyle(fontFamily: 'AM',fontSize: 18,color: textColor),),
           Spacer(),
           Container(
               height: 25,
@@ -29,7 +30,7 @@ class ExpectedDateContainer extends StatelessWidget {
                   color: iconColor
               ),
 
-              child: Center(child: Icon(Icons.calendar_today,color:Colors.grey ,size: 20,)))
+              child: Center(child: SvgPicture.asset("assets/icons/calendar.svg")))
         ],
       ),
     );

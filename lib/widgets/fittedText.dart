@@ -15,6 +15,7 @@ class FittedText extends StatelessWidget {
         height: height,
         width: width,
         alignment:alignment,
+        color: Colors.transparent,
         child: FittedBox(child: Text("$text",style: textStyle,))
     );
   }
@@ -30,7 +31,7 @@ class FlexFittedText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Flexible(
       flex: flex,
-        child: FittedBox(child: Text("$text",style: textStyle,))
+        child: FittedBox(alignment: Alignment.centerRight,child: Text("$text",style: textStyle,textAlign: TextAlign.end,))
     );
   }
 }

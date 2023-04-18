@@ -257,7 +257,6 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           }
         }
         finalParams.addAll(await getParamEssential(extraParam: extraParam));
-
         await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams,loader: loader).then((value){
           if(value[0]){
             var parsed=jsonDecode(value[1]);
@@ -304,7 +303,8 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   Future<void> postUIJson(String pageIdentifier,String dataJson,String action,{Function? successCallback,
-    DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam}) async{
+    DevelopmentMode developmentMode= DevelopmentMode.traditional,TraditionalParam? traditionalParam,RxBool? loader
+    ,String extraParam=""}) async{
     //"N'$dataJson'"
     if(developmentMode==DevelopmentMode.json){
       //"N'$dataJson'"
@@ -331,7 +331,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
       if(traditionalParam != null && traditionalParam.executableSp!=null){
         List<ParamModel> finalParams=traditionalParam.paramList.isNotEmpty?traditionalParam.paramList:[];
         finalParams.add(ParamModel(Key: "SpName", Type: "String", Value: traditionalParam.executableSp));
-        finalParams.addAll(await getParamEssential());
+        finalParams.addAll(await getParamEssential(extraParam: extraParam));
         if(dataJson.isNotEmpty){
           var parsedDataJson=jsonDecode(dataJson);
           if(HE_IsMap(parsedDataJson)){
@@ -341,10 +341,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           }
         }
 
-
-
-
-        await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams).then((value){
+        await FlutterUtilsPlatform.apiInstance.getInvoke(finalParams,loader: loader).then((value){
           if(value[0]){
 
             var parsed=jsonDecode(value[1]);
@@ -368,7 +365,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     }
   }
 
-  void sysSubmit(List<dynamic> widgets,{
+  void sysSubmit(dynamic widgets,{
     Function? successCallback,
     String action="",
     bool isEdit=false,
@@ -378,7 +375,8 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     bool closeFrmOnSubmit=true,
     DevelopmentMode developmentMode= DevelopmentMode.traditional,
     TraditionalParam? traditionalParam,
-    bool needSuccessCb=false
+    bool needSuccessCb=false,required RxBool? loader
+    ,String extraParam=""
   }) async{
 
     void successCbHandler(e){
@@ -428,7 +426,8 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           traditionalParam.executableSp=isEdit?traditionalParam.updateSp:traditionalParam.insertSp;
           traditionalParam.paramList=params;
           postUIJson(getPageIdentifier(), "", "", successCallback: successCbHandler,
-              developmentMode: developmentMode, traditionalParam: traditionalParam
+              developmentMode: developmentMode, traditionalParam: traditionalParam,loader: loader,
+            extraParam: extraParam
           );
         }
       }
@@ -487,7 +486,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   fillTreeDrp(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam=""}) async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false}) async{
     var fWid=foundWidgetByKey(widgets, key);
     if(fWid!=null){
       if(clearValues){
@@ -501,6 +500,11 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           try{
             fWid.isValid.value=true;
           }catch(e){assignWidgetErrorToast("IsValid",e);}
+        }
+        if(needToDisable){
+          try{
+            fWid.isEnabled.value=value.isNotEmpty;
+          }catch(e){}
         }
       });
     }
@@ -540,7 +544,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
     }
     else if(widgetType==WidgetType.map){
       for (var widget in widgets.entries){
-        widget.clearValues();
+        widget.value.clearValues();
       }
     }
   }

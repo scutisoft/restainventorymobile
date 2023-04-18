@@ -12,6 +12,10 @@ import 'model/parameterModel.dart';
 
 class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensionHelper{
 
+  MethodChannelFlutterUtils(){
+    print("MethodChannelFlutterUtils");
+  }
+
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_utils');
 
@@ -28,7 +32,7 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
 
   @override
   void setFrmValuesV1(var widgets,List valueArray,{bool fromClearAll=false}){
-    setFrmValues(widgets, valueArray,fromClearAll: fromClearAll);
+    setFrmValuesV2(widgets, valueArray);
   }
 
   @override
@@ -41,13 +45,53 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
 
   @override
   void fillTreeDrpV1(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam=""})async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false})async{
       fillTreeDrp(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
-      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam);
+      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable: needToDisable);
   }
+
+  @override
+  void clearAllV4(widgets){
+    clearAllV2(widgets);
+  }
+
+  @override
+  void sysSubmitV1(dynamic widgets,{
+    Function? successCallback,
+    String action="",
+    bool isEdit=false,
+    bool needCustomValidation=false,
+    Function? onCustomValidation,
+    bool clearFrm=true,
+    bool closeFrmOnSubmit=true,
+    DevelopmentMode developmentMode= DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,
+    bool needSuccessCb=false, RxBool? loader,String extraParam=""
+  }) async{
+    sysSubmit(widgets,successCallback: successCallback,action: action,isEdit: isEdit,needCustomValidation: needCustomValidation,
+        onCustomValidation: onCustomValidation,clearFrm: clearFrm,closeFrmOnSubmit: closeFrmOnSubmit,developmentMode: developmentMode,traditionalParam: traditionalParam,
+        needSuccessCb: needSuccessCb,loader: loader,extraParam: extraParam);
+  }
+
+
+  @override
+  void foundWidgetByKeyV1(var widgets,String key,{bool needSetValue=false,dynamic value}){
+    foundWidgetByKey(widgets, key,needSetValue: needSetValue,value: value);
+  }
+
+  @override
+  void clearOnDisposeV1(){
+    clearOnDispose();
+  }
+
 }
 
 class ApiManger extends FlutterUtilsPlatform{
+
+  ApiManger(){
+    print("ApiManger");
+  }
+
   int timeOut=30;
 
   onTme(RxBool loader){

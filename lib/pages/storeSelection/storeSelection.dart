@@ -76,7 +76,7 @@ class _StoreSelectionState extends State<StoreSelection> {
   }
 
   void getStoreList(){
-    getMasterDrp("", "StoreId", "", "", "", Sp.masterSp,extraParam: MyConstants.extraParam).then((value){
+    getMasterDrp("", "StoreId", null, null, null, Sp.masterSp,extraParam: MyConstants.extraParam).then((value){
       console(value);
       stores.value=value;
     });

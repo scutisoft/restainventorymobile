@@ -5,7 +5,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
+import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
+import 'package:restainventorymobile/pages/purchaseOrder/purchaseGrid.dart';
+import 'package:restainventorymobile/pages/transfer/transferGrid.dart';
 import 'package:restainventorymobile/utils/constants.dart';
 import 'package:restainventorymobile/widgets/customAppBar.dart';
 
@@ -13,6 +16,7 @@ import '../notifier/configuration.dart';
 import '../utils/colorUtil.dart';
 import '../utils/sizeLocal.dart';
 import '../utils/utils.dart';
+import '../widgets/accessWidget.dart';
 import '../widgets/circle.dart';
 import '../widgets/customNetworkImg.dart';
 
@@ -60,6 +64,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
     scaffoldkey.currentState!.openDrawer();
   }
 
+  List<dynamic> menuList=[
+    {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
+    {"Title":'Indent Order',"PageNumber":2,"accessId": 100},
+    {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
+    {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
+    {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
+  ];
+
   @override
   Widget build(BuildContext context) {
 
@@ -99,24 +111,21 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
                 ],
               ),
               const SizedBox(height: 20,),
-              DrawerContent(
-                title: 'Dashboard',
-                Img: '',
-                ontap: (){
-                  menuSel.value=1;
-                  closeDrawer();
-                },
-                pageNumber: 1,
-              ),
-              DrawerContent(
-                title: 'Indent Order',
-                Img: '',
-                ontap: (){
-                  menuSel.value=2;
-                  closeDrawer();
-                },
-                pageNumber: 2,
-              ),
+              for(int i=0;i<menuList.length;i++)
+                AccessWidget(
+                  hasAccess:/*menuList[i]['accessId']==null?true: isHasAccess(menuList[i]['accessId'])*/true,
+                  needToHide: true,
+                  widget:   DrawerContent(
+                    title: menuList[i]['Title'],
+                    Img: '',
+                    pageNumber: menuList[i]['PageNumber'],
+                  ),
+                  onTap: (){
+                    menuSel.value=menuList[i]['PageNumber'];
+                    closeDrawer();
+                  },
+                ),
+
               const Spacer(),
               const Divider(),
               const SizedBox(height: 5,),
@@ -136,6 +145,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
           menuSel.value==2?IndentGrid(
             navCallback: openDrawer,
           ):
+          menuSel.value==3?PurchaseGrid(
+            navCallback: openDrawer,
+          ):
+          menuSel.value==4?GoodsGrid(
+            navCallback: openDrawer,
+          ):
+          menuSel.value==5?TransferGrid(
+            navCallback: openDrawer,
+          ):
               Container()
         ),
       ),
@@ -146,39 +164,35 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
 class DrawerContent extends StatelessWidget {
   String title;
   String Img;
-  VoidCallback ontap;
   bool isSvg;
   int pageNumber;
-  DrawerContent({required this.title,required this.ontap,required this.Img,this.isSvg=false,this.pageNumber=1});
+  DrawerContent({required this.title,required this.Img,this.isSvg=false,this.pageNumber=1});
   late double width;
 
   @override
   Widget build(BuildContext context) {
     width=MediaQuery.of(context).size.width;
-    return GestureDetector(
-      onTap: ontap,
-      child: Container(
-        height: 40,
-        color: Colors.transparent,
-        child: Row(
-          children: [
-            /*Container(
-              height: 70,
-              width: SizeConfig.screenWidth!*0.20,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.white
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(15.0),
-                child:isSvg?SvgPicture.asset('$Img',fit: BoxFit.cover,): Image.asset('$Img',fit: BoxFit.cover,),
-              ),
+    return Container(
+      height: 40,
+      color: Colors.transparent,
+      child: Row(
+        children: [
+          /*Container(
+            height: 70,
+            width: SizeConfig.screenWidth!*0.20,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white
             ),
-            SizedBox(height: 5,),*/
-            Obx(() => Text("$title", style: ts20(pageNumber==menuSel.value?ColorUtil.red:Color(0xffA8A8A8,),fontfamily: 'AR'),)
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child:isSvg?SvgPicture.asset('$Img',fit: BoxFit.cover,): Image.asset('$Img',fit: BoxFit.cover,),
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: 5,),*/
+          Obx(() => Text("$title", style: ts20(pageNumber==menuSel.value?ColorUtil.red:Color(0xffA8A8A8,),fontfamily: 'AR'),)
+          ),
+        ],
       ),
     );
   }

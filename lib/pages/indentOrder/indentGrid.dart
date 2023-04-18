@@ -1,17 +1,17 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
+import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:restainventorymobile/utils/constants.dart';
-import 'package:restainventorymobile/utils/utils.dart';
-import '../../api/apiUtils.dart';
-import '../../utils/colorUtil.dart';
-import '../../widgets/fittedText.dart';
-import '../../widgets/listView/HE_ListView.dart';
-import '../../widgets/loader.dart';
+import '/widgets/inventoryWidgets.dart';
+import '/utils/constants.dart';
+import '/utils/utils.dart';
+import '/api/apiUtils.dart';
+import '/utils/colorUtil.dart';
+import '/widgets/listView/HE_ListView.dart';
+import '/widgets/loader.dart';
 import '/utils/sizeLocal.dart';
 import '/widgets/customAppBar.dart';
 import 'indentForm.dart';
@@ -27,6 +27,7 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
 
 
   Map widgets={};
+  var totalCount=0.obs;
   late HE_ListViewBody he_listViewBody;
 
   @override
@@ -40,7 +41,7 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
             //sysDeleteHE_ListView(he_listViewBody, "LandId",dataJson: dataJson);
           },
           onEdit: (updatedMap){
-            //he_listViewBody.updateArrById("LandId", updatedMap);
+            he_listViewBody.updateArrById("IndentOrderId", updatedMap);
           },
           globalKey: GlobalKey(),
         );
@@ -61,42 +62,17 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
             title: "Indent Order",
             onTap: widget.navCallback,
           ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  flex:3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      FlexFittedText(
-                        text: "Total Indent Order",
-                        textStyle: ts20(ColorUtil.themeBlack,fontfamily: 'AM'),
-                      ),
-                      const SizedBox(height: 5,),
-                      Row(
-                        children: [
-                          Obx(() => Text("${totalIndent.value}",style: ts20(ColorUtil.red,fontfamily: 'AM',fontsize: 36),)),
-                          const SizedBox(width: 10,),
-                          Text("Indent Available",style: ts20(ColorUtil.text2,fontfamily: 'AM'),),
-                        ],
-                      )
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                GridAddIcon(
-                  onTap: (){
-                    fadeRoute(IndentForm());
-                  },
-                ),
-              ],
-            ),
+          CustomAppBar2(
+            title:  "Total Indent Order",
+            subTitle: "Indent Available",
+            count: totalCount,
+            addCb: (){
+              fadeRoute(IndentForm(closeCb: (e){
+                he_listViewBody.addData(e['Table'][0]);
+                totalCount.value=he_listViewBody.data.length;
+              },));
+            },
           ),
-
           Flexible(child:he_listViewBody),
           Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
         ],
@@ -104,7 +80,7 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
     );
   }
 
-  var totalIndent=0.obs;
+
 
   @override
   void assignWidgets() {
@@ -114,10 +90,17 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
     parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Indent_GetIndentOrderDetail"),needToSetValue: false,resCb: (res){
       console(res);
       try{
-        totalIndent.value=res['Table'].length;
+        totalCount.value=res['Table'].length;
         he_listViewBody.assignWidget(res['Table']);
       }catch(e){}
     },loader: showLoader,dataJson: jsonEncode(dj),extraParam: MyConstants.extraParam);
+  }
+
+  @override
+  void dispose(){
+    he_listViewBody.clearData();
+    clearOnDispose();
+    super.dispose();
   }
 }
 
@@ -164,16 +147,8 @@ class HE_IndentContent extends StatelessWidget implements HE_ListViewContentExte
                     inBtwHei(),
                     Text("${dataListener['Destination']}",style: ts20M(ColorUtil.themeBlack),),
                     inBtwHei(),
-                    Container(
-                      width: 110,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(3),
-                        color: ColorUtil.bgColor
-                      ),
-                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                      alignment: Alignment.center,
-                      child: Text("${dataListener['Status']}",style: ts20(ColorUtil.red,fontsize: 15),maxLines: 1,overflow: TextOverflow.ellipsis,),
-                    )
+                    StatusTxt(status: dataListener['Status']),
+
                   ],
                 ),
               ),
@@ -184,6 +159,26 @@ class HE_IndentContent extends StatelessWidget implements HE_ListViewContentExte
                   inBtwHei(height: 3),
                   Text("${dataListener['DeliveryType']}",style: ts20M(ColorUtil.red,fontfamily: 'AH',fontsize: 18),),
                   inBtwHei(),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      EyeIcon(),
+                      GridEditIcon(
+                        hasAccess: dataListener['IsEdit'],
+                        onTap: (){
+                          fadeRoute(IndentForm(
+                            isEdit: true,
+                            dataJson: getDataJsonForGrid({"IndentOrderId":dataListener['IndentOrderId']}),
+                            closeCb: (e){
+                              updateDataListener(e['Table'][0]);
+                              onEdit!(e['Table'][0]);
+                            },
+                          ));
+                        },
+                      ),
+                      GridDeleteIcon(hasAccess: dataListener['IsDelete'],),
+                    ],
+                  )
                 ],
               )
 

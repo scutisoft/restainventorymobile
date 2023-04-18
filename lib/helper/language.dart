@@ -149,7 +149,7 @@ class Language{
   static String policyContent2="";
   static String policyContent3="";
   static String acceptPolicy="";
-  static String required="";
+  static String required="Required";
   static String fingerPrintContent="";
   static String welcomeBack="";
   static String enterPin="";

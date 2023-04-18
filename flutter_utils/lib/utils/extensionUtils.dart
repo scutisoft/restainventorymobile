@@ -80,7 +80,8 @@ bool HE_IsMap(value){
       value.runtimeType.toString() =="_Map<String, Object?>" ;
 }
 bool HE_IsList(value){
-  return value.runtimeType.toString()=="List<dynamic>" || value.runtimeType.toString()=="List<Widget>";
+  return value.runtimeType.toString()=="List<dynamic>" || value.runtimeType.toString()=="List<Widget>" ||
+      value.runtimeType.toString()=="List<Map<String, dynamic>>";
 }
 bool HE_IsInt(value){
   return value.runtimeType.toString()=="int";

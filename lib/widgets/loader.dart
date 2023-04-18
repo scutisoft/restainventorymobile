@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:restainventorymobile/utils/constants.dart';
 import '../api/apiUtils.dart';
 import '../helper/language.dart';
 import '../utils/colorUtil.dart';
@@ -35,7 +36,7 @@ class Loader extends StatelessWidget {
   }
 }
 
-/*class Blur extends StatelessWidget {
+class Blur extends StatelessWidget {
   bool? value;
   Blur({this.value});
   @override
@@ -43,8 +44,8 @@ class Loader extends StatelessWidget {
     return IgnorePointer(
       ignoring:value!?false: true,
       child: AnimatedOpacity(
-        duration: animeDuration,
-        curve: animeCurve,
+        duration: MyConstants.animeDuration,
+        curve: MyConstants.animeCurve,
         opacity: value!?1:0,
         // opacity: 1,
         child: Container(
@@ -55,7 +56,7 @@ class Loader extends StatelessWidget {
       ),
     );
   }
-}*/
+}
 
 class NoData extends StatelessWidget {
   bool show;
