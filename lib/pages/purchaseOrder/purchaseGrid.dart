@@ -197,8 +197,11 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
 
   @override
   void assignWidgets() async{
-    var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
+ /*   var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
       "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
+    };*/
+    var dj={"FromDate":"2023-04-15",
+      "ToDate":"2023-04-15"
     };
     parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Purchase_GetPurchaseOrderDetail"),needToSetValue: false,resCb: (res){
       console(res);

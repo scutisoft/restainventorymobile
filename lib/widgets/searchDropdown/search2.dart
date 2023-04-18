@@ -987,12 +987,21 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
                       return   GestureDetector(
                         onTap:(){
                           Navigator.pop(ctx);
+
                           if(isToJson) {
-                            selectedData.value=dataNotifier[index];
-                          } else {
-                            selectedData.value={"value":dataNotifier[index]};
+                            if(selectedData.value!=dataNotifier[index]){
+                              selectedData.value=dataNotifier[index];
+                              selectedValueFunc(dataNotifier[index]);
+                            }
                           }
-                          selectedValueFunc(dataNotifier[index]);
+                          else {
+                            if(selectedData.value!={"value":dataNotifier[index]}){
+                              selectedData.value={"value":dataNotifier[index]};
+                              selectedValueFunc(dataNotifier[index]);
+                            }
+
+                          }
+
                           checkAndClearSearch();
                         },
                         child: Container(

@@ -7,8 +7,10 @@ import 'package:get/get.dart';
 
 import '../utils/colorUtil.dart';
 import '../utils/constants.dart';
+import '../utils/sizeLocal.dart';
 import 'alertDialog.dart';
 import 'circle.dart';
+import 'customAppBar.dart';
 
 class UnitDropDown extends StatelessWidget implements ExtensionCallback{
 
@@ -211,3 +213,49 @@ class StatusTxt extends StatelessWidget {
 }
 
 
+class SlidePopUp extends StatelessWidget {
+  RxBool isOpen;
+  Widget? appBar;
+  List<Widget> widgets;
+  SlidePopUp({Key? key,required this.isOpen,this.appBar,this.widgets=const []}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => AnimatedContainer(
+      duration: MyConstants.animeDuration,
+      curve: MyConstants.animeCurve,
+      width: SizeConfig.screenWidth,
+      height: SizeConfig.screenHeight,
+      transform:  Matrix4.translationValues(isOpen.value? 0:SizeConfig.screenWidth!, 0, 0),
+      padding: ColorUtil.formMargin,
+      decoration: const BoxDecoration(
+          color: ColorUtil.bgColor
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CustomTapIcon(
+                    alignment:Alignment.centerLeft,
+                    widget: Icon(Icons.arrow_back_rounded,color: ColorUtil.themeBlack,),
+                    onTap: (){
+                      isOpen.value=false;
+                    },
+                  ),
+                  Text("Back",style: ts20M(ColorUtil.themeBlack,fontsize: 18),),
+                ],
+              ),
+              appBar??Container(),
+            ],
+          ),
+          for(int i=0;i<widgets.length;i++)
+            widgets[i]
+        ],
+      ),
+    ));
+  }
+}

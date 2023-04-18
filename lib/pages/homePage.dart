@@ -8,6 +8,7 @@ import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
 import 'package:restainventorymobile/pages/purchaseOrder/purchaseGrid.dart';
+import 'package:restainventorymobile/pages/transfer/transferGrid.dart';
 import 'package:restainventorymobile/utils/constants.dart';
 import 'package:restainventorymobile/widgets/customAppBar.dart';
 
@@ -68,6 +69,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
     {"Title":'Indent Order',"PageNumber":2,"accessId": 100},
     {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
     {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
+    {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
   ];
 
   @override
@@ -147,6 +149,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
             navCallback: openDrawer,
           ):
           menuSel.value==4?GoodsGrid(
+            navCallback: openDrawer,
+          ):
+          menuSel.value==5?TransferGrid(
             navCallback: openDrawer,
           ):
               Container()

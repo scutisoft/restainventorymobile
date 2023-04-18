@@ -142,6 +142,11 @@ String getRupeeFormat(value){
   return formatCurrency.format(parseDouble(value));
 }
 
+String getQtyString(value){
+  double a=parseDouble(value);
+  return a>0?a.toString():"";
+}
+
 //Nested ScrollView
 double flexibleSpaceBarHeight=160.0;
 double toolBarHeight=50.0;

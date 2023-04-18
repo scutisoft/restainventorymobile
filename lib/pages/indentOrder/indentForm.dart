@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/flutter_utils.dart';
@@ -891,9 +890,10 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
       widgets['FromStoreName'].setValue(await getSharedPrefStringUtil(SP_STORENAME));
       expectedDate.value=DateTime.now();
       needApprovedQty.value=false;
+      fillTreeDrp(widgets, "ToStoreId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
     }
 
-    fillTreeDrp(widgets, "ToStoreId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
+
     fillTreeDrp(widgets, "DeliveryTypeId",refId: await getSharedPrefStringUtil(SP_STOREID),page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
     fillTreeDrp(widgets, "DepartmentId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
 
@@ -904,6 +904,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
     resCb: (e){
       try{
         console("parseJson $e");
+        fillTreeDrp(widgets, "ToStoreId",refId: e['Table'][0]['FromStoreId'],page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
         expectedDate.value=DateTime.parse(e['Table'][0]['CustomDate']);
         needApprovedQty.value=e['Table'][0]['IsApproveRejectPermission'];
         if(e['Table'][0]['IndentMaterialTypeId']==1){

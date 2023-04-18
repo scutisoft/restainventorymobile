@@ -62,6 +62,7 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
 
   RxList<dynamic> counterList=RxList<dynamic>();
   RxList<dynamic> vendorMaterialList=RxList<dynamic>();
+  RxList<dynamic> otherChargesList=RxList<dynamic>();
 
   var isCartOpen=false.obs;
   var selectedIndex=(-1).obs;
@@ -75,7 +76,7 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
     "numPadVal":"",
     "numPadTitle":"",
     "numPadSubTitle":"",
-    "vendorIndex":-1,
+    "numPadType":0,
     "productIndex":-1
   }.obs;
 
@@ -193,17 +194,25 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                                     suffix: Text("  ${vendorMaterialList[index]['UnitName']}",style: ts20M(ColorUtil.text2,fontfamily: 'ALO',fontsize: 15),),
                                   ),
                                   inBtwHei(height: 3),
-                                  gridCardText("Total Ordered",vendorMaterialList[index]['TotalReceivedQty'],
+                                  gridCardText("Total Received",vendorMaterialList[index]['TotalReceivedQty'],
                                     suffix: Text("  ${vendorMaterialList[index]['UnitName']}",style: ts20M(ColorUtil.text2,fontfamily: 'ALO',fontsize: 15),),
                                   ),
                                   GestureDetector(
                                     onTap: (){
-                                      console("aaa");
+                                      console("aaa ${vendorMaterialList[index]}");
+                                      numPadUtils.value={
+                                        "isNumPadOpen":true,
+                                        "numPadVal":getQtyString(vendorMaterialList[index]['CurrentReceivedQty']),
+                                        "numPadTitle":vendorMaterialList[index]['MaterialName'],
+                                        "numPadSubTitle":"Current Received Qty",
+                                        "numPadType":1,
+                                        "productIndex":index
+                                      };
                                     },
                                     child: Container(
                                       color: Colors.transparent,
                                       margin: const EdgeInsets.only(top: 3),
-                                      child: gridCardText("Current Received Qty",vendorMaterialList[index]['TotalReceivedQty'],
+                                      child: gridCardText("Current Received Qty",vendorMaterialList[index]['CurrentReceivedQty'],
                                         suffix: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
@@ -219,6 +228,14 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                                   GestureDetector(
                                     onTap: (){
                                       console("bbb");
+                                      numPadUtils.value={
+                                        "isNumPadOpen":true,
+                                        "numPadVal":getQtyString(vendorMaterialList[index]['Price']),
+                                        "numPadTitle":"${vendorMaterialList[index]['MaterialName']}",
+                                        "numPadSubTitle":"Bill Price Per Qty",
+                                        "numPadType":2,
+                                        "productIndex":index
+                                      };
                                     },
                                     child: Container(
                                       color: Colors.transparent,
@@ -247,16 +264,38 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       GestureDetector(
-                                        onTap: (){
-                                          console("bbb");
+                                        onTap: () async{
+                                          final DateTime? picked = await showDatePicker2(
+                                              context: context,
+                                              initialDate:  vendorMaterialList[index]['ExpiryDate']==null?DateTime.now():DateTime.parse(vendorMaterialList[index]['ExpiryDate']), // Refer step 1
+                                              firstDate: DateTime.now(),
+                                              lastDate: DateTime(2050),
+                                              builder: (BuildContext context,Widget? child){
+                                                return Theme(
+                                                  data: Theme.of(context).copyWith(
+                                                    colorScheme: ColorScheme.light(
+                                                      primary: ColorUtil.primary, // header background color
+                                                      onPrimary: ColorUtil.themeWhite, // header text color
+                                                      onSurface: ColorUtil.themeBlack, // body text color
+                                                    ),
+                                                    // textTheme: TextTheme(bodySmall: TextStyle(fontFamily: 'AM',color: Colors.red))
+                                                  ),
+                                                  child: child!,
+                                                );
+                                              });
+                                          if (picked != null) {
+                                            vendorMaterialList[index]['ExpiryDate']=DateFormat(MyConstants.dbDateFormat).format(picked);
+                                            vendorMaterialList.refresh();
+                                          }
                                         },
                                         child: Container(
                                           color: Colors.transparent,
                                           margin: const EdgeInsets.only(top: 3),
-                                          child: gridCardText("Expiry Date",getRupeeFormat(vendorMaterialList[index]['Price']),
+                                          child: gridCardText("Expiry Date","",
                                             suffix: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
+                                                Text("  ${vendorMaterialList[index]['ExpiryDate']??"yyyy-MM-dd"}",style: ts20M(ColorUtil.themeBlack,fontfamily: 'AM',fontsize: 15),),
                                                 const SizedBox(width: 5,),
                                                 SvgPicture.asset("assets/icons/edit.svg",height: 20,),
                                               ],
@@ -264,7 +303,10 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                                           ),
                                         ),
                                       ),
-                                      CupertinoSwitch(value: false, onChanged: (e){})
+                                      CupertinoSwitch(value: vendorMaterialList[index]['InventoryStatusId'], onChanged: (e){
+                                        vendorMaterialList[index]['InventoryStatusId']=e;
+                                        vendorMaterialList.refresh();
+                                      })
                                     ],
                                   ),
 
@@ -293,19 +335,33 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                     traditionalParam: traditionalParam,
                     loader: showLoader,
                     extraParam: MyConstants.extraParam,
+                    clearFrm: false,
+                    closeFrmOnSubmit: false,
                     onCustomValidation: (){
-                      /*if(purchaseList.isEmpty){
-                        CustomAlert().cupertinoAlert("Select Material to raise Purchase...");
+                      if(vendorMaterialList.isEmpty){
+                        CustomAlert().cupertinoAlert("Select Vendor to Update...");
                         return false;
                       }
-                      foundWidgetByKey(widgets, "Datajson",needSetValue: true,value: jsonEncode(purchaseList));*/
+                      chkInventoryStatus();
+                      for(var pd in vendorMaterialList){
+                        double cQty=parseDouble(pd['CurrentReceivedQty']);
+                        double price=parseDouble(pd['Price']);
+                        if(cQty>0){
+                          if(price<=0){
+                            CustomAlert().cupertinoAlert("One of your Material Price is Empty. Enter Material Price ...");
+                            return false;
+                          }
+                        }
+                      }
+                      foundWidgetByKey(widgets, "PurchaseVendorMaterialTransactionJson",needSetValue: true,value: jsonEncode(vendorMaterialList));
+                      foundWidgetByKey(widgets, "PurchaseOtherChargesListJson",needSetValue: true,value: jsonEncode(otherChargesList));
 
                       return true;
                     },
                     successCallback: (e){
                       console("sysSubmit $e");
                       if(widget.closeCb!=null){
-                        widget.closeCb!(e);
+                        getGoodsByVendor(widgets['PurchaseOrderVendorMappingId'].getValue());
                       }
                     }
                 );
@@ -370,7 +426,12 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                 numPadUtils['numPadVal']=e;
               },
               onDone: (){
-
+                if(numPadUtils['numPadType']==1){
+                  onCurrentReceivedQtyChange();
+                }
+                else if(numPadUtils['numPadType']==2){
+                  onBillPriceChange();
+                }
               },
             )),
 
@@ -384,12 +445,9 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
   void assignWidgets() async{
     widgets.clear();
     widgets['PurchaseOrderId']=HiddenController(dataname: "PurchaseOrderId");
-    widgets['PurchaseOrderVendorMappingId']=SlideSearch(dataName: "PurchaseOrderVendorMappingId",
-        selectedValueFunc: (e){
-          console(e);
-          getGoodsByVendor(e['Id']);
-        },
-        hinttext: "Select Vendor",data: []);
+    widgets['PurchaseOtherChargesListJson']=HiddenController(dataname: "PurchaseOtherChargesListJson");
+    widgets['PurchaseVendorMaterialTransactionJson']=HiddenController(dataname: "PurchaseVendorMaterialTransactionJson");
+    widgets['PurchaseOrderVendorMappingId']=SlideSearch(dataName: "PurchaseOrderVendorMappingId",selectedValueFunc: (e){  console(e);  getGoodsByVendor(e['Id']); },hinttext: "Select Vendor",data: []);
 
     if(!widget.isEdit){
 
@@ -424,13 +482,64 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
     });
   }
 
+  void onCurrentReceivedQtyChange(){
+    double crQty=parseDouble(numPadUtils['numPadVal']);
+    int index=numPadUtils['productIndex']as int;
+    if(index>=0){
+      double needToRec=Calculation().sub(vendorMaterialList[index]['OrderedQty'], vendorMaterialList[index]['TotalReceivedQty']);
+      if(crQty>needToRec){
+        CustomAlert().cupertinoAlert("Received Quantity should be less than Remaining Quantity ($needToRec)");
+        return;
+      }
+      vendorMaterialList[index]['CurrentReceivedQty'] = crQty;
+      productCalc(index);
+      numPadUtils['isNumPadOpen']=false;
+      clearNumPadUtils();
+    }
+  }
+
+  void onBillPriceChange(){
+    double price=parseDouble(numPadUtils['numPadVal']);
+    int index=numPadUtils['productIndex']as int;
+    if(index>=0){
+      if(price<=0){
+        CustomAlert().cupertinoAlert("Price should not be empty");
+        return;
+      }
+      vendorMaterialList[index]['Price'] = price;
+      productCalc(index);
+      numPadUtils['isNumPadOpen']=false;
+      clearNumPadUtils();
+    }
+  }
+
+  void productCalc(index){
+
+    double psT=0.0,ptax=0.0,ptA=0.0,pTV=0.0;
+    psT=Calculation().mul(vendorMaterialList[index]['CurrentReceivedQty'], vendorMaterialList[index]['Price']);
+    pTV=Calculation().div(vendorMaterialList[index]['TaxValue'], 100);
+    ptax=Calculation().mul(psT, pTV);
+    ptA=Calculation().add(psT, ptax);
+
+    vendorMaterialList[index]['CurrentReceivedAmt'] = ptA;
+    vendorMaterialList[index]['InventoryStatusId'] = parseDouble(vendorMaterialList[index]['OrderedQty'])==Calculation().add(vendorMaterialList[index]['CurrentReceivedQty'], vendorMaterialList[index]['TotalReceivedQty']);
+    vendorMaterialList.refresh();
+  }
+
+  void chkInventoryStatus(){
+    for(var pd in vendorMaterialList){
+      pd['InventoryStatusId'] = parseDouble(pd['OrderedQty'])==Calculation().add(parseDouble(pd['CurrentReceivedQty']), parseDouble(pd['TotalReceivedQty']));
+    }
+    vendorMaterialList.refresh();
+  }
+
 
   void clearNumPadUtils(){
     numPadUtils['numPadVal']="";
     numPadUtils['numPadTitle']="";
     numPadUtils['numPadSubTitle']="";
-    numPadUtils['vendorIndex']=-1;
     numPadUtils['productIndex']=-1;
+    numPadUtils['numPadType']=0;
   }
 
   Color getVendorStatusBgColor(id){
