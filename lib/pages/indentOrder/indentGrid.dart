@@ -5,6 +5,7 @@ import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restainventorymobile/pages/commonView.dart';
 import '/widgets/inventoryWidgets.dart';
 import '/utils/constants.dart';
 import '/utils/utils.dart';
@@ -72,6 +73,11 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
                 totalCount.value=he_listViewBody.data.length;
               },));
             },
+            needDatePicker: true,
+            onDateSel: (a){
+              dj=a;
+              assignWidgets();
+            },
           ),
           Flexible(child:he_listViewBody),
           Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
@@ -80,13 +86,13 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
     );
   }
 
-
+  var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
+    "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
+  };
 
   @override
   void assignWidgets() {
-    var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
-      "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
-    };
+    he_listViewBody.clearData();
     parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Indent_GetIndentOrderDetail"),needToSetValue: false,resCb: (res){
       console(res);
       try{
@@ -162,7 +168,16 @@ class HE_IndentContent extends StatelessWidget implements HE_ListViewContentExte
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      EyeIcon(),
+                      EyeIcon(
+                        onTap: (){
+                          fadeRoute(CommomView(
+                              pageTitle: "Indent Order",
+                            spName: "IV_Indent_GetIndentOrderViewDetail",
+                            dataJson: getDataJsonForGrid({"IndentOrderId":dataListener['IndentOrderId']}),
+                            page: "Indent",
+                          ));
+                        },
+                      ),
                       GridEditIcon(
                         hasAccess: dataListener['IsEdit'],
                         onTap: (){

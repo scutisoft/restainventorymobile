@@ -10,27 +10,21 @@ import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/customCheckBox.dart';
 import '../../widgets/numberPadPopUp/numberPadPopUp.dart';
 import '/widgets/calculation.dart';
-import '/widgets/expandedSection.dart';
 import '/widgets/loader.dart';
 import '/api/apiUtils.dart';
-import '/widgets/arrowAnimation.dart';
-import '/widgets/inventoryWidgets.dart';
 import '/api/sp.dart';
 import '/utils/constants.dart';
 import '/utils/sizeLocal.dart';
 import '/utils/utils.dart';
 import '/widgets/alertDialog.dart';
-import '/widgets/circle.dart';
 import '/widgets/customAppBar.dart';
-import '/widgets/expectedDateContainer.dart';
-import '/widgets/pinWidget.dart';
 import '/widgets/searchDropdown/search2.dart';
 import '/utils/colorUtil.dart';
 import '/utils/utilWidgets.dart';
 import '/widgets/singleDatePicker.dart';
-import '/widgets/swipe2/core/cell.dart';
 import '/widgets/swipe2/core/controller.dart';
 
 class GoodsForm extends StatefulWidget {
@@ -66,7 +60,7 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
 
   var isCartOpen=false.obs;
   var selectedIndex=(-1).obs;
-
+  var sameAsActualQty=false.obs;
 
   late SwipeActionController controller;
   final FlutterUtils _flutterUtils=FlutterUtils();
@@ -79,6 +73,8 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
     "numPadType":0,
     "productIndex":-1
   }.obs;
+
+  bool needReload=false;
 
   @override
   void initState(){
@@ -105,6 +101,7 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                     prefix: ArrowBack(
                       onTap: (){
                         Get.back();
+                        chkReload();
                       },
                     ),
                   )),
@@ -162,6 +159,17 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                         LeftHeader(title: "Vendor"),
                         widgets['PurchaseOrderVendorMappingId'],
                         LeftHeader(title: "Materials"),
+                        Obx(() => CustomCheckBox(
+                          isSelect: sameAsActualQty.value,
+                          content:"Same As Actual Quantity",
+                          margin: const EdgeInsets.fromLTRB(15, 10, 0,10),
+                          ontap: (){
+                            sameAsActualQty.value=!sameAsActualQty.value;
+                            onChkBoxChg();
+                          },
+                          selectColor: ColorUtil.red2,
+                        )),
+                        inBtwHei(height: 10),
                         Obx(() => ListView.builder(
                           shrinkWrap: true,
                           itemCount: vendorMaterialList.length,
@@ -360,12 +368,16 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
                     },
                     successCallback: (e){
                       console("sysSubmit $e");
-                      if(widget.closeCb!=null){
-                        getGoodsByVendor(widgets['PurchaseOrderVendorMappingId'].getValue());
-                      }
+                      needReload=true;
+                      getGoodsByVendor(widgets['PurchaseOrderVendorMappingId'].getValue());
+
                     }
                 );
               },
+              onClose: (){
+                chkReload();
+              },
+
             ),
 
             Obx(() => AnimatedContainer(
@@ -467,8 +479,14 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
         });
   }
 
+  void chkReload(){
+    if(needReload && widget.closeCb!=null){
+      widget.closeCb!("A");
+    }
+  }
 
   void getGoodsByVendor(vId) async{
+    sameAsActualQty.value=false;
     vendorMaterialList.clear();
     List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
     parameterList.add(ParamModel(Key: "PurchaseOrderId", Type: "String", Value: widgets['PurchaseOrderId'].getValue()));
@@ -476,7 +494,7 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
     _flutterUtils.getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/GoodsReceivedApi/GetGoodsDetailByVendorId").then((value){
       if(value[0]){
         var parsed=jsonDecode(value[1]);
-        console(parsed);
+        //console(parsed);
         vendorMaterialList.value=parsed['Table2'];
       }
     });
@@ -533,6 +551,23 @@ class _GoodsFormState extends State<GoodsForm> with HappyExtension implements Ha
     vendorMaterialList.refresh();
   }
 
+  void onChkBoxChg(){
+    int i=0;
+    for (var md in vendorMaterialList) {
+      if(sameAsActualQty.value){
+        double needToRec=Calculation().sub(md['OrderedQty'], md['TotalReceivedQty']);
+        if(needToRec>0){
+          md['CurrentReceivedQty']=needToRec;
+        }
+      }
+      else{
+        md['CurrentReceivedQty']=0.0;
+      }
+      productCalc(i);
+      i++;
+    }
+    vendorMaterialList.refresh();
+  }
 
   void clearNumPadUtils(){
     numPadUtils['numPadVal']="";

@@ -2,11 +2,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
+import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/customCheckBox.dart';
+import '../../widgets/fittedText.dart';
 import '../../widgets/numberPadPopUp/numberPadPopUp.dart';
 import '/widgets/calculation.dart';
 import '/widgets/expandedSection.dart';
@@ -58,9 +62,17 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
 
 
   RxList<dynamic> purchaseList=RxList<dynamic>();
-  var isCartOpen=false.obs;
-  var selectedIndex=(-1).obs;
+  RxList<dynamic> indentMappingList=RxList<dynamic>();
 
+
+  Map vendorNames={};
+  List vendorIdList=[];
+
+  var isCartOpen=false.obs;
+  var isIndentOpen=false.obs;
+
+  var selectedIndex=(-1).obs;
+  final FlutterUtils _flutterUtils=FlutterUtils();
 
   late SwipeActionController controller;
 
@@ -142,6 +154,17 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
                           children: [
                             LeftHeader(title: "+ Add Purchase Material"),
                             const Spacer(),
+                            GestureDetector(
+                              onTap: (){
+                                isIndentOpen.value=true;
+                              },
+                              child: CustomCircle(
+                                hei: 50,
+                                color: ColorUtil.themeWhite,
+                                margin: const EdgeInsets.only(right: 10),
+                                widget: SvgPicture.asset("assets/icons/delivery-truck.svg",height: 25,),
+                              ),
+                            ),
                             Obx(() => cartIcon(
                                 onTap:(){
                                   isCartOpen.value=true;
@@ -428,6 +451,236 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
               ),
             )),
 
+            SlidePopUp(
+              isOpen: isIndentOpen,
+              appBar: Obx(() => FlexFittedText(
+                flex: 3,
+                text: "Indent (${indentMappingList.length} Numbers)",
+                textStyle: ts20M(ColorUtil.themeBlack,fontsize: 18),
+              )),
+              widgets: [
+                Expanded(
+                  child: Obx(() =>
+                      ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: indentMappingList.length,
+                        itemBuilder: (ctx,i){
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 5.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap:(){
+                                    if(selectedIndex.value==i){
+                                      selectedIndex.value=-1;
+                                    }
+                                    else {
+                                      selectedIndex.value=i;
+                                    }
+                                  },
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 10,left: 0,right: 0),
+                                    padding: const EdgeInsets.all(10),
+                                    width: SizeConfig.screenWidth!*1,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      color: const Color(0XFFffffff),
+                                    ),
+                                    clipBehavior:Clip.antiAlias,
+                                    child:  Row(
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Expanded(
+                                          flex: 2,
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text("${indentMappingList[i]['IndentOrderNumber']} / ${indentMappingList[i]['Date']}",style: ts20M(ColorUtil.red),),
+                                              inBtwHei(),
+                                            ],
+                                          ),
+                                        ),
+                                        Visibility(
+                                          visible: indentMappingList[i]['hasProduct']??false,
+                                          child: CustomCircle(
+                                              hei: 30,
+                                              color: ColorUtil.red2,
+                                              margin: const EdgeInsets.only(right: 10),
+                                            widget: Text("${indentMappingList[i]['MaterialList'].where((z)=>z['IsSelect']==true).toList().length}",
+                                              style: ts20M(ColorUtil.themeWhite,fontfamily: 'RR'),
+                                            ),
+                                          ),
+                                        ),
+                                        CustomCheckBox(
+                                          isSelect: indentMappingList[i]['IsSelectAll']??false,onlyCheckbox: true,ontap: (){
+                                          if(indentMappingList[i]['IsSelectAll']==null){
+                                            indentMappingList[i]['IsSelectAll']=true;
+                                          }
+                                          else{
+                                            indentMappingList[i]['IsSelectAll']=!indentMappingList[i]['IsSelectAll'];
+                                          }
+                                          indentMappingList[i]['MaterialList'].forEach((p){
+                                            p['IsSelect']=indentMappingList[i]['IsSelectAll'];
+                                          });
+                                          indentMappingList[i]['hasProduct']=indentMappingList[i]['IsSelectAll'];
+                                          indentMappingList.refresh();
+                                        },selectColor: ColorUtil.red2,),
+                                        const SizedBox(width: 10,),
+                                        Obx(() => ArrowAnimation(
+                                          openCb: (value){
+                                          },
+                                          isclose: selectedIndex.value!=i,
+                                        ),),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Obx(() => ExpandedSection(
+                                  expand: selectedIndex.value==i,
+                                  child: ListView.builder(
+                                    itemCount: indentMappingList[i]['MaterialList'].length,
+                                    physics:const NeverScrollableScrollPhysics(),
+                                    shrinkWrap:true,
+                                    itemBuilder: (ctx1,index){
+                                      return Container(
+                                        margin: const EdgeInsets.only(left: 7,right: 7),
+                                        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
+                                        decoration: BoxDecoration(
+                                            border: Border(
+                                                bottom: BorderSide(color: ColorUtil.greyBorder)
+                                            )
+                                        ),
+                                        //  decoration:ColorUtil.formContBoxDec,
+                                        child: Row(
+                                          children: [
+                                            SizedBox(
+                                              width:SizeConfig.screenWidth!-230,
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                children: [
+                                                  Text("${indentMappingList[i]['MaterialList'][index]['MaterialName']}",
+                                                    style: ts20M(ColorUtil.themeBlack,fontsize: 18),
+                                                  ),
+                                                  Visibility(
+                                                    visible: indentMappingList[i]['MaterialList'][index]['MaterialBrandName'].toString().isNotEmpty,
+                                                    child: Text("${indentMappingList[i]['MaterialList'][index]['MaterialBrandName']}",
+                                                      style: ts20M(ColorUtil.red2,fontsize: 15),
+                                                    ),
+                                                  ),
+                                                  inBtwHei(),
+
+                                                ],
+                                              ),
+                                            ),
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                FittedText(
+                                                  height: 25,
+                                                  width:150,
+                                                  alignment: Alignment.centerLeft,
+                                                  text: "${indentMappingList[i]['MaterialList'][index]['IndentQuantity']??0} ${indentMappingList[i]['MaterialList'][index]['UnitName']}",
+                                                  textStyle:  ts20M(ColorUtil.themeBlack,fontsize: 18),
+                                                ),
+                                                Container(
+                                                  width: 140,
+                                                  height: 35,
+                                                  clipBehavior: Clip.antiAlias,
+                                                  margin: const EdgeInsets.only(top: 0,bottom: 0,right: 0),
+                                                  decoration: BoxDecoration(
+                                                    borderRadius: BorderRadius.circular(5),
+                                                    color:  Color.fromRGBO(255, 0, 34,0.2),
+                                                  ),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.only(left:10.0,right: 10),
+                                                    child: DropdownButtonHideUnderline(
+                                                      child: DropdownButton<dynamic>(
+                                                          isExpanded: true,
+                                                          value: indentMappingList[i]['MaterialList'][index]['VendorId']!=null?
+                                                          vendorIdList.contains(indentMappingList[i]['MaterialList'][index]['VendorId'])?indentMappingList[i]['MaterialList'][index]['VendorId']
+                                                          :null:indentMappingList[i]['MaterialList'][index]['VendorId'],
+                                                          hint: Text("Select Vendor",style: ts20M(ColorUtil.themeBlack.withOpacity(0.5),fontsize: 15),),
+                                                          style: ts20M(ColorUtil.themeBlack,fontsize: 15),
+                                                          selectedItemBuilder: (ctx){
+                                                            return vendorIdList.map<Widget>((item) {
+                                                              return Container(
+                                                                alignment: Alignment.centerLeft,
+                                                                constraints: const BoxConstraints(maxWidth: 120),
+                                                                child: Text(
+                                                                  "${vendorNames[item.toString()]}",
+                                                                  style: TextStyle(color: ColorUtil.themeBlack, fontSize: 14),
+                                                                ),
+                                                              );
+                                                            }).toList();
+                                                          },
+                                                          icon:  Icon(
+                                                            Icons.keyboard_arrow_down_outlined,
+                                                            color: ColorUtil.themeBlack.withOpacity(0.5),
+                                                          ),
+                                                          dropdownColor: ColorUtil.red,
+                                                          items: vendorIdList.map((value) {
+                                                            return DropdownMenuItem<dynamic>(
+                                                              value: value,
+                                                              child: Text(
+                                                                "${vendorNames[value.toString()]}",
+                                                                style: ts20M(ColorUtil.themeWhite,fontsize: 15),
+                                                              ),
+                                                            );
+                                                          }).toList(),
+                                                          onChanged: (v) {
+                                                            indentMappingList[i]['MaterialList'][index]['VendorId']=v;
+                                                            indentMappingList.refresh();
+                                                          }
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            CustomCheckBox(
+                                              isSelect: indentMappingList[i]['MaterialList'][index]['IsSelect']??false,
+                                              onlyCheckbox: true,
+                                              selectColor: ColorUtil.red2,
+                                              ontap: (){
+                                                if(indentMappingList[i]['MaterialList'][index]['IsSelect']==null){
+                                                  indentMappingList[i]['MaterialList'][index]['IsSelect']=true;
+                                                }
+                                                else{
+                                                  indentMappingList[i]['MaterialList'][index]['IsSelect']=!indentMappingList[i]['MaterialList'][index]['IsSelect'];
+                                                }
+                                                int cc=indentMappingList[i]['MaterialList'].where((pa)=>pa['IsSelect']==true).toList().length;
+                                                if(cc==indentMappingList[i]['MaterialList'].length){
+                                                  indentMappingList[i]['IsSelectAll']=true;
+                                                }
+                                                else{
+                                                  indentMappingList[i]['IsSelectAll']=false;
+                                                }
+                                                indentMappingList[i]['hasProduct']=cc>0;
+                                                indentMappingList.refresh();
+                                              },
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ))
+                              ],
+                            ),
+                          );
+                        },
+                      )
+                  ),
+                ),
+                inBtwHei(height: 20),
+                DoneBtn(onDone: onAddIndent, title: "Add"),
+                inBtwHei(height: 20)
+              ],
+            ),
+
             Obx(() => Blur(value: numPadUtils['isNumPadOpen'] as bool,)),
 
             Obx(() => NumberPadPopUp(
@@ -535,7 +788,15 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
 
     }
 
-    fillTreeDrp(materialForm, "VendorId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
+    fillTreeDrp(materialForm, "VendorId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false,resCb: (arr){
+      vendorIdList.clear();
+      vendorNames.clear();
+      for(var vd in arr){
+        vendorIdList.add(vd['Id']);
+        vendorNames[vd['Id'].toString()]=vd['Text'];
+      }
+      getIndentOrders();
+    });
     await parseJson(widgets, "",dataJson: widget.dataJson,traditionalParam: traditionalParam,extraParam: MyConstants.extraParam,loader: showLoader,
         resCb: (e){
           try{
@@ -552,6 +813,9 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
           }
 
         });
+
+
+
   }
 
 
@@ -707,6 +971,128 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
     }
     numPadUtils['isNumPadOpen']=false;
     clearNumPadUtils();
+  }
+
+  void getIndentOrders() async{
+    indentMappingList.clear();
+    List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
+    _flutterUtils.getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/PurchaseApi/GetIndentOrdersList").then((value){
+      if(value[0]){
+        var parsed=jsonDecode(value[1]);
+        List<dynamic> materialLis=parsed['Table1'];
+        indentMappingList.value=parsed['Table'];
+        for (var element in indentMappingList) {
+          element['MaterialList']=materialLis.where((e) => e['IndentOrderId']==element['IndentOrderId']).toList();
+        }
+      }
+    });
+  }
+
+  void onAddIndent(){
+    List<dynamic> tempIndentSelList=[];
+    tempIndentSelList=indentMappingList.where((p0) => p0['hasProduct']==true).toList();
+    //bool chkCt=indentMappingList.any((element) => element['MaterialList'].any((p)=>p['IsSelect']==true)==true);
+    if(tempIndentSelList.isNotEmpty){
+     /* bool proceed=false;
+      for(var vd in tempIndentSelList){
+        for(var pd in  vd['MaterialList'].where((y)=>y['IsSelect']==true).toList()){
+          proceed=checkNullEmpty(pd['VendorId']) || vendorNames[pd['VendorId'].toString()]!=null;
+          console("proceed ${pd['VendorId']} ${checkNullEmpty(pd['VendorId'])} ${vendorNames[pd['VendorId'].toString()]} $proceed");
+        }
+      }*/
+      bool hasNotVendor=tempIndentSelList.any((element) => element['MaterialList'].any((p)=>p['IsSelect']==true &&
+          !(checkNullEmpty(p['VendorId']) || vendorNames[p['VendorId'].toString()]!=null))==true);
+      if(hasNotVendor){
+        CustomAlert().cupertinoAlert("Select Vendor to Add...");
+      }
+      else{
+       // console(tempIndentSelList);
+        for(var vd in tempIndentSelList){
+          for(var pd in  vd['MaterialList'].where((y)=>y['IsSelect']==true).toList()){
+            int existsVendorIndex=purchaseList.indexWhere((element) => element['VendorId']==pd['VendorId']);
+            if(existsVendorIndex!=-1){
+              List productList=purchaseList[existsVendorIndex]['PMD'];
+              int existsProductIndex=productList.indexWhere((element) => element['MaterialId']==pd['MaterialId'] &&
+                  element['MaterialBrandId']==pd['MaterialBrandId']);
+              if(existsProductIndex!=-1){
+                purchaseList[existsVendorIndex]['PMD'][existsProductIndex]['Quantity']=0.0;
+              }
+            }
+          }
+        }
+        for(var vd in tempIndentSelList){
+          for(var pd in  vd['MaterialList'].where((y)=>y['IsSelect']==true).toList()){
+            int existsVendorIndex=purchaseList.indexWhere((element) => element['VendorId']==pd['VendorId']);
+            int rNo=purchaseList.length;
+            if(existsVendorIndex==-1){
+              var obj = {
+                "RNo": rNo + 1,
+                "PurchaseOrderVendorMappingId": null,
+                "PurchaseOrderId": null,
+                "VendorId": pd['VendorId'],
+                "VendorName": vendorNames[pd['VendorId'].toString()],
+                "Notes": "",
+                "SubTotal": 0.0,
+                "IsDiscount": false,
+                "IsPercentage": false,
+                "DiscountValue": 0.0,
+                "DiscountAmount": 0.0,
+                "DiscountedSubTotal": 0.0,
+                "TaxAmount": 0.0,
+                "GrandTotalAmount": 0.0,
+                "InventoryStatusId": null,
+                "InventoryStatusName": "",
+                "PMD": []
+              };
+              purchaseList.add(obj);
+            }
+            else{
+              rNo=existsVendorIndex;
+            }
+            List productList=purchaseList[rNo]['PMD'];
+            int existsProductIndex=productList.indexWhere((element) => element['MaterialId']==pd['MaterialId'] &&
+                element['MaterialBrandId']==pd['MaterialBrandId']);
+            if(existsProductIndex==-1){
+              var pObj = {
+                "PurchaseOrderMaterialMappingId": null,
+                "PurchaseOrderId": null,
+                "MaterialId": pd['MaterialId'],
+                "MaterialName": pd['MaterialName'],
+                "MaterialBrandId": pd['MaterialBrandId'],
+                "MaterialBrandName": pd['MaterialBrandId']!=null ? pd['MaterialBrandName'] : "",
+                "UnitId": pd['UnitId'],
+                "UnitName": pd['UnitName']??"",
+                "Price": parseDouble(pd['MaterialPrice']),
+                "Quantity": parseDouble(pd['Quantity']),
+                "IsPercentage": false,
+                "DiscountValue": 0.0000,
+                "DiscountAmount": 0.0000,
+                "TaxId": pd['TaxId'],
+                "TaxValue": parseDouble(pd['TaxValue']),
+                "TaxAmount": 0.0000,
+                "TotalAmount": 0.0000,
+                "SubTotal": 0.0000,
+                "DiscountedSubTotal": 0.0000,
+                "PurchaseOrderVendorMappingId": null,
+                "VendorId": purchaseList[rNo]['VendorId']
+              };
+              productList.add(pObj);
+
+            }
+            else{
+              productList[existsProductIndex]['Quantity']=Calculation().add(productList[existsProductIndex]['Quantity'], parseDouble(pd['Quantity']));
+            }
+          }
+        }
+        totalCalc();
+        overAllCalc();
+        purchaseList.refresh();
+        isIndentOpen.value=false;
+      }
+    }
+    else{
+      CustomAlert().cupertinoAlert("No Materials Selected to add...");
+    }
   }
 
   void clearNumPadUtils(){

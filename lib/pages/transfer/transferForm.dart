@@ -67,7 +67,14 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
   var isIndentOpen=false.obs;
   var selectedIndex=(-1).obs;
   late SwipeActionController controller;
-
+  var numPadUtils={
+    "isNumPadOpen":false,
+    "numPadVal":"",
+    "numPadTitle":"",
+    "numPadSubTitle":"",
+    "numPadType":0,
+    "productIndex":-1
+  }.obs;
   final FlutterUtils _flutterUtils=FlutterUtils();
 
   @override
@@ -93,8 +100,6 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
 
   var activeTab=0;
   var approvedQtyUnit="Unit".obs;
-
-
 
   var hasIndentMaterials=false.obs;
 
@@ -316,8 +321,15 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
                           firstActionWillCoverAllSpaceOnDeleting: false,
                           trailingActions: [
                             swipeActionEdit((handler) async{
-
-                              // controller.closeAllOpenCell();
+                              numPadUtils.value={
+                                "isNumPadOpen":true,
+                                "numPadVal":getQtyString(materialMappingList[i]['TransferQuantity']),
+                                "numPadTitle":"${materialMappingList[i]['MaterialName']}",
+                                "numPadSubTitle":"Transfer Qty",
+                                "numPadType":1,
+                                "productIndex":i
+                              };
+                              controller.closeAllOpenCell();
                             }),
                             swipeActionDelete((handler) async {
                               materialMappingList.removeAt(i);
@@ -528,10 +540,33 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
                         )
                     ),
                   ),
+                  inBtwHei(height: 20),
                   DoneBtn(onDone: onAddIndent, title: "Add"),
-                  inBtwHei(height: 20)
+                  inBtwHei(height: 20),
                 ],
             ),
+
+            Obx(() => Blur(value: numPadUtils['isNumPadOpen'] as bool,)),
+
+            Obx(() => NumberPadPopUp(
+              isSevenInch: true,
+              isOpen:  numPadUtils['isNumPadOpen'] as bool,
+              value:  numPadUtils['numPadVal'].toString(),
+              title: numPadUtils['numPadTitle'].toString(),
+              subTitle: numPadUtils['numPadSubTitle'].toString(),
+              onCancel: (){
+                numPadUtils['isNumPadOpen']=false;
+                clearNumPadUtils();
+              },
+              numberTap: (e){
+                numPadUtils['numPadVal']=e;
+              },
+              onDone: (){
+                if(numPadUtils['numPadType']==1){
+                  onMaterialUpdate();
+                }
+              },
+            )),
 
             Obx(() => Loader(value: showLoader.value,)),
           ],
@@ -669,13 +704,24 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
       };
 
       materialMappingList.add(obj);
-      console(materialMappingList);
       clearMaterialForm();
     }
   }
 
   void onMaterialUpdate(){
-
+    double trQty=parseDouble(numPadUtils['numPadVal']);
+    int index=numPadUtils['productIndex']as int;
+    if(index>=0){
+      if(trQty<=0){
+        CustomAlert().cupertinoAlert("Transfer Qty should not be empty");
+        return;
+      }
+      materialMappingList[index]['TransferQuantity']=trQty;
+      materialMappingList[index]['TotalQuantity']=trQty;
+      materialMappingList.refresh();
+      numPadUtils['isNumPadOpen']=false;
+      clearNumPadUtils();
+    }
   }
 
   void getIndentOrders() async{
@@ -748,6 +794,16 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
     unitDropDown.clearValues();
     approvedQtyUnit.value="Unit";
     FocusScope.of(context).unfocus();
+  }
+
+
+
+  void clearNumPadUtils(){
+    numPadUtils['numPadVal']="";
+    numPadUtils['numPadTitle']="";
+    numPadUtils['numPadSubTitle']="";
+    numPadUtils['productIndex']=-1;
+    numPadUtils['numPadType']=0;
   }
 
 

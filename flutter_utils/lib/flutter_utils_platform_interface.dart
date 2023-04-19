@@ -59,7 +59,7 @@ abstract class FlutterUtilsPlatform extends PlatformInterface {
   }
 
   void fillTreeDrpV1(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false}) async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false,Function(dynamic)? resCb}) async{
     throw UnimplementedError('fillTreeDrpV1() has not been implemented.');
   }
 

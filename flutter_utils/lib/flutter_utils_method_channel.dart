@@ -45,9 +45,9 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
 
   @override
   void fillTreeDrpV1(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false})async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false,Function(dynamic)? resCb})async{
       fillTreeDrp(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
-      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable: needToDisable);
+      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable: needToDisable,resCb: resCb);
   }
 
   @override

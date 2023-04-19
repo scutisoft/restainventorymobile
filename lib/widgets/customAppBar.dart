@@ -2,13 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import '/utils/sizeLocal.dart';
 import '/widgets/fittedText.dart';
-import '../helper/language.dart';
-import '../utils/colorUtil.dart';
-import '../utils/constants.dart';
+import '/helper/language.dart';
+import '/utils/colorUtil.dart';
+import '/utils/constants.dart';
 import 'accessWidget.dart';
-import 'navigationBarIcon.dart';
+import '/widgets/dateRangePicker.dart' as DateRagePicker;
 import 'swipe2/core/cell.dart';
 
 class CustomAppBar extends StatelessWidget {
@@ -17,13 +18,16 @@ class CustomAppBar extends StatelessWidget {
   Widget? suffix;
   VoidCallback? onTap;
   double? width;
-  CustomAppBar({required this.title,this.prefix,this.suffix,this.onTap,this.width});
+  Decoration? decoration;
+  CustomAppBar({required this.title,this.prefix,this.suffix,this.onTap,this.width,this.decoration});
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 80,
       width: SizeConfig.screenWidth,
-      color: Colors.white,
+      decoration: decoration??BoxDecoration(
+        color: Colors.white,
+      ),
       child: Row(
         children: [
           const SizedBox(width:20,),
@@ -85,8 +89,13 @@ class CustomAppBar2 extends StatelessWidget {
   String subTitle;
   VoidCallback? addCb;
   bool hasAdd;
-  CustomAppBar2({Key? key,required this.count,required this.title,required this.subTitle,this.addCb ,this.hasAdd=true}) : super(key: key);
+  bool needDatePicker;
+  Function(dynamic)? onDateSel;
+  bool needDbDateFormat;
+  CustomAppBar2({Key? key,required this.count,required this.title,required this.subTitle,this.addCb ,this.hasAdd=true,this.needDatePicker=false,
+    this.onDateSel,this.needDbDateFormat=true}) : super(key: key);
 
+  RxList<DateTime> dateList=RxList();
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -106,10 +115,14 @@ class CustomAppBar2 extends StatelessWidget {
                 ),
                 const SizedBox(height: 5,),
                 Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Obx(() => Text("${count.value}",style: ts20(ColorUtil.red,fontfamily: 'AM',fontsize: 36),)),
                     const SizedBox(width: 10,),
-                    Text(subTitle,style: ts20(ColorUtil.text2,fontfamily: 'AM'),),
+                    FlexFittedText(
+                      text: subTitle,
+                      textStyle: ts20(ColorUtil.text2,fontfamily: 'AM'),
+                    ),
                   ],
                 )
               ],
@@ -117,11 +130,53 @@ class CustomAppBar2 extends StatelessWidget {
           ),
           const Spacer(),
           Visibility(
+            visible: needDatePicker,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: CustomTapIcon(
+                onTap:() async{
+                  final List<DateTime>?  picked1 = await DateRagePicker.showDatePicker(
+                      context: context,
+                      initialFirstDate:dateList.isEmpty? DateTime.now():dateList[0],
+                      initialLastDate: dateList.isEmpty? DateTime.now():dateList[1],
+                      firstDate: DateTime(2000),
+                      lastDate: DateTime.now()
+                  );
+                  if (picked1 != null && picked1.length == 2) {
+                    dateList.clear();
+                    dateList.add(picked1[0]);
+                    dateList.add(picked1[1]);
+                  }
+                  else if(picked1!=null && picked1.length ==1){
+                    dateList.clear();
+                    dateList.add(picked1[0]);
+                    dateList.add(picked1[0]);
+                  }
+
+                  if(onDateSel!=null){
+                    if(needDbDateFormat){
+                      onDateSel!({"FromDate":DateFormat(MyConstants.dbDateFormat).format(dateList[0]),
+                        "ToDate":DateFormat(MyConstants.dbDateFormat).format(dateList[1])
+                      });
+                    }
+                    else{
+                      onDateSel!(dateList.value);
+                    }
+
+                  }
+                },
+                bg: Colors.white,
+                widget: SvgPicture.asset("assets/icons/calendar.svg",height: 25,),
+              ),
+            ),
+          ),
+          Visibility(
             visible: hasAdd,
             child: GridAddIcon(
               onTap:addCb,
             ),
           ),
+
         ],
       ),
     );
@@ -382,7 +437,8 @@ class CustomTapIcon extends StatelessWidget {
   double height;
   Widget widget;
   Alignment alignment;
-  CustomTapIcon({this.onTap,this.height=50,required this.widget,this.alignment=Alignment.center});
+  Color? bg;
+  CustomTapIcon({this.onTap,this.height=50,required this.widget,this.alignment=Alignment.center,this.bg});
 
   @override
   Widget build(BuildContext context) {
@@ -391,9 +447,9 @@ class CustomTapIcon extends StatelessWidget {
       child: Container(
           height: height,
           width: height ,
-          decoration: const BoxDecoration(
+          decoration:  BoxDecoration(
             shape: BoxShape.circle,
-            color: ColorUtil.bgColor,
+            color: bg??ColorUtil.bgColor,
           ),
           alignment: alignment,
           child: widget
@@ -431,8 +487,9 @@ SwipeAction swipeActionEdit(Function(Function(bool)) ontap){
 class SaveCloseBtn extends StatelessWidget {
   bool isEdit;
   VoidCallback onSave;
+  VoidCallback? onClose;
   RxBool isKeyboardVisible;
-  SaveCloseBtn({Key? key,required this.isEdit,required this.onSave,required this.isKeyboardVisible}) : super(key: key);
+  SaveCloseBtn({Key? key,required this.isEdit,required this.onSave,required this.isKeyboardVisible,this.onClose}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -450,6 +507,9 @@ class SaveCloseBtn extends StatelessWidget {
             GestureDetector(
               onTap: (){
                 Get.back();
+                if(onClose!=null){
+                  onClose!();
+                }
               },
               child: Container(
                 width: SizeConfig.screenWidth!*0.4,

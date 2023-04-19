@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -37,7 +38,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState(){
     allowAccess();
-    loadCred();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      loadCred();
+    });
     super.initState();
   }
 
@@ -135,7 +138,7 @@ class _LoginPageState extends State<LoginPage> {
 
   login() async{
     var result = await Permission.storage.request();
-    if(result == PermissionStatus.granted) {
+    if(true) {
       await setSharedPrefStringUtil(getDeviceId(), SP_DEVICEID);
       await setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);
       if(email.text.isEmpty){
@@ -170,6 +173,14 @@ class _LoginPageState extends State<LoginPage> {
         }
       });
     }
+
+  }
+
+  @override
+  void dispose(){
+    email.removeListener(() { });
+    password.removeListener(() { });
+    super.dispose();
   }
 }
 
@@ -178,7 +189,12 @@ class LoginTextField extends StatelessWidget {
   bool obscure;
   TextEditingController textEditingController;
   VoidCallback onEditCom;
-  LoginTextField({Key? key,required this.hintText,this.obscure=false,required this.textEditingController,required this.onEditCom}) : super(key: key);
+  LoginTextField({Key? key,required this.hintText,this.obscure=false,required this.textEditingController,required this.onEditCom}) : super(key: key){
+    textEditingController.addListener(() {
+      isFilled.value=textEditingController.text.isNotEmpty;
+    });
+
+  }
 
   var isFilled=false.obs;
 
@@ -217,8 +233,9 @@ class LoginTextField extends StatelessWidget {
                 hintStyle:TextStyle(fontSize: 18,fontFamily:'RL',color:ColorUtil.themeBlack,fontWeight: FontWeight.w100),
               ),
               cursorColor: ColorUtil.cursorColor,
+              keyboardType: TextInputType.emailAddress,
               onChanged: (v){
-                isFilled.value=v.isNotEmpty;
+              //  isFilled.value=v.isNotEmpty;
               },
               onEditingComplete: onEditCom,
             ),
@@ -237,4 +254,6 @@ class LoginTextField extends StatelessWidget {
       ),
     );
   }
+
+
 }

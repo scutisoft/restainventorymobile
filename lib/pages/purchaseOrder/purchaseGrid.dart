@@ -62,6 +62,11 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                 },
               ));
             },
+            needDatePicker: true,
+            onDateSel: (a){
+              dj=a;
+              assignWidgets();
+            },
           ),
           Flexible(
             child: Obx(()=>ListView.builder(
@@ -195,14 +200,14 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
     );
   }
 
+  var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
+    "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
+  };
+
   @override
   void assignWidgets() async{
- /*   var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
-      "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
-    };*/
-    var dj={"FromDate":"2023-04-15",
-      "ToDate":"2023-04-15"
-    };
+    purchaseOrders.clear();
+    filterPurchaseOrders.clear();
     parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Purchase_GetPurchaseOrderDetail"),needToSetValue: false,resCb: (res){
       console(res);
       try{

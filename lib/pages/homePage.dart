@@ -49,11 +49,12 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
 
   var  profileImage="".obs;
   var  storeName="".obs;
+  var  userName="".obs;
   void loadCredentials() async{
     imgPath=await getApplicationPath();
     profileImage.value=await getSharedPrefStringUtil(SP_USERIMG);
     storeName.value=await getSharedPrefStringUtil(SP_STORENAME);
-
+    userName.value=await getSharedPrefStringUtil(SP_USERNAME);
   }
 
   void closeDrawer(){
@@ -65,7 +66,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
   }
 
   List<dynamic> menuList=[
-    {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
+   // {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
     {"Title":'Indent Order',"PageNumber":2,"accessId": 100},
     {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
     {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
@@ -104,7 +105,13 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
                     color: ColorUtil.red,
                     widget: Icon(Icons.person_2_outlined,color: Colors.white,size: 30,),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 10,),
+                  Expanded(
+                    child: Obx(() => Text(userName.value,
+                      style: ts20M(ColorUtil.themeBlack),
+                    )),
+                  ),
+                  const SizedBox(width: 10,),
                   CloseBtnV1(
                     onTap:closeDrawer,
                   ),
@@ -131,10 +138,24 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
               const SizedBox(height: 5,),
               Align(
                 alignment: Alignment.centerLeft,
-                child: Obx(() => Text("${storeName.value}",style: ts20(ColorUtil.themeBlack,fontfamily: 'AM'),textAlign: TextAlign.start,)),
+                child: Obx(() => Text(storeName.value,style: ts20(ColorUtil.themeBlack,fontfamily: 'AM'),textAlign: TextAlign.start,)),
               ),
               const SizedBox(height: 5,),
               const Divider(),
+              GestureDetector(
+                onTap: (){
+                  clearUserSessionDetail();
+                },
+                child: Container(
+                  height: 50,
+                  color: Colors.transparent,
+                  child: Row(
+                    children: [
+                      Text("LogOut",style: ts20M(ColorUtil.red,fontsize: 23),)
+                    ],
+                  ),
+                ),
+              )
             ],
           ),
         ),
@@ -190,7 +211,7 @@ class DrawerContent extends StatelessWidget {
             ),
           ),
           SizedBox(height: 5,),*/
-          Obx(() => Text("$title", style: ts20(pageNumber==menuSel.value?ColorUtil.red:Color(0xffA8A8A8,),fontfamily: 'AR'),)
+          Obx(() => Text(title, style: ts20(pageNumber==menuSel.value?ColorUtil.red:Color(0xffA8A8A8,),fontfamily: 'AR'),)
           ),
         ],
       ),

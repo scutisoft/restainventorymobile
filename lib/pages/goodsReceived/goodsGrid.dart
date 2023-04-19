@@ -125,7 +125,7 @@ class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements Ha
                                     GridEditIcon(
                                       hasAccess: filterPurchaseOrders[i]['IsEdit'],
                                       onTap: (){
-                                        console("edit");
+
                                         fadeRoute(GoodsForm(
                                           isEdit: true,
                                           dataJson: getDataJsonForGrid({"PurchaseOrderId":filterPurchaseOrders[i]['PurchaseOrderId']}),

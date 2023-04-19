@@ -486,7 +486,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   fillTreeDrp(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false}) async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false,Function(dynamic)? resCb}) async{
     var fWid=foundWidgetByKey(widgets, key);
     if(fWid!=null){
       if(clearValues){
@@ -505,6 +505,9 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           try{
             fWid.isEnabled.value=value.isNotEmpty;
           }catch(e){}
+        }
+        if(resCb!=null){
+          resCb(value);
         }
       });
     }
