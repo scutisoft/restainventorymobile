@@ -5,6 +5,7 @@ import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:restainventorymobile/pages/commonView.dart';
 import '/pages/purchaseOrder/purchaseForm.dart';
 import '/widgets/expandedSection.dart';
 import '/api/apiUtils.dart';
@@ -62,6 +63,11 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                 },
               ));
             },
+            needDatePicker: true,
+            onDateSel: (a){
+              dj=a;
+              assignWidgets();
+            },
           ),
           Flexible(
             child: Obx(()=>ListView.builder(
@@ -117,7 +123,7 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    EyeIcon(),
+
                                     GridEditIcon(
                                       hasAccess: filterPurchaseOrders[i]['IsEdit'],
                                       onTap: (){
@@ -129,17 +135,11 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                                             assignWidgets();
                                           },
                                         ));
-                                        // fadeRoute(IndentForm(
-                                        //   isEdit: true,
-                                        //   dataJson: getDataJsonForGrid({"IndentOrderId":dataListener['IndentOrderId']}),
-                                        //   closeCb: (e){
-                                        //     updateDataListener(e['Table'][0]);
-                                        //     onEdit!(e['Table'][0]);
-                                        //   },
-                                        // ));
                                       },
                                     ),
-                                    GridDeleteIcon(hasAccess: filterPurchaseOrders[i]['IsDelete'],),
+                                    GridDeleteIcon(
+                                      hasAccess: filterPurchaseOrders[i]['IsDelete'],
+                                    ),
                                     const SizedBox(width: 5,),
                                     ArrowAnimation(
                                       openCb: (value){
@@ -171,14 +171,34 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
                               )
                             ),
                             //  decoration:ColorUtil.formContBoxDec,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
+                             // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                gridCardText("Vendor",innerPurchaseOrders[index]['VendorName']),
-                                gridCardText("Total Materials",innerPurchaseOrders[index]['NoOfMaterial']),
-                                gridCardText("Total Quantity",parseDouble(innerPurchaseOrders[index]['NoOfQuantity'])),
-                                gridCardText("Grand Total",getRupeeString(innerPurchaseOrders[index]['GrandTotalAmount'])),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      gridCardText("Vendor",innerPurchaseOrders[index]['VendorName']),
+                                      gridCardText("Total Materials",innerPurchaseOrders[index]['NoOfMaterial']),
+                                      gridCardText("Total Quantity",parseDouble(innerPurchaseOrders[index]['NoOfQuantity'])),
+                                      gridCardText("Grand Total",getRupeeString(innerPurchaseOrders[index]['GrandTotalAmount'])),
+                                    ],
+                                  ),
+                                ),
+                                EyeIcon(
+                                  onTap: (){
+                                    fadeRoute(CommomView(
+                                        pageTitle: "Purchase Order",
+                                        spName: "IV_Purchase_GetPurchaseOrderDetailVendorView",
+                                        page: "Purchase",
+                                      dataJson: getDataJsonForGrid({
+                                        "PurchaseOrderId":innerPurchaseOrders[index]['PurchaseOrderId'],
+                                        "VendorId":innerPurchaseOrders[index]['VendorId'],
+                                      }),
+                                    ));
+                                  },
+                                ),
                               ],
                             ),
                           );
@@ -195,14 +215,14 @@ class _PurchaseGridState extends State<PurchaseGrid> with HappyExtension impleme
     );
   }
 
+  var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
+    "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
+  };
+
   @override
   void assignWidgets() async{
- /*   var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
-      "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
-    };*/
-    var dj={"FromDate":"2023-04-15",
-      "ToDate":"2023-04-15"
-    };
+    purchaseOrders.clear();
+    filterPurchaseOrders.clear();
     parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Purchase_GetPurchaseOrderDetail"),needToSetValue: false,resCb: (res){
       console(res);
       try{

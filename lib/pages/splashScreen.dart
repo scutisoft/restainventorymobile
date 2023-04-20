@@ -34,22 +34,20 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,overlays: [SystemUiOverlay.bottom,SystemUiOverlay.top]);
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-
-
-
-      /*navigate();
-      return;*/
-      initPlatformState().then((value){
-        setSharedPrefStringUtil(getDeviceId(), SP_DEVICEID);
-        setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);
-        checkUserData();
-
-        //navigate();
-      });
+    //  navigate();
       if(Platform.isAndroid){
         _checkBiometrics();
       }
+      initPlatformState().then((value){
+        try{
+          setSharedPrefStringUtil(getDeviceId(), SP_DEVICEID);
+          setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);
+        }catch(e){}
+        checkUserData();
+      });
+
     });
     super.initState();
   }
@@ -65,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) {
       return;
     }
-    setSharedPrefBoolUtil(canCheckBiometrics, SP_HASFINGERPRINT);
+    await setSharedPrefBoolUtil(canCheckBiometrics, SP_HASFINGERPRINT);
   }
 
 

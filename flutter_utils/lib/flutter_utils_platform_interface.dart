@@ -59,7 +59,7 @@ abstract class FlutterUtilsPlatform extends PlatformInterface {
   }
 
   void fillTreeDrpV1(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false}) async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false,Function(dynamic)? resCb}) async{
     throw UnimplementedError('fillTreeDrpV1() has not been implemented.');
   }
 
@@ -89,5 +89,11 @@ abstract class FlutterUtilsPlatform extends PlatformInterface {
 
   void clearOnDisposeV1(){
     throw UnimplementedError('clearOnDisposeV1() has not been implemented.');
+  }
+
+  void sysDeleteHE_ListViewV1(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="",
+    String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,RxBool? loader}){
+    throw UnimplementedError('sysDeleteHE_ListViewV1() has not been implemented.');
   }
 }

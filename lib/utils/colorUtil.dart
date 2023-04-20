@@ -48,7 +48,7 @@ class ColorUtil{
 
   static Color search2ActBg= primary;
   static Color search2InActBg= Color(0xffffffff);
-  static double formContainerHeight=60;
+  static double formContainerHeight=50;
   static BoxDecoration formContBoxDec=BoxDecoration(
       color: themeWhite,
       borderRadius: BorderRadius.circular(8),
@@ -85,5 +85,12 @@ class ColorUtil{
   static TextStyle formTableBodyTS=TextStyle(fontSize: 13,fontFamily: 'RR',color: themeBlack );
   static TextStyle formTableBodyTSB=TextStyle(fontSize: 13,fontFamily: 'Bold',color: themeBlack );
   static TextStyle formTableHeaderTS=TextStyle(fontSize: 12,fontFamily: 'Med',color:ColorUtil.themeBlack );
+
+  //Multi Date Picker
+  static Color mdp_HeaderBg=red2;
+  static Color mdp_SelectedDay=red2;
+  static Color mdp_ActionBtn=red2;
+
+
 
 }

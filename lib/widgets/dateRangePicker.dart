@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
+import '../utils/colorUtil.dart';
+
 
 
 /// Initial display mode of the date picker dialog.
@@ -92,10 +94,10 @@ class _DatePickerHeader extends StatelessWidget {
     Color? backgroundColor;
     switch (themeData.brightness) {
       case Brightness.light:
-        backgroundColor = themeData.primaryColor;
+        backgroundColor = ColorUtil.mdp_HeaderBg;
         break;
       case Brightness.dark:
-        backgroundColor = themeData.backgroundColor;
+        backgroundColor = ColorUtil.mdp_HeaderBg;
         break;
     }
 
@@ -461,12 +463,13 @@ class DayPicker extends StatelessWidget {
             (isSelectedLastDay == null || isSelectedLastDay)) {
           itemStyle = themeData.accentTextTheme.bodyText1;
           decoration = new BoxDecoration(
-              color: themeData.accentColor, shape: BoxShape.circle);
+              color: ColorUtil.mdp_SelectedDay, shape: BoxShape.circle
+          );
         } else if (isSelectedFirstDay) {
           // The selected day gets a circle background highlight, and a contrasting text color.
           itemStyle = themeData.accentTextTheme.bodyText1;
           decoration = new BoxDecoration(
-              color: themeData.accentColor,
+              color: ColorUtil.mdp_SelectedDay,
               borderRadius: BorderRadius.only(
                 topLeft: new Radius.circular(50.0),
                 bottomLeft: new Radius.circular(50.0),
@@ -474,14 +477,14 @@ class DayPicker extends StatelessWidget {
         } else if (isSelectedLastDay != null && isSelectedLastDay) {
           itemStyle = themeData.accentTextTheme.bodyText1;
           decoration = new BoxDecoration(
-              color: themeData.accentColor,
+              color: ColorUtil.mdp_SelectedDay,
               borderRadius: BorderRadius.only(
                 topRight: new Radius.circular(50.0),
                 bottomRight: new Radius.circular(50.0),
               ));
         } else if (isInRange != null && isInRange) {
           decoration = new BoxDecoration(
-              color: themeData.accentColor.withOpacity(0.1),
+              color: ColorUtil.mdp_SelectedDay.withOpacity(0.1),
               shape: BoxShape.rectangle);
         } else if (disabled) {
           itemStyle = themeData.textTheme.bodyText2!
@@ -491,7 +494,7 @@ class DayPicker extends StatelessWidget {
             currentDate.day == day) {
           // The current day gets a different text color.
           itemStyle =
-              themeData.textTheme.bodyText1!.copyWith(color: themeData.accentColor);
+              themeData.textTheme.bodyText1!.copyWith(color: ColorUtil.mdp_SelectedDay);
         }
 
         Widget dayWidget = new Container(
@@ -947,7 +950,7 @@ class _YearPickerState extends State<YearPicker> {
                 year == widget.selectedLastDate!.year);
         final TextStyle? itemStyle = isSelected
             ? themeData.textTheme.headline5!
-            .copyWith(color: themeData.accentColor)
+            .copyWith(color: ColorUtil.mdp_SelectedDay)
             : style;
         return new InkWell(
           key: new ValueKey<int>(year),
@@ -1151,12 +1154,11 @@ class _DatePickerDialogState extends State<_DatePickerDialog> {
       child: ButtonBar(
         children: <Widget>[
           new TextButton(
-
-            child: new Text(localizations.cancelButtonLabel),
+            child: new Text("Cancel",style: TextStyle(color: ColorUtil.mdp_ActionBtn),),
             onPressed: _handleCancel,
           ),
           new TextButton(
-            child: new Text(localizations.okButtonLabel),
+            child: new Text("Ok",style: TextStyle(color: ColorUtil.mdp_ActionBtn)),
             onPressed: _handleOk,
           ),
         ],

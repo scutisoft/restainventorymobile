@@ -459,7 +459,8 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   void sysDeleteHE_ListView(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="",
-    String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,TraditionalParam? traditionalParam}){
+    String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,RxBool? loader}){
     CustomAlertUtil(
         callback: (){
           postUIJson(getPageIdentifier(),
@@ -472,11 +473,15 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
                 if(successCallback!=null){
                   successCallback(e);
                 }
-                he_listViewBody.updateArrById(primaryKey, e["Table"][0],action: ActionType.deleteById);
+                if(he_listViewBody!=null && e["Table"]!=null && e["Table"].length>0){
+                  he_listViewBody.updateArrById(primaryKey, e["Table"][0],action: ActionType.deleteById);
+                }
+
                 //updateArrById(primaryKey, e["Table"][0], arr,action: ActionType.deleteById,primaryArr:primaryArr );
               },
               developmentMode: developmentMode,
-              traditionalParam:  traditionalParam
+              traditionalParam:  traditionalParam,
+            loader: loader
           );
         },
         cancelCallback: (){
@@ -486,7 +491,7 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
   }
 
   fillTreeDrp(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false}) async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false,Function(dynamic)? resCb}) async{
     var fWid=foundWidgetByKey(widgets, key);
     if(fWid!=null){
       if(clearValues){
@@ -505,6 +510,9 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
           try{
             fWid.isEnabled.value=value.isNotEmpty;
           }catch(e){}
+        }
+        if(resCb!=null){
+          resCb(value);
         }
       });
     }

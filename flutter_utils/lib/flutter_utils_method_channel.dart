@@ -45,9 +45,9 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
 
   @override
   void fillTreeDrpV1(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,
-    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false})async{
+    String spName="USP_GetMasterDetail",String extraParam="",bool needToDisable=false,Function(dynamic)? resCb})async{
       fillTreeDrp(widgets, key,refId: refId,page: page,clearValues: clearValues,refType: refType,toggleRequired: toggleRequired,
-      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable: needToDisable);
+      hierarchicalId: hierarchicalId,spName: spName,extraParam: extraParam,needToDisable: needToDisable,resCb: resCb);
   }
 
   @override
@@ -83,6 +83,16 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
   void clearOnDisposeV1(){
     clearOnDispose();
   }
+
+
+  @override
+  void sysDeleteHE_ListViewV1(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="",
+    String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,RxBool? loader}){
+    sysDeleteHE_ListView(he_listViewBody, primaryKey,successCallback: successCallback,dataJson: dataJson,
+        developmentMode: developmentMode,content: content,traditionalParam: traditionalParam,loader:loader);
+  }
+
 
 }
 

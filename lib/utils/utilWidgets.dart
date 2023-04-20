@@ -615,7 +615,7 @@ class HE_WrapText2 extends StatelessWidget implements ExtensionCallback{
 
   @override
   setValue(value) {
-    print(value);
+   // console("wrap text 2  $value ${value.runtimeType}");
     if(value.runtimeType.toString()=="_InternalLinkedHashMap<String, dynamic>" || value.runtimeType.toString()=="_InternalLinkedHashMap<dynamic, dynamic>" ){
       Map parsedValue=value;
       if(parsedValue.containsKey("value2")){
@@ -630,6 +630,9 @@ class HE_WrapText2 extends StatelessWidget implements ExtensionCallback{
       if(parsedValue.containsKey("style1")){
         textStyle.value=parsedValue["style1"];
       }
+    }
+    else if(value.runtimeType.toString() =="String" || value.runtimeType.toString() =="int"){
+      text2.value=value.toString();
     }
   }
 

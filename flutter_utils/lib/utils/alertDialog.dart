@@ -33,8 +33,8 @@ class CustomAlertUtil{
               child:Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                   children:[
-
-                  //  isSvg?SvgPicture.asset(img,height: imgHeight,):Image.asset(img,height: imgHeight,),
+                    Icon(Icons.delete_outline_outlined,size: 30,color: Colors.red,),
+                    //isSvg?SvgPicture.asset(img,height: imgHeight,):Image.asset(img,height: imgHeight,),
                     SizedBox(height:30),
                     Container(
                       width: textWidth,

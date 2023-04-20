@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsForm.dart';
 import '../../widgets/inventoryWidgets.dart';
+import '../commonView.dart';
 import '/pages/purchaseOrder/purchaseForm.dart';
 import '/widgets/expandedSection.dart';
 import '/api/apiUtils.dart';
@@ -125,7 +126,7 @@ class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements Ha
                                     GridEditIcon(
                                       hasAccess: filterPurchaseOrders[i]['IsEdit'],
                                       onTap: (){
-                                        console("edit");
+
                                         fadeRoute(GoodsForm(
                                           isEdit: true,
                                           dataJson: getDataJsonForGrid({"PurchaseOrderId":filterPurchaseOrders[i]['PurchaseOrderId']}),
@@ -174,13 +175,33 @@ class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements Ha
                                 )
                             ),
                             //  decoration:ColorUtil.formContBoxDec,
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                gridCardText("Vendor",innerPurchaseOrders[index]['VendorName']),
-                                gridCardText("Grand Total",getRupeeString(innerPurchaseOrders[index]['GrandTotal'])),
-                                StatusTxt(status: innerPurchaseOrders[index]['Status']),
+                                Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      gridCardText("Vendor",innerPurchaseOrders[index]['VendorName']),
+                                      gridCardText("Grand Total",getRupeeString(innerPurchaseOrders[index]['GrandTotal'])),
+                                      StatusTxt(status: innerPurchaseOrders[index]['Status']),
+                                    ],
+                                  ),
+                                ),
+                                EyeIcon(
+                                  onTap: (){
+                                    fadeRoute(CommomView(
+                                      pageTitle: "Goods Received",
+                                      spName: "IV_Goods_GetGoodsReceivedVendorViewDetail",
+                                      page: "Goods",
+                                      dataJson: getDataJsonForGrid({
+                                        "PurchaseOrderId":innerPurchaseOrders[index]['PurchaseOrderId'],
+                                        "PurchaseOrderVendorMappingId":innerPurchaseOrders[index]['PurchaseOrderVendorMappingId'],
+                                      }),
+                                    ));
+                                  },
+                                ),
                               ],
                             ),
                           );

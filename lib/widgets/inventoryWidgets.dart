@@ -217,7 +217,8 @@ class SlidePopUp extends StatelessWidget {
   RxBool isOpen;
   Widget? appBar;
   List<Widget> widgets;
-  SlidePopUp({Key? key,required this.isOpen,this.appBar,this.widgets=const []}) : super(key: key);
+  VoidCallback? onBack;
+  SlidePopUp({Key? key,required this.isOpen,this.appBar,this.widgets=const [],this.onBack}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +245,9 @@ class SlidePopUp extends StatelessWidget {
                     widget: Icon(Icons.arrow_back_rounded,color: ColorUtil.themeBlack,),
                     onTap: (){
                       isOpen.value=false;
+                      if(onBack!=null){
+                        onBack!();
+                      }
                     },
                   ),
                   Text("Back",style: ts20M(ColorUtil.themeBlack,fontsize: 18),),
