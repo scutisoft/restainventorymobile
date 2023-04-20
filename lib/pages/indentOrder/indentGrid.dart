@@ -39,7 +39,8 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
         return HE_IndentContent(
           data: e,
           onDelete: (dataJson){
-            //sysDeleteHE_ListView(he_listViewBody, "LandId",dataJson: dataJson);
+            sysDeleteHE_ListView(he_listViewBody, "IndentOrderId",dataJson: dataJson,loader: showLoader,
+                traditionalParam: TraditionalParam(executableSp: "IV_Indent_DeleteIndentOrderDetail"));
           },
           onEdit: (updatedMap){
             he_listViewBody.updateArrById("IndentOrderId", updatedMap);
@@ -191,7 +192,12 @@ class HE_IndentContent extends StatelessWidget implements HE_ListViewContentExte
                           ));
                         },
                       ),
-                      GridDeleteIcon(hasAccess: dataListener['IsDelete'],),
+                      GridDeleteIcon(
+                        hasAccess: dataListener['IsDelete'],
+                        onTap: (){
+                          onDelete!(getDataJsonForGrid({"IndentOrderId":dataListener['IndentOrderId']}));
+                        },
+                      ),
                     ],
                   )
                 ],

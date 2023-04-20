@@ -19,6 +19,7 @@ import '../utils/utils.dart';
 import '../widgets/accessWidget.dart';
 import '../widgets/circle.dart';
 import '../widgets/customNetworkImg.dart';
+import 'departmentDistribution/depDistGrid.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -71,6 +72,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
     {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
     {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
     {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
+    {"Title":'Department Distribution',"PageNumber":6,"accessId": 100},
   ];
 
   @override
@@ -83,7 +85,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
         backgroundColor: ColorUtil.bgColor,
         drawer: Container(
           height: SizeConfig.screenHeight,
-          width: SizeConfig.screenWidth!*0.7,
+          width: SizeConfig.screenWidth!*0.8,
           clipBehavior: Clip.antiAlias,
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
@@ -101,14 +103,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
               Row(
                 children: [
                   CustomCircle(
-                    hei: 70,
+                    hei: 50,
                     color: ColorUtil.red,
-                    widget: Icon(Icons.person_2_outlined,color: Colors.white,size: 30,),
+                    widget: Icon(Icons.person_2_outlined,color: Colors.white,size: 25,),
                   ),
                   const SizedBox(width: 10,),
                   Expanded(
                     child: Obx(() => Text(userName.value,
-                      style: ts20M(ColorUtil.themeBlack),
+                      style: ts20M(ColorUtil.themeBlack),maxLines: 2,overflow: TextOverflow.ellipsis,
                     )),
                   ),
                   const SizedBox(width: 10,),
@@ -173,6 +175,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver{
             navCallback: openDrawer,
           ):
           menuSel.value==5?TransferGrid(
+            navCallback: openDrawer,
+          ):
+          menuSel.value==6?DepartmentDistributionGrid(
             navCallback: openDrawer,
           ):
               Container()

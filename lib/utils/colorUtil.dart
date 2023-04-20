@@ -48,7 +48,7 @@ class ColorUtil{
 
   static Color search2ActBg= primary;
   static Color search2InActBg= Color(0xffffffff);
-  static double formContainerHeight=60;
+  static double formContainerHeight=50;
   static BoxDecoration formContBoxDec=BoxDecoration(
       color: themeWhite,
       borderRadius: BorderRadius.circular(8),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/flutter_utils_platform_interface.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
@@ -73,7 +74,9 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset("assets/logo.png"),
+                    //Image.asset("assets/logo.png"),
+                    SvgPicture.asset("assets/inventory-white.svg",height: 80,),
+                    inBtwHei(height: 20),
                     Align(
                       alignment: Alignment.centerLeft,
                       child: FittedText(

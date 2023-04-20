@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:restainventorymobile/utils/constants.dart';
+import 'package:restainventorymobile/utils/utils.dart';
+import 'package:restainventorymobile/widgets/searchDropdown/search2.dart';
 
 import '../../utils/sizeLocal.dart';
+import '../fittedText.dart';
 
 
-class ReportGridStyleModel2{
+class CommonViewGridStyleModel{
   String? columnName;
   String dataName;
   double width;
@@ -13,9 +17,12 @@ class ReportGridStyleModel2{
   EdgeInsets edgeInsets;
   bool isActive;
   bool isDate;
-
-  ReportGridStyleModel2({this.columnName,this.width=150,this.alignment=Alignment.centerLeft,
-    this.edgeInsets=const EdgeInsets.only(left: 10),this.isActive=true,this.isDate=false,required this.dataName});
+  bool isMaterial;
+  String brandDataName;
+  bool needRupeeFormat;
+  CommonViewGridStyleModel({this.columnName,this.width=150,this.alignment=Alignment.centerLeft,
+    this.edgeInsets=const EdgeInsets.only(left: 10),this.isActive=true,this.isDate=false,required this.dataName,this.isMaterial=false,
+  this.brandDataName="",this.needRupeeFormat=false});
 
 
   Map<String, dynamic> toJson() => {
@@ -32,9 +39,9 @@ class ReportGridStyleModel2{
   }
 }
 
-class ReportDataTable2 extends StatefulWidget {
+class CommonViewGrid extends StatefulWidget {
 
-  List<ReportGridStyleModel2>? gridDataRowList=[];
+  List<CommonViewGridStyleModel>? gridDataRowList=[];
   List<dynamic>? gridData=[];
 
   int? selectedIndex;
@@ -42,13 +49,15 @@ class ReportDataTable2 extends StatefulWidget {
   Function(int)? func;
   double? topMargin;//70 || 50
   double? gridBodyReduceHeight;// 260  // 140
+  double staticColWidth;
 
-  ReportDataTable2({this.gridDataRowList,this.gridData,this.selectedIndex,this.voidCallback,this.func,this.topMargin,this.gridBodyReduceHeight});
+  CommonViewGrid({this.gridDataRowList,this.gridData,this.selectedIndex,this.voidCallback,this.func,this.topMargin,this.gridBodyReduceHeight,
+  this.staticColWidth=150});
   @override
-  _ReportDataTable2State createState() => _ReportDataTable2State();
+  _CommonViewGridState createState() => _CommonViewGridState();
 }
 
-class _ReportDataTable2State extends State<ReportDataTable2> {
+class _CommonViewGridState extends State<CommonViewGrid> {
 
 
   ScrollController header=new ScrollController();
@@ -103,7 +112,7 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
   }
 
 
-  ScrollPhysics horizontalPhysics=BouncingScrollPhysics(decelerationRate: ScrollDecelerationRate.fast);
+  ScrollPhysics horizontalPhysics=BouncingScrollPhysics();
 
 
   @override
@@ -120,21 +129,22 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
             color:AppTheme.gridbodyBgColor,
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight: Radius.circular(10))
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(3),topRight: Radius.circular(3))
         ),
         child: Stack(
           children: [
 
             //Scrollable
             Positioned(
-              left:149,
+              left:widget.staticColWidth-1,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     height: 50,
-                    width: SizeConfig.screenWidth!-149,
+                    width: SizeConfig.screenWidth!-widget.staticColWidth-1,
                     color: showShadow? AppTheme.bgColor.withOpacity(0.8):AppTheme.bgColor,
                     child: SingleChildScrollView(
                       controller: header,
@@ -147,7 +157,6 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                               alignment: value.alignment,
                               padding: value.edgeInsets,
                               width: value.width,
-
                               constraints: BoxConstraints(
                                   minWidth: 100,
                                   maxWidth: 200
@@ -158,11 +167,10 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                               .values.toList()
                       ),
                     ),
-
                   ),
                   Container(
                     height: SizeConfig.screenHeight!-widget.gridBodyReduceHeight!,
-                    width: SizeConfig.screenWidth!-149,
+                    width: SizeConfig.screenWidth!-widget.staticColWidth-1,
                     alignment: Alignment.topLeft,
                     color: AppTheme.gridbodyBgColor,
                     child: SingleChildScrollView(
@@ -178,6 +186,7 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                           scrollDirection: Axis.vertical,
                          // physics: BouncingScrollPhysics(),
                           child: Column(
+                              mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children:widget.gridData!.asMap().
                               map((i, value) => MapEntry(
@@ -188,19 +197,16 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                                   //setState(() {});
                                 },
                                 child: Container(
-
                                   decoration: BoxDecoration(
                                     border: AppTheme.gridBottomborder,
                                     color: widget.selectedIndex==i?AppTheme.yellowColor:AppTheme.gridbodyBgColor,
                                   ),
                                   height: 50,
-                                  margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
+                               //   margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
                                   child: Row(
                                       mainAxisAlignment: MainAxisAlignment.start,
 
                                       children: widget.gridDataRowList!.asMap().map((j, v) {
-
-
                                         if(!v.isDate){
                                           if((10.0*value[v.dataName].toString().length)>v.width){
                                             setState(() {
@@ -208,9 +214,6 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                                             });
                                           }
                                         }
-
-                                        // print("${value.get(v.columnName)} ${v.width} ${10.0*value.get(v.columnName).toString().length}");
-
                                         return MapEntry(j,
                                           j==0?Container():v.isActive?!v.isDate?Container(
                                             width: v.width,
@@ -221,11 +224,26 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                                                 minWidth: 100,
                                                 maxWidth: 200
                                             ),
-                                            decoration: BoxDecoration(
-
-                                            ),
-
-                                            child: Text("${value[v.dataName].toString().isNotEmpty?value[v.dataName]??" ":" "}",
+                                            decoration: BoxDecoration(      ),
+                                            child:v.isMaterial?Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text("${value[v.dataName]}",
+                                                  style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
+                                                ),
+                                                Visibility(
+                                                    visible: !checkNullEmpty(value[v.brandDataName]),
+                                                    child: FittedText(
+                                                      width: widget.staticColWidth,
+                                                      alignment: Alignment.centerLeft,
+                                                      text: "${value[v.brandDataName]}",
+                                                      textStyle: ts20M(AppTheme.bgColor,fontsize: 14),
+                                                    )
+                                                ),
+                                              ],
+                                            ):
+                                            Text("${v.needRupeeFormat?getRupeeString(value[v.dataName]):value[v.dataName]}",
                                               style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
                                             ),
                                           ):Container(
@@ -272,7 +290,7 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                 children: [
                   Container(
                     height: 50,
-                    width: 150,
+                    width: widget.staticColWidth,
                     color: AppTheme.bgColor,
                     padding: widget.gridDataRowList![0].edgeInsets,
                     alignment: widget.gridDataRowList![0].alignment,
@@ -302,6 +320,7 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                         scrollDirection: Axis.vertical,
                        // physics: BouncingScrollPhysics(),
                         child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             children: widget.gridData!.asMap().
                             map((i, value) => MapEntry(
                                 i,InkWell(
@@ -312,31 +331,32 @@ class _ReportDataTable2State extends State<ReportDataTable2> {
                               child:  Container(
                                 alignment:widget.gridDataRowList![0].alignment,
                                 padding: widget.gridDataRowList![0].edgeInsets,
-                                margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
+                            //    margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
                                 decoration: BoxDecoration(
                                   border: AppTheme.gridBottomborder,
                                   color: widget.selectedIndex==i?AppTheme.yellowColor:AppTheme.gridbodyBgColor,
-
                                 ),
                                 height: 50,
-                                width: 150,
-                                constraints: BoxConstraints(
-                                    maxWidth: 150
-                                ),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    //color:value.invoiceType=='Receivable'? Colors.green:AppTheme.red,
-                                  ),
-                                  child: FittedBox(
-                                    fit: BoxFit.contain,
-                                    child: !widget.gridDataRowList![0].isDate? Text("${value[widget.gridDataRowList![0].dataName]}",
+                                width: widget.staticColWidth,
+                                child: widget.gridDataRowList![0].isMaterial?Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text("${value[widget.gridDataRowList![0].dataName]}",
                                       style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
-                                    ):
-                                    widget.gridDataRowList![0].columnName!=null?Text("${widget.gridDataRowList![0].columnName.toString().isNotEmpty?widget.gridDataRowList![0].columnName!=null?
-                                    DateFormat('dd-MM-yyyy').format(DateTime.parse(value[widget.gridDataRowList![0].dataName])):" ":" "}",
-                                      style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
-                                    ):Container(),
-                                  ),
+                                    ),
+                                    Visibility(
+                                      visible: !checkNullEmpty(value[widget.gridDataRowList![0].brandDataName]),
+                                      child: FittedText(
+                                        width: widget.staticColWidth,
+                                        alignment: Alignment.centerLeft,
+                                        text: "${value[widget.gridDataRowList![0].brandDataName]}",
+                                        textStyle: ts20M(AppTheme.bgColor,fontsize: 14),
+                                      )
+                                    ),
+                                  ],
+                                ):Text("${value[widget.gridDataRowList![0].dataName]}",
+                                  style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
                                 ),
                               ),
                             )
@@ -416,7 +436,7 @@ class AppTheme {
   static  TextStyle hintText=TextStyle(fontFamily: 'RR',fontSize: 16,color: addNewTextFieldText.withOpacity(0.5));
   static TextStyle TSWhite20=TextStyle(fontFamily: 'RR',fontSize: 20,color: Colors.white,letterSpacing: 0.1);
   static TextStyle TSWhite16=TextStyle(fontFamily: 'RR',fontSize: 18,color: Colors.white,letterSpacing: 0.1);
-  static TextStyle TSWhite166=TextStyle(fontFamily: 'RR',fontSize: 16,color: Colors.white,letterSpacing: 0.1);
+  static TextStyle TSWhite166=TextStyle(fontFamily: 'AM',fontSize: 16,color: Colors.white,letterSpacing: 0.1);
 
   static TextStyle TSWhiteML=TextStyle(fontFamily: 'RR',fontSize: 14,color: Colors.white,letterSpacing: 0.1);
   //CT colourTextStyle
@@ -432,7 +452,7 @@ class AppTheme {
   static TextStyle bgColorTS=TextStyle(fontFamily: 'RR',color: AppTheme.bgColor,fontSize: 16);
   static TextStyle bgColorTS14=TextStyle(fontFamily: 'RR',color: AppTheme.bgColor,fontSize: 14);
   static TextStyle gridTextColorTS=TextStyle(fontFamily: 'RR',color: AppTheme.gridTextColor,fontSize: 16);
-  static TextStyle gridTextColor14=TextStyle(fontFamily: 'RR',color: AppTheme.gridTextColor,fontSize: 14);
+  static TextStyle gridTextColor14=TextStyle(fontFamily: 'AM',color: AppTheme.gridTextColor,fontSize: 14);
   static TextStyle gridTextGreenColor14=TextStyle(fontFamily: 'RR',color: Colors.green,fontSize: 14);
   static TextStyle gridTextRedColor14=TextStyle(fontFamily: 'RR',color: AppTheme.red,fontSize: 14);
 

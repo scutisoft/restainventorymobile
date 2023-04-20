@@ -459,24 +459,41 @@ class CustomTapIcon extends StatelessWidget {
 }
 
 
-SwipeAction swipeActionDelete(Function(Function(bool)) ontap){
+SwipeAction swipeActionDelete(Function(Function(bool)) ontap,{bool hasAccess=true,bool needBG=false}){
+  Color ic=needBG?ColorUtil.themeWhite:ColorUtil.red;
   return   SwipeAction(
     title: "",
     icon: Padding(
       padding:  const EdgeInsets.only(top: 11),
-      child: SvgPicture.asset("assets/icons/delete.svg",height: 30,),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+          decoration: needBG?BoxDecoration(
+            color: hasAccess?ColorUtil.red:ColorUtil.red.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(50)
+          ):null,
+          child: SvgPicture.asset("assets/icons/delete.svg",height: 30,color:  hasAccess?ic:ic.withOpacity(0.5),)
+      ),
     ),
     onTap:ontap,
     color: ColorUtil.bgColor,
   );
 }
 
-SwipeAction swipeActionEdit(Function(Function(bool)) ontap){
+SwipeAction swipeActionEdit(Function(Function(bool)) ontap,{bool needBG=false}){
+  //125ac6
+  Color ic=needBG?ColorUtil.themeWhite:Color(0xff125ac6);
   return   SwipeAction(
     title: "",
     icon: Padding(
       padding:const  EdgeInsets.only(top: 11),
-      child: SvgPicture.asset("assets/icons/edit.svg",height: 30,),
+      child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: needBG?BoxDecoration(
+              color: Color(0xff125ac6),
+              borderRadius: BorderRadius.circular(50)
+          ):null,
+          child: SvgPicture.asset("assets/icons/edit.svg",height: 30,color: ic,)
+      ),
     ),
     onTap: ontap,
     color: ColorUtil.bgColor,

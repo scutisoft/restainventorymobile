@@ -68,4 +68,11 @@ mixin HappyExtension{
   void clearOnDispose(){
     FlutterUtilsPlatform.instance.clearOnDisposeV1();
   }
+
+  void sysDeleteHE_ListView(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="",
+    String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,
+    TraditionalParam? traditionalParam,RxBool? loader}){
+    FlutterUtilsPlatform.instance.sysDeleteHE_ListViewV1(he_listViewBody, primaryKey,successCallback: successCallback,dataJson: dataJson,
+    developmentMode: developmentMode,content: content,traditionalParam: traditionalParam,loader: loader);
+  }
 }

@@ -372,7 +372,7 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
                                           numPadUtils['vendorIndex']=i;
                                           numPadUtils['productIndex']=index;
                                           controller.closeAllOpenCell();
-                                        }),
+                                        },needBG: true),
                                         swipeActionDelete((handler) async {
                                           CustomAlert(
                                               cancelCallback: (){},
@@ -389,7 +389,7 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
                                               }
                                           ).yesOrNoDialog2("assets/icons/delete.svg", "Are you sure want to Delete ?", true);
 
-                                        }),
+                                        },needBG: true),
                                       ],
                                       child: Container(
                                         margin: const EdgeInsets.only(left: 7,right: 7),
@@ -909,6 +909,7 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
         };
         productList.add(pObj);
         clearAllV2(materialForm);
+        setFrmValues(materialForm, [{"VendorId":vDrp['Id']}]);
         unitName.value="Unit";
         totalCalc();
         overAllCalc();
