@@ -39,6 +39,7 @@ abstract class ExtensionCallback {
   void clearValues();
   int getOrderBy();
   setOrderBy(int oBy);
+  void triggerChange();
 }
 
 
@@ -435,59 +436,92 @@ mixin HappyExtensionHelper implements HappyExtensionHelperCallback2{
 
   }
 
-  void sysDelete(arr,primaryKey,primaryArr,{Function? successCallback,String dataJson="",String content="Are you sure want to delete ?",}){
-    CustomAlertUtil(
-        callback: (){
-          postUIJson(getPageIdentifier(),
-              dataJson,
-              "Delete",
-              successCallback: (e){
-                String errorMsg=e["TblOutPut"][0]["@Message"];
-                addNotifications(NotificationType.success,msg: errorMsg);
-                //CustomAlertUtil().successAlert(errorMsg, "");
-                if(successCallback!=null){
-                  successCallback(e);
+  void sysDelete(arr,primaryKey,primaryArr,{Function? successCallback,String dataJson="",String content="Are you sure want to delete ?",
+    bool isCustomDialog=false}){
+    if(isCustomDialog){
+      postUIJson(getPageIdentifier(),
+          dataJson,
+          "Delete",
+          successCallback: (e){
+            if(successCallback!=null){
+              successCallback(e);
+            }
+          }
+      );
+    }
+    else{
+      CustomAlertUtil(
+          callback: (){
+            postUIJson(getPageIdentifier(),
+                dataJson,
+                "Delete",
+                successCallback: (e){
+                  String errorMsg=e["TblOutPut"][0]["@Message"];
+                  addNotifications(NotificationType.success,msg: errorMsg);
+                  //CustomAlertUtil().successAlert(errorMsg, "");
+                  if(successCallback!=null){
+                    successCallback(e);
+                  }
+                  //updateArrById(primaryKey, e["Table"][0], arr,action: ActionType.deleteById,primaryArr:primaryArr );
                 }
-                //updateArrById(primaryKey, e["Table"][0], arr,action: ActionType.deleteById,primaryArr:primaryArr );
-              }
-          );
-        },
-        cancelCallback: (){
+            );
+          },
+          cancelCallback: (){
 
-        }
-    ).yesOrNoDialog2('assets/Slice/like.png', content, false);
+          }
+      ).yesOrNoDialog2('assets/Slice/like.png', content, false);
+    }
   }
 
   void sysDeleteHE_ListView(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="",
     String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,
-    TraditionalParam? traditionalParam,RxBool? loader}){
-    CustomAlertUtil(
-        callback: (){
-          postUIJson(getPageIdentifier(),
-              dataJson,
-              "Delete",
-              successCallback: (e){
-                String errorMsg=e["TblOutPut"][0]["@Message"];
-                addNotifications(NotificationType.success,msg: errorMsg);
-                //CustomAlertUtil().successAlert(errorMsg, "");
-                if(successCallback!=null){
-                  successCallback(e);
-                }
-                if(he_listViewBody!=null && e["Table"]!=null && e["Table"].length>0){
-                  he_listViewBody.updateArrById(primaryKey, e["Table"][0],action: ActionType.deleteById);
-                }
+    TraditionalParam? traditionalParam,RxBool? loader,bool isCustomDialog=false}){
+    if(isCustomDialog){
+      postUIJson(getPageIdentifier(),
+          dataJson,
+          "Delete",
+          successCallback: (e){
+            if(successCallback!=null){
+              successCallback(e);
+            }
+            if(he_listViewBody!=null && e["Table"]!=null && e["Table"].length>0){
+              he_listViewBody.updateArrById(primaryKey, e["Table"][0],action: ActionType.deleteById);
+            }
+          },
+          developmentMode: developmentMode,
+          traditionalParam:  traditionalParam,
+          loader: loader
+      );
+    }
+    else{
+      CustomAlertUtil(
+          callback: (){
+            postUIJson(getPageIdentifier(),
+                dataJson,
+                "Delete",
+                successCallback: (e){
+                  String errorMsg=e["TblOutPut"][0]["@Message"];
+                  addNotifications(NotificationType.success,msg: errorMsg);
+                  //CustomAlertUtil().successAlert(errorMsg, "");
+                  if(successCallback!=null){
+                    successCallback(e);
+                  }
+                  if(he_listViewBody!=null && e["Table"]!=null && e["Table"].length>0){
+                    he_listViewBody.updateArrById(primaryKey, e["Table"][0],action: ActionType.deleteById);
+                  }
 
-                //updateArrById(primaryKey, e["Table"][0], arr,action: ActionType.deleteById,primaryArr:primaryArr );
-              },
-              developmentMode: developmentMode,
-              traditionalParam:  traditionalParam,
-            loader: loader
-          );
-        },
-        cancelCallback: (){
+                  //updateArrById(primaryKey, e["Table"][0], arr,action: ActionType.deleteById,primaryArr:primaryArr );
+                },
+                developmentMode: developmentMode,
+                traditionalParam:  traditionalParam,
+                loader: loader
+            );
+          },
+          cancelCallback: (){
 
-        }
-    ).yesOrNoDialog2('assets/Slice/like.png', content, false);
+          }
+      ).yesOrNoDialog2('assets/Slice/like.png', content, false);
+    }
   }
 
   fillTreeDrp(var widgets,String key,{var refId,var page,bool clearValues=true,var refType,bool toggleRequired=false,var hierarchicalId,

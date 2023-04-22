@@ -2,17 +2,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
-import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../widgets/customCheckBox.dart';
-import '../../widgets/fittedText.dart';
 import '../../widgets/numberPadPopUp/numberPadPopUp.dart';
-import '/widgets/calculation.dart';
 import '/widgets/expandedSection.dart';
 import '/widgets/loader.dart';
 import '/api/apiUtils.dart';
@@ -23,7 +18,6 @@ import '/utils/constants.dart';
 import '/utils/sizeLocal.dart';
 import '/utils/utils.dart';
 import '/widgets/alertDialog.dart';
-import '/widgets/circle.dart';
 import '/widgets/customAppBar.dart';
 import '/widgets/expectedDateContainer.dart';
 import '/widgets/pinWidget.dart';

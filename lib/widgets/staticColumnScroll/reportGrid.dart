@@ -6,22 +6,30 @@ import '/utils/utils.dart';
 import '/widgets/searchDropdown/search2.dart';
 import '/utils/sizeLocal.dart';
 import '../fittedText.dart';
+import 'commonViewGrid.dart';
 
+enum ColumnType{
+  normal,
+  material,
+  colSpan
+}
 
-class CommonViewGridStyleModel{
+class ReportGridStyleModel{
   String? columnName;
   String dataName;
   double width;
+  double maxWidth;
   Alignment alignment;
   EdgeInsets edgeInsets;
   bool isActive;
-  bool isDate;
-  bool isMaterial;
+  ColumnType columnType;
   String brandDataName;
   bool needRupeeFormat;
-  CommonViewGridStyleModel({this.columnName,this.width=150,this.alignment=Alignment.centerLeft,
-    this.edgeInsets=const EdgeInsets.only(left: 10),this.isActive=true,this.isDate=false,required this.dataName,this.isMaterial=false,
-  this.brandDataName="",this.needRupeeFormat=false});
+  List<String> colSpanTitle;
+  ReportGridStyleModel({this.columnName,this.width=150,this.maxWidth=200,this.alignment=Alignment.centerLeft,
+    this.edgeInsets=const EdgeInsets.only(left: 10),this.isActive=true,required this.dataName,
+    this.columnType=ColumnType.normal, this.brandDataName="",this.needRupeeFormat=false,
+  this.colSpanTitle=const ["Title1","Title2"]});
 
 
   Map<String, dynamic> toJson() => {
@@ -38,9 +46,9 @@ class CommonViewGridStyleModel{
   }
 }
 
-class CommonViewGrid extends StatefulWidget {
+class ReportGrid extends StatefulWidget {
 
-  List<CommonViewGridStyleModel>? gridDataRowList=[];
+  List<ReportGridStyleModel>? gridDataRowList=[];
   List<dynamic>? gridData=[];
 
   int? selectedIndex;
@@ -50,13 +58,13 @@ class CommonViewGrid extends StatefulWidget {
   double? gridBodyReduceHeight;// 260  // 140
   double staticColWidth;
 
-  CommonViewGrid({this.gridDataRowList,this.gridData,this.selectedIndex,this.voidCallback,this.func,this.topMargin,this.gridBodyReduceHeight,
-  this.staticColWidth=150});
+  ReportGrid({this.gridDataRowList,this.gridData,this.selectedIndex,this.voidCallback,this.func,this.topMargin,this.gridBodyReduceHeight,
+    this.staticColWidth=150});
   @override
-  _CommonViewGridState createState() => _CommonViewGridState();
+  _ReportGridState createState() => _ReportGridState();
 }
 
-class _CommonViewGridState extends State<CommonViewGrid> {
+class _ReportGridState extends State<ReportGrid> {
 
 
   ScrollController header=new ScrollController();
@@ -111,16 +119,17 @@ class _CommonViewGridState extends State<CommonViewGrid> {
   }
 
 
-  ScrollPhysics horizontalPhysics=BouncingScrollPhysics();
-  ScrollPhysics verticalPhysics=NeverScrollableScrollPhysics();
+  ScrollPhysics horizontalPhysics=ClampingScrollPhysics();
+  ScrollPhysics verticalPhysics=ClampingScrollPhysics();
 
-  double gridHeight=100;
+  double gridHeight=SizeConfig.screenHeight!-200;
+  //double maxWidth=200;
 
   @override
   Widget build(BuildContext context) {
-     gridHeight=widget.gridData!.length*50.0;
+    //gridHeight=widget.gridData!.length*50.0;
     return Container(
-        //height: SizeConfig.screenHeight!-200,
+      //height: SizeConfig.screenHeight!-200,
         height: gridHeight+50,
         width: SizeConfig.screenWidth,
         margin: EdgeInsets.only(top: widget.topMargin!,left: 5,right: 5),
@@ -142,13 +151,14 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                 children: [
                   Container(
                     height: 50,
-                    width: SizeConfig.screenWidth!-widget.staticColWidth-1,
+                    width: SizeConfig.screenWidth!-widget.staticColWidth-1-11,
                     color: showShadow? AppTheme.bgColor.withOpacity(0.8):AppTheme.bgColor,
                     child: SingleChildScrollView(
                       controller: header,
                       scrollDirection: Axis.horizontal,
                       physics: horizontalPhysics,
                       child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: widget.gridDataRowList!.asMap().
                           map((i, value) => MapEntry(i, i==0?Container():
                           value.isActive?Container(
@@ -157,9 +167,22 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                               width: value.width,
                               constraints: BoxConstraints(
                                   minWidth: 100,
-                                  maxWidth: 200
+                                  maxWidth: value.maxWidth
                               ),
-                              child: FittedBox(child: Text(value.columnName!,style: AppTheme.TSWhite166,))
+                              child: value.columnType==ColumnType.colSpan?Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(value.columnName!,style: AppTheme.TSWhite166),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(value.colSpanTitle[0],style: AppTheme.TSWhite166),
+                                      Text(value.colSpanTitle[1],style: AppTheme.TSWhite166),
+                                    ],
+                                  )
+                                ],
+                              ):
+                              FittedBox(child: Text(value.columnName!,style: AppTheme.TSWhite166,))
                           ):Container()
                           ))
                               .values.toList()
@@ -169,7 +192,7 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                   Container(
                     //height: SizeConfig.screenHeight!-widget.gridBodyReduceHeight!,
                     height: gridHeight,
-                    width: SizeConfig.screenWidth!-widget.staticColWidth-1,
+                    width: SizeConfig.screenWidth!-widget.staticColWidth-1-11,
                     alignment: Alignment.topLeft,
                     color: AppTheme.gridbodyBgColor,
                     child: SingleChildScrollView(
@@ -202,32 +225,31 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                                     color: widget.selectedIndex==i?AppTheme.yellowColor:AppTheme.gridbodyBgColor,
                                   ),
                                   height: 50,
-                               //   margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
+                                  //   margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
                                   child: Row(
                                       mainAxisAlignment: MainAxisAlignment.start,
 
                                       children: widget.gridDataRowList!.asMap().map((j, v) {
-                                        if(!v.isDate){
-                                          if((10.0*value[v.dataName].toString().length)>v.width){
+                                        if((10.0*value[v.dataName].toString().length)>v.width){
                                             setState(() {
                                               v.width=10.0*value[v.dataName].toString().length;
                                             });
-                                          }
                                         }
+
                                         return MapEntry(j,
-                                          j==0?Container():v.isActive?!v.isDate?Container(
+                                          j==0?Container():v.isActive?Container(
                                             width: v.width,
                                             height: 50,
                                             alignment: v.alignment,
                                             padding: v.edgeInsets,
                                             constraints: BoxConstraints(
                                                 minWidth: 100,
-                                                maxWidth: 200
+                                                maxWidth: v.maxWidth
                                             ),
                                             decoration: BoxDecoration(
-                                              color: AppTheme.gridbodyBgColor
+                                                color: AppTheme.gridbodyBgColor
                                             ),
-                                            child:v.isMaterial?Column(
+                                            child:v.columnType==ColumnType.material?Column(
                                               mainAxisSize: MainAxisSize.min,
                                               crossAxisAlignment: CrossAxisAlignment.start,
                                               children: [
@@ -245,23 +267,14 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                                                 ),
                                               ],
                                             ):
+                                            v.columnType==ColumnType.colSpan?Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Flexible(child: Text(value[v.dataName]??"",style: AppTheme.gridTextColor14)),
+                                                Flexible(child: Text(value[v.brandDataName]??"",style: AppTheme.gridTextColor14)),
+                                              ],
+                                            ):
                                             Text("${v.needRupeeFormat?getRupeeString(value[v.dataName]):value[v.dataName]}",
-                                              style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
-                                            ),
-                                          ):Container(
-                                            width: v.width,
-                                            height: 50,
-                                            alignment: v.alignment,
-                                            padding: v.edgeInsets,
-                                            constraints: BoxConstraints(
-                                                minWidth: 100,
-                                                maxWidth: 200
-                                            ),
-                                            decoration: BoxDecoration(
-
-                                            ),
-
-                                            child: Text("${value[v.dataName]!=null?DateFormat('dd-MM-yyyy').format(DateTime.parse(value[v.dataName])):" "}",
                                               style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
                                             ),
                                           )
@@ -303,7 +316,7 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                     height: gridHeight,
                     alignment: Alignment.topCenter,
                     decoration: BoxDecoration(
-                        //color:showShadow? AppTheme.gridbodyBgColor:Colors.transparent,
+                      //color:showShadow? AppTheme.gridbodyBgColor:Colors.transparent,
                         color: AppTheme.gridbodyBgColor,
                         boxShadow: [
                           showShadow?  BoxShadow(
@@ -334,14 +347,14 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                               child:  Container(
                                 alignment:widget.gridDataRowList![0].alignment,
                                 padding: widget.gridDataRowList![0].edgeInsets,
-                            //    margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
+                                //    margin: EdgeInsets.only(bottom:i==widget.gridData!.length-1?70: 0),
                                 decoration: BoxDecoration(
                                   border: AppTheme.gridBottomborder,
                                   color: widget.selectedIndex==i?AppTheme.yellowColor:AppTheme.gridbodyBgColor,
                                 ),
                                 height: 50,
                                 width: widget.staticColWidth,
-                                child: widget.gridDataRowList![0].isMaterial?Column(
+                                child: widget.gridDataRowList![0].columnType==ColumnType.material?Column(
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -349,13 +362,13 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                                       style:widget.selectedIndex==i?AppTheme.bgColorTS14:AppTheme.gridTextColor14,
                                     ),
                                     Visibility(
-                                      visible: !checkNullEmpty(value[widget.gridDataRowList![0].brandDataName]),
-                                      child: FittedText(
-                                        width: widget.staticColWidth,
-                                        alignment: Alignment.centerLeft,
-                                        text: "${value[widget.gridDataRowList![0].brandDataName]}",
-                                        textStyle: ts20M(AppTheme.bgColor,fontsize: 14),
-                                      )
+                                        visible: !checkNullEmpty(value[widget.gridDataRowList![0].brandDataName]),
+                                        child: FittedText(
+                                          width: widget.staticColWidth,
+                                          alignment: Alignment.centerLeft,
+                                          text: "${value[widget.gridDataRowList![0].brandDataName]}",
+                                          textStyle: ts20M(AppTheme.bgColor,fontsize: 14),
+                                        )
                                     ),
                                   ],
                                 ):Text("${value[widget.gridDataRowList![0].dataName]}",
@@ -392,112 +405,4 @@ class _CommonViewGridState extends State<CommonViewGrid> {
 
     );
   }
-}
-
-
-
-
-class AppTheme {
-  AppTheme._();
-
-
-
-  static const Color yellowColor=Color(0xFFFFC010);
-  static const Color bgColor=Color(0xffFF0022);
-  static const Color red=Color(0xFFE34343);
-  static const Color addNewTextFieldBorder=Color(0xFFCDCDCD);
-  static const Color addNewTextFieldFocusBorder=Color(0xFF6B6B6B);
-
-  static  Color addNewTextFieldText=Color(0xFF787878);
-
-  static  Color indicatorColor=Color(0xFF1C1C1C);
-
-  static  Color grey=Color(0xFF787878);
-  static  Color gridTextColor=Color(0xff515151);
-  //static  Color gridTextColor=Color(0xFF787878);
-  static  Color gridbodyBgColor=Color(0xFFF6F7F9);
-  //static  Color gridbodyBgColor=Color.fromRGBO(228, 233, 240,0.3);
-  static  Color disableColor=Color(0xFFe8e8e8);
-
-  static  Color uploadColor=Color(0xFFC7D0D8);
-  static  Color avatarBorderColor=Color(0xFFC7D0D8);
-  static  Color hintColor=Color(0xFFC5C5C5);
-
-  static const Color EFEFEF=Color(0xFFEFEFEF);
-  static const Color f737373=Color(0xFF737373);
-  static const Color unitSelectColor=Color(0xFFF3F4F9);
-
-  static TextStyle discountDeactive=TextStyle(fontFamily: 'RR',fontSize: 20,color: Color(0xFF777A92));
-  static TextStyle discountactive=TextStyle(fontFamily: 'RR',fontSize: 20,color: Colors.white);
-
-  static  TextStyle hintText=TextStyle(fontFamily: 'RR',fontSize: 16,color: addNewTextFieldText.withOpacity(0.5));
-  static TextStyle TSWhite20=TextStyle(fontFamily: 'RR',fontSize: 20,color: Colors.white,letterSpacing: 0.1);
-  static TextStyle TSWhite16=TextStyle(fontFamily: 'RR',fontSize: 18,color: Colors.white,letterSpacing: 0.1);
-  static TextStyle TSWhite166=TextStyle(fontFamily: 'AM',fontSize: 16,color: Colors.white,letterSpacing: 0.1);
-
-  static TextStyle TSWhiteML=TextStyle(fontFamily: 'RR',fontSize: 14,color: Colors.white,letterSpacing: 0.1);
-  //CT colourTextStyle
-  static TextStyle ML_bgCT=TextStyle(fontFamily: 'RR',color: AppTheme.bgColor,fontSize: 14);
-
-
-  static TextStyle userNameTS=TextStyle(fontFamily: 'RM',color: AppTheme.bgColor,fontSize: 16);
-  static TextStyle userGroupTS=TextStyle(fontFamily: 'RL',color: AppTheme.gridTextColor,fontSize: 14);
-  static TextStyle userDesgTS=TextStyle(fontFamily: 'RR',color:AppTheme.grey.withOpacity(0.5),fontSize: 12);
-
-
-
-  static TextStyle bgColorTS=TextStyle(fontFamily: 'RR',color: AppTheme.bgColor,fontSize: 16);
-  static TextStyle bgColorTS14=TextStyle(fontFamily: 'RR',color: AppTheme.bgColor,fontSize: 14);
-  static TextStyle gridTextColorTS=TextStyle(fontFamily: 'RR',color: AppTheme.gridTextColor,fontSize: 16);
-  static TextStyle gridTextColor14=TextStyle(fontFamily: 'AM',color: AppTheme.gridTextColor,fontSize: 14);
-  static TextStyle gridTextGreenColor14=TextStyle(fontFamily: 'RR',color: Colors.green,fontSize: 14);
-  static TextStyle gridTextRedColor14=TextStyle(fontFamily: 'RR',color: AppTheme.red,fontSize: 14);
-
-
-  static const Color popUpSelectedColor=Color(0xFF3B3B3D);
-  static const Color editDisableColor=Color(0xFFF2F2F2);
-
-  static  Border gridBottomborder= Border(bottom: BorderSide(color: AppTheme.addNewTextFieldBorder.withOpacity(0.5)));
-
-
-  //yellow BoxShadow
-  static BoxShadow yellowShadow=  BoxShadow(
-    color: AppTheme.yellowColor.withOpacity(0.4),
-    spreadRadius: 1,
-    blurRadius: 5,
-    offset: Offset(1, 8), // changes position of shadow
-  );
-/*  boxShadow: [
-  qn.supplierMaterialMappingList.length==0?BoxShadow():
-        BoxShadow(
-            color: AppTheme.addNewTextFieldText.withOpacity(0.2),
-        spreadRadius: 2,
-  blurRadius: 15,
-  offset: Offset(0, 0), // changes position of shadow
-  )
-  ]*/
-
-  static EdgeInsets gridAppBarPadding=EdgeInsets.only(bottom: 15);
-  static EdgeInsets leftRightMargin20=EdgeInsets.only(left: SizeConfig.width20!,right: SizeConfig.width20!);
-  static BorderRadius gridTopBorder=BorderRadius.only(topLeft: Radius.circular(15),topRight: Radius.circular(15));
-
-
-  //Appbar TextStyle
-  static TextStyle appBarTS=TextStyle(fontFamily: 'RR',color: AppTheme.bgColor,fontSize: 16);
-
-  //rawScrollBar Properties
-  static const Color srollBarColor=Colors.grey;
-  static const double scrollBarRadius=5.0;
-  static const double scrollBarThickness=4.0;
-
-
-  //DashBoard
-  static const Color dashCalendar=Color(0xFFCDCDCD);
-  static const Color attendanceDashText1=Color(0xFF949494);
-  static const Color spikeColor=Color(0xFFD1E7E7);
-  static const Color yAxisText=Color(0xFFB38C1E);
-
-  static TextStyle saleChartTotal=TextStyle(fontFamily: 'RM',fontSize: 12,color: Color(0xffadadad),letterSpacing: 0.1);
-  static TextStyle saleChartQty=TextStyle(fontFamily: 'RM',fontSize: 12,color: Color(0xFF6a6a6a),letterSpacing: 0.1);
-
 }

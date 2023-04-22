@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/flutter_utils_platform_interface.dart';
 import 'package:flutter_utils/flutter_utils_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';

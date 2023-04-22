@@ -1040,4 +1040,9 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
       },
     );
   }
+
+  @override
+  void triggerChange() {
+    selectedValueFunc(getValueMap());
+  }
 }

@@ -88,9 +88,9 @@ class MethodChannelFlutterUtils  extends FlutterUtilsPlatform with HappyExtensio
   @override
   void sysDeleteHE_ListViewV1(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="",
     String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional,
-    TraditionalParam? traditionalParam,RxBool? loader}){
+    TraditionalParam? traditionalParam,RxBool? loader,bool isCustomDialog=false}){
     sysDeleteHE_ListView(he_listViewBody, primaryKey,successCallback: successCallback,dataJson: dataJson,
-        developmentMode: developmentMode,content: content,traditionalParam: traditionalParam,loader:loader);
+        developmentMode: developmentMode,content: content,traditionalParam: traditionalParam,loader:loader,isCustomDialog: isCustomDialog);
   }
 
 
@@ -129,9 +129,7 @@ class ApiManger extends FlutterUtilsPlatform{
           body: json.encode(body)
       ).timeout(Duration(seconds: timeOut),onTimeout: ()=>onTme(loader));
       loader.value=false;
-      print(response.body);
       if(response.statusCode==200){
-
         return [true,response.body];
       }
       else{

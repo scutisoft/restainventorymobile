@@ -119,6 +119,11 @@ class UnitDropDown extends StatelessWidget implements ExtensionCallback{
   getValueMap(){
     return selectedUnit.value;
   }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
+  }
 }
 
 getUnitIdNameList(String id,String name){

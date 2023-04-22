@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/flutter_utils_platform_interface.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
 import 'package:flutter_utils/utils/utils.dart';

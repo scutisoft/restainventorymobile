@@ -8,6 +8,7 @@ import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
 import 'package:restainventorymobile/pages/purchaseOrder/purchaseGrid.dart';
+import 'package:restainventorymobile/pages/report/reportSelection.dart';
 import 'package:restainventorymobile/pages/transfer/transferGrid.dart';
 import 'package:restainventorymobile/utils/constants.dart';
 import 'package:restainventorymobile/widgets/customAppBar.dart';
@@ -64,14 +65,15 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     scaffoldkey.currentState!.openDrawer();
   }
 
-  List<dynamic> menuList = [
-    // {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
-    {"Title": 'Indent Order', "PageNumber": 2, "accessId": 100},
-    {"Title": 'Purchase Order', "PageNumber": 3, "accessId": 100},
-    {"Title": 'Goods Received', "PageNumber": 4, "accessId": 100},
-    {"Title": 'Transfer Material', "PageNumber": 5, "accessId": 100},
-    {"Title": 'Department Distribution', "PageNumber": 6, "accessId": 100},
-    {"Title": 'Receipe', "PageNumber": 8, "accessId": 100},
+  List<dynamic> menuList=[
+   // {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
+    {"Title":'Indent Order',"PageNumber":2,"accessId": 100},
+    {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
+    {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
+    {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
+    {"Title":'Department Distribution',"PageNumber":6,"accessId": 100},
+    {"Title": 'Recipe', "PageNumber": 8, "accessId": 100},
+    {"Title":'Report',"PageNumber":7,"accessId": 100},
   ];
 
   @override
@@ -101,7 +103,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                   CustomCircle(
                     hei: 50,
                     color: ColorUtil.red,
-                    widget: Icon(
+                    widget: const Icon(
                       Icons.person_2_outlined,
                       color: Colors.white,
                       size: 25,
@@ -181,35 +183,33 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             ],
           ),
         ),
-        body: Obx(() => menuSel.value == 1
-            ? Dashboard(
+
+        body: Obx(() => menuSel.value == 1 ? Dashboard(
                 navCallback: openDrawer,
               )
-            : menuSel.value == 2
-                ? IndentGrid(
+            : menuSel.value == 2  ? IndentGrid(
                     navCallback: openDrawer,
                   )
-                : menuSel.value == 3
-                    ? PurchaseGrid(
+            : menuSel.value == 3 ? PurchaseGrid(
                         navCallback: openDrawer,
                       )
-                    : menuSel.value == 4
-                        ? GoodsGrid(
+            : menuSel.value == 4 ? GoodsGrid(
                             navCallback: openDrawer,
                           )
-                        : menuSel.value == 5
-                            ? TransferGrid(
+            : menuSel.value == 5  ? TransferGrid(
                                 navCallback: openDrawer,
                               )
-                            : menuSel.value == 6
-                                ? DepartmentDistributionGrid(
+            : menuSel.value == 6 ? DepartmentDistributionGrid(
                                     navCallback: openDrawer,
                                   )
-                                : menuSel.value == 8
-                                    ? RecipeMasterGrid(
+            :menuSel.value==7?ReportSelection(
+                              navCallback: openDrawer,
+                              )
+            : menuSel.value == 8 ? RecipeMasterGrid(
                                         navCallback: openDrawer,
                                       )
-                                    : Container()),
+            : Container()),
+
       ),
     );
   }
