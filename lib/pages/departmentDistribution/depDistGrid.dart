@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
@@ -29,6 +29,7 @@ class _DepartmentDistributionGridState extends State<DepartmentDistributionGrid>
   Map widgets={};
   var totalCount=0.obs;
   late HE_ListViewBody he_listViewBody;
+  RxBool loader=RxBool(false);
 
   @override
   void initState() {
@@ -74,7 +75,8 @@ class _DepartmentDistributionGridState extends State<DepartmentDistributionGrid>
             },
           ),
           Flexible(child:he_listViewBody),
-          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
+          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty && !loader.value,)),
+          ShimmerLoader(loader: loader,),
         ],
       ),
     );

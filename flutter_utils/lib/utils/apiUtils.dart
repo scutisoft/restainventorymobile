@@ -6,39 +6,39 @@ import 'utils.dart';
 
 Future<List<ParamModel>> getParamEssential({String extraParam=""}) async{
   List<ParamModel> par= [
-    ParamModel(Key: "LoginUserId", Type: "int", Value: await getLoginUserId()),
+    ParamModel(Key: "LoginUserId", Type: "int", Value: await gL()),
     ParamModel(Key: "IsMobile", Type: "int", Value: 1),
-    ParamModel(Key: "database", Type: "String", Value: await getDatabaseName()),
-    ParamModel(Key: "DeviceId", Type: "String", Value: await getDeviceIdUtil()),
+    ParamModel(Key: "database", Type: "String", Value: await gD()),
+    ParamModel(Key: "DeviceId", Type: "String", Value: await gDI()),
     ParamModel(Key: "TransactionDeviceId", Type: "String", Value: 2),
 
   ];
   if(extraParam.isNotEmpty){
-    String a=await getExtraParamUtil(extraParam);
+    String a=await gE(extraParam);
     par.add(ParamModel(Key: extraParam, Type: "String", Value: a.isNotEmpty?a:null));
   }
   return par;
 }
 
-getLoginUserId() async{
+gL() async{
   String userId=await getSharedPrefStringUtil("userid");
   return userId.isEmpty?"0":userId;
 }
 
-getDatabaseName() async{
+gD() async{
   return await getSharedPrefStringUtil("DatabaseName");
 }
 
-getDeviceIdUtil() async{
+gDI() async{
   return await getSharedPrefStringUtil("DeviceId");
 }
 
 
-getExtraParamUtil(String param) async{
+gE(String param) async{
   return await getSharedPrefStringUtil(param);
 }
 
-getBaseUrlUtil() async{
+gBU() async{
   return await getSharedPrefStringUtil("BaseUrl");
 }
 

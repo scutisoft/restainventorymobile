@@ -416,16 +416,19 @@ class CloseBtnV1 extends StatelessWidget {
 
 class LeftHeader extends StatelessWidget {
   String title;
-  LeftHeader({Key? key,required this.title}) : super(key: key);
+  double? width;
+  LeftHeader({Key? key,required this.title,this.width}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: 30,
+      width: width,
       alignment: Alignment.centerLeft,
       padding: MyConstants.LRPadding,
       margin: const EdgeInsets.only(top: 15),
-      child: Text(title,style: ts20M(ColorUtil.themeBlack,fontsize: 18),),
+      child: FittedBox(child: Text(title,style: ts20M(ColorUtil.themeBlack,fontsize: 18),)),
+      //child: FlexFittedText(text: title,textStyle: ts20M(ColorUtil.themeBlack,fontsize: 18),),
     );
   }
 }

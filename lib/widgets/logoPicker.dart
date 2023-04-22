@@ -289,6 +289,11 @@ class SingleImagePicker extends StatelessWidget implements ExtensionCallback{
     isValid.value=(imageName.value != null && imageName.value!.isNotEmpty) || imageFile.value != null;
     return isValid.value;
   }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
+  }
 }
 
 
@@ -471,5 +476,10 @@ class MultiImagePicker extends StatelessWidget implements ExtensionCallback{
   bool validate() {
     isValid.value=imageFileList.isNotEmpty || imagesList.isNotEmpty;
     return isValid.value;
+  }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
   }
 }

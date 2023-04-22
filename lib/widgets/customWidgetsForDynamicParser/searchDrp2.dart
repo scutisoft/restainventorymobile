@@ -115,6 +115,11 @@ class SearchDrp2 extends StatelessWidget  implements ExtensionCallback{
   setOrderBy(int oBy) {
     orderBy.value=oBy;
   }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
+  }
 }
 
 class SearchDrpMulti2 extends StatelessWidget  implements ExtensionCallback{
@@ -225,5 +230,10 @@ class SearchDrpMulti2 extends StatelessWidget  implements ExtensionCallback{
   @override
   setOrderBy(int oBy) {
     orderBy.value=oBy;
+  }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
   }
 }

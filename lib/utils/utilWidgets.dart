@@ -10,6 +10,7 @@ import '../helper/language.dart';
 import '../utils/colorUtil.dart';
 import '../utils/constants.dart';
 import '../utils/sizeLocal.dart';
+import '../widgets/alertDialog.dart';
 import '../widgets/validationErrorText.dart';
 import 'utils.dart';
 
@@ -68,6 +69,11 @@ class HiddenController extends StatelessWidget implements ExtensionCallback{
   @override
   bool validate() {
     return true;
+  }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
   }
 }
 
@@ -439,6 +445,11 @@ class HE_Text extends StatelessWidget implements ExtensionCallback{
   setOrderBy(int oBy) {
     orderBy.value=oBy;
   }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
+  }
 }
 
 class HE_WrapText extends StatelessWidget implements ExtensionCallback{
@@ -542,6 +553,11 @@ class HE_WrapText extends StatelessWidget implements ExtensionCallback{
   setOrderBy(int oBy) {
     orderBy.value=oBy;
   }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
+  }
 }
 class HE_WrapText2 extends StatelessWidget implements ExtensionCallback{
   bool hasInput;
@@ -551,9 +567,9 @@ class HE_WrapText2 extends StatelessWidget implements ExtensionCallback{
   TextStyle contentTextStyle;
   String content2;
   TextStyle contentTextStyle2;
-
+  CrossAxisAlignment? crossAxisAlignment;
   HE_WrapText2({this.hasInput=false,this.required=false,required this.dataname,this.content="Hello",required this.contentTextStyle,
-    this.content2="Hello",required this.contentTextStyle2}){
+    this.content2="Hello",required this.contentTextStyle2,this.crossAxisAlignment}){
     text.value=content;
     text2.value=content2;
     textStyle.value=contentTextStyle;
@@ -570,7 +586,7 @@ class HE_WrapText2 extends StatelessWidget implements ExtensionCallback{
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-   //   crossAxisAlignment: WrapCrossAlignment.center,
+      crossAxisAlignment: crossAxisAlignment??CrossAxisAlignment.center,
  //     spacing: 5.0,
       children: [
         Obx(
@@ -649,6 +665,11 @@ class HE_WrapText2 extends StatelessWidget implements ExtensionCallback{
   @override
   setOrderBy(int oBy) {
     orderBy.value=oBy;
+  }
+
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
   }
 }
 
@@ -808,6 +829,11 @@ class HE_LocationPicker extends StatelessWidget implements ExtensionCallback{
     orderBy.value=oBy;
   }
 
+  @override
+  void triggerChange() {
+    // TODO: implement triggerChange
+  }
+
 }
 
 
@@ -914,4 +940,17 @@ TextDecoration parseTextDecoration(String? textDecorationString) {
       textDecoration = TextDecoration.none;
   }
   return textDecoration;
+}
+
+void gridDelete(VoidCallback voidCallback){
+  CustomAlert(
+      callback: (){
+        voidCallback();
+      },
+      cancelCallback: (){}
+  ).yesOrNoDialog2("assets/icons/delete.svg", "Are you sure want to Delete ?", true);
+}
+void deleteCallback(e){
+  String errorMsg=e["TblOutPut"][0]["@Message"];
+  addNotifications(NotificationType.success,msg: errorMsg);
 }

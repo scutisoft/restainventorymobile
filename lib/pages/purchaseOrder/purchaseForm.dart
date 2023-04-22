@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
 import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
@@ -152,7 +153,7 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
                         inBtwHei(height: 20),
                         Row(
                           children: [
-                            LeftHeader(title: "+ Add Purchase Material"),
+                            LeftHeader(title: "+ Add Purchase Material",width: SizeConfig.screenWidth!-140,),
                             const Spacer(),
                             GestureDetector(
                               onTap: (){
@@ -453,6 +454,9 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
 
             SlidePopUp(
               isOpen: isIndentOpen,
+              onBack: (){
+                selectedIndex.value=-1;
+              },
               appBar: Obx(() => FlexFittedText(
                 flex: 3,
                 text: "Indent (${indentMappingList.length} Numbers)",
@@ -997,12 +1001,13 @@ class _PurchaseFormState extends State<PurchaseForm> with HappyExtension impleme
      /* bool proceed=false;
       for(var vd in tempIndentSelList){
         for(var pd in  vd['MaterialList'].where((y)=>y['IsSelect']==true).toList()){
-          proceed=checkNullEmpty(pd['VendorId']) || vendorNames[pd['VendorId'].toString()]!=null;
+          proceed=!checkNullEmpty(pd['VendorId']) && vendorNames[pd['VendorId'].toString()]!=null;
           console("proceed ${pd['VendorId']} ${checkNullEmpty(pd['VendorId'])} ${vendorNames[pd['VendorId'].toString()]} $proceed");
         }
-      }*/
+      }
+      return;*/
       bool hasNotVendor=tempIndentSelList.any((element) => element['MaterialList'].any((p)=>p['IsSelect']==true &&
-          !(checkNullEmpty(p['VendorId']) || vendorNames[p['VendorId'].toString()]!=null))==true);
+          !(!checkNullEmpty(p['VendorId']) && vendorNames[p['VendorId'].toString()]!=null))==true);
       if(hasNotVendor){
         CustomAlert().cupertinoAlert("Select Vendor to Add...");
       }

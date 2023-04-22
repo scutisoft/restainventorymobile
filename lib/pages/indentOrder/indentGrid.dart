@@ -1,11 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restainventorymobile/pages/commonView.dart';
+import 'package:restainventorymobile/utils/utilWidgets.dart';
+import 'package:restainventorymobile/widgets/alertDialog.dart';
 import '/widgets/inventoryWidgets.dart';
 import '/utils/constants.dart';
 import '/utils/utils.dart';
@@ -30,6 +32,7 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
   Map widgets={};
   var totalCount=0.obs;
   late HE_ListViewBody he_listViewBody;
+  RxBool loader=RxBool(false);
 
   @override
   void initState() {
@@ -39,8 +42,10 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
         return HE_IndentContent(
           data: e,
           onDelete: (dataJson){
-            sysDeleteHE_ListView(he_listViewBody, "IndentOrderId",dataJson: dataJson,loader: showLoader,
-                traditionalParam: TraditionalParam(executableSp: "IV_Indent_DeleteIndentOrderDetail"));
+            gridDelete(() {
+              sysDeleteHE_ListView(he_listViewBody, "IndentOrderId",dataJson: dataJson,loader: showLoader,
+                  traditionalParam: TraditionalParam(executableSp: "IV_Indent_DeleteIndentOrderDetail"),isCustomDialog: true,successCallback: deleteCallback);
+            });
           },
           onEdit: (updatedMap){
             he_listViewBody.updateArrById("IndentOrderId", updatedMap);
@@ -80,8 +85,10 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
               assignWidgets();
             },
           ),
+
           Flexible(child:he_listViewBody),
-          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
+          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty && !loader.value,)),
+          ShimmerLoader(loader: loader,),
         ],
       ),
     );
@@ -100,7 +107,7 @@ class _IndentGridState extends State<IndentGrid> with HappyExtension implements 
         totalCount.value=res['Table'].length;
         he_listViewBody.assignWidget(res['Table']);
       }catch(e){}
-    },loader: showLoader,dataJson: jsonEncode(dj),extraParam: MyConstants.extraParam);
+    },loader: loader,dataJson: jsonEncode(dj),extraParam: MyConstants.extraParam);
   }
 
   @override

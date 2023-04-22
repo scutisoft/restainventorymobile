@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
 import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
@@ -185,7 +186,7 @@ class _TransferFormState extends State<TransferForm> with HappyExtension,TickerP
                         inBtwHei(height: 20),
                         Row(
                           children: [
-                            LeftHeader(title: "+ Add Transfer Material"),
+                            LeftHeader(title: "+ Add Transfer Material",width: SizeConfig.screenWidth!-140,),
                             const Spacer(),
                             GestureDetector(
                               onTap: (){

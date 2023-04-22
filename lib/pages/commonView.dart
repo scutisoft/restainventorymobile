@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_utils/flutter_utils.dart';
+import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import '../widgets/fittedText.dart';
+import '../widgets/loader.dart';
 import '/utils/utilWidgets.dart';
 import '/api/apiUtils.dart';
 import '/utils/colorUtil.dart';
@@ -31,7 +32,7 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
   var billFooter={}.obs;
   var notes="".obs;
   var amtInWords="".obs;
-
+  RxBool loader=RxBool(false);
   List<CommonViewGridStyleModel> columnList=[];
   RxList<dynamic> gridData=RxList();
 
@@ -87,14 +88,16 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
                               alignment: Alignment.center,
                               child: Image.asset("assets/icons/invoice-logo.png",width: 90,),
                             ),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(title,style: ts20M(Color(0xFFA1A1C2),fontsize: 44,fontfamily: 'AH'),),
-                                for (MapEntry<dynamic, dynamic> item in header.entries)
-                                  item.value
-                              ],
+                            Expanded(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(title,style: ts20M(Color(0xFFA1A1C2),fontsize: 30,fontfamily: 'AH'),),
+                                  for (MapEntry<dynamic, dynamic> item in header.entries)
+                                    item.value
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -203,15 +206,17 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
                 )
               ],
             ),
-          )
+          ),
+          Positioned(top: 80,child: ShimmerLoader(loader: loader)),
         ],
       ),
     );
   }
 
-  TextStyle textStyle1=ts20M(ColorUtil.text1);
+  TextStyle textStyle1=ts20M(ColorUtil.text1,fontsize: 16);
   TextStyle textStyleBold1=ts20M(ColorUtil.themeBlack,fontsize: 34,fontfamily: 'AH');
   Color dividerColor=Colors.grey;
+  CrossAxisAlignment wrapTextCA=CrossAxisAlignment.start;
 
   void getData() async{
     header.clear();
@@ -285,12 +290,12 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
     }
     else if(widget.page=="Goods"){
       title="Goods";
-      header['PurchaseOrderNumber']=HE_WrapText2(dataname: "PurchaseOrderNumber",content: "Purchase Order: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['GoodsReceivedNumber']=HE_WrapText2(dataname: "GoodsReceivedNumber",content: "Goods Order: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['PurchaseOn']=HE_WrapText2(dataname: "PurchaseOn",content: "Purchase On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['ExpectedOn']=HE_WrapText2(dataname: "ExpectedOn",content: "Expected On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['DeliveryOn']=HE_WrapText2(dataname: "DeliveryOn",content: "Delivery On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['Status']=HE_WrapText2(dataname: "Status",content: "Status: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
+      header['PurchaseOrderNumber']=HE_WrapText2(dataname: "PurchaseOrderNumber",content: "Purchase Order: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['GoodsReceivedNumber']=HE_WrapText2(dataname: "GoodsReceivedNumber",content: "Goods Order: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['PurchaseOn']=HE_WrapText2(dataname: "PurchaseOn",content: "Purchase On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['ExpectedOn']=HE_WrapText2(dataname: "ExpectedOn",content: "Expected On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['DeliveryOn']=HE_WrapText2(dataname: "DeliveryOn",content: "Delivery On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['Status']=HE_WrapText2(dataname: "Status",content: "Status: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
 
       fromStore["StoreName"]=HE_Text(dataname: "StoreName", contentTextStyle: textStyleBold1);
       fromStore["StoreAddress"]=HE_Text(dataname: "StoreAddress", contentTextStyle: textStyle1);
@@ -325,10 +330,10 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
     }
     else if(widget.page=="Transfer") {
       title = "Transfer";
-      header['TransferOrderNumber']=HE_WrapText2(dataname: "TransferOrderNumber",content: "Transfer Order: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['TransferDate']=HE_WrapText2(dataname: "TransferDate",content: "Transfer On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['TransferPerson']=HE_WrapText2(dataname: "TransferPerson",content: "Transfer Person: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
-      header['NoOfItems']=HE_WrapText2(dataname: "NoOfItems",content: "No.of Items: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,);
+      header['TransferOrderNumber']=HE_WrapText2(dataname: "TransferOrderNumber",content: "Transfer Order: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['TransferDate']=HE_WrapText2(dataname: "TransferDate",content: "Transfer On: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['TransferPerson']=HE_WrapText2(dataname: "TransferPerson",content: "Transfer By: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
+      header['NoOfItems']=HE_WrapText2(dataname: "NoOfItems",content: "No.of Items: ", contentTextStyle: textStyle1, contentTextStyle2:textStyle1,crossAxisAlignment: wrapTextCA,);
 
       fromStore["FromStoreName"]=HE_Text(dataname: "FromStoreName", contentTextStyle: textStyleBold1);
       fromStore["FromStoreAddress"]=HE_Text(dataname: "FromStoreAddress", contentTextStyle: textStyle1);
@@ -380,7 +385,7 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
 
     setState(() {});
     parseJson([], "",traditionalParam: TraditionalParam(getByIdSp: widget.spName),needToSetValue: false,resCb: (res){
-      console(res);
+      //console(res);
       try{
         setFrmValues(header, res['Table']);
         setFrmValues(fromStore, res['Table']);
@@ -407,6 +412,6 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
       }catch(e,t){
         assignWidgetErrorToastLocal(e, t);
       }
-    },loader: showLoader,dataJson: widget.dataJson,extraParam: MyConstants.extraParam);
+    },loader: loader,dataJson: widget.dataJson,extraParam: MyConstants.extraParam);
   }
 }
