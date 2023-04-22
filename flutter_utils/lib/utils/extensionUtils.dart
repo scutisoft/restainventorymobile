@@ -154,11 +154,11 @@ String getDataJsonForGrid(x){
   return "[]";
 }
 
-WidgetType getWidgetType(var widgets){
-  if(HE_IsList(widgets)){
-    return WidgetType.list;
+WT getWT(var w){
+  if(HE_IsList(w)){
+    return WT.list;
   }
-  return WidgetType.map;
+  return WT.map;
 }
 
 void assignWidgetErrorToast(e,t){

@@ -1,15 +1,14 @@
 import 'package:get/get.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
+import 'apiManager.dart';
 import 'flutter_utils_method_channel.dart';
 import 'model/parameterModel.dart';
 import 'utils/extensionHelper.dart';
 
 abstract class FlutterUtilsPlatform extends PlatformInterface {
 
-  FlutterUtilsPlatform() : super(token: _token){
-    print("FlutterUtilsPlatform hiiiiii");
-  }
+  FlutterUtilsPlatform() : super(token: _token);
 
   static final Object _token = Object();
 
