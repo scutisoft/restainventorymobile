@@ -4,9 +4,6 @@ import 'flutter_utils_platform_interface.dart';
 import 'model/parameterModel.dart';
 
 class FlutterUtils {
-  FlutterUtils(){
-    print("FlutterUtils");
-  }
   Future<String?> getPlatformVersion() {
     return FlutterUtilsPlatform.instance.getPlatformVersion();
   }

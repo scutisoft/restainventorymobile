@@ -9,6 +9,7 @@ import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../../widgets/customCheckBox.dart';
 import '/widgets/expandedSection.dart';
 import '/widgets/fittedText.dart';
 import '/widgets/loader.dart';
@@ -94,6 +95,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
   var needApprovedQty=false.obs;
   var approvedQtyUnit="Unit".obs;
   int selectedIndex=-1;
+  var sameAsActualQty=false.obs;
 
   var recipeNumPadOpen=false.obs;
   var recipeNumPadVal="".obs;
@@ -419,6 +421,19 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                     ],
                   ),
                   const SwipeNotes(),
+                  Obx(() => Visibility(
+                    visible: needApprovedQty.value,
+                    child: Obx(() => CustomCheckBox(
+                      isSelect: sameAsActualQty.value,
+                      content:"Same As Requested Quantity",
+                      margin: const EdgeInsets.fromLTRB(0, 10, 0,10),
+                      ontap: (){
+                        sameAsActualQty.value=!sameAsActualQty.value;
+                        onChkBoxChg();
+                      },
+                      selectColor: ColorUtil.red2,
+                    )),
+                  )),
                   Expanded(
                     child: ListView.builder(
                       shrinkWrap: true,
@@ -1012,6 +1027,14 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
     materialMappingList.refresh();
   }
 
+  void onChkBoxChg(){
+    if(sameAsActualQty.value){
+      for (var pd in materialMappingList) {
+        pd['ApprovedQuantity']=parseDouble(pd['RequestedQuantity']);
+      }
+      materialMappingList.refresh();
+    }
+  }
   void onRecipeChange(e){
     unitDropDown.clearValues();
     if(!checkNullEmpty(e['UnitId'])){
