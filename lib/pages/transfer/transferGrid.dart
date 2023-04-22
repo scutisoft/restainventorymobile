@@ -30,6 +30,7 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
   Map widgets={};
   var totalCount=0.obs;
   late HE_ListViewBody he_listViewBody;
+  RxBool loader=RxBool(false);
 
   @override
   void initState() {
@@ -75,7 +76,8 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
             },
           ),
           Flexible(child:he_listViewBody),
-          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
+          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty && !loader.value,)),
+          ShimmerLoader(loader: loader,),
         ],
       ),
     );
@@ -92,7 +94,7 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
         totalCount.value=res['Table'].length;
         he_listViewBody.assignWidget(res['Table']);
       }catch(e){}
-    },loader: showLoader,dataJson:  jsonEncode(dj),extraParam: MyConstants.extraParam);
+    },loader: loader,dataJson:  jsonEncode(dj),extraParam: MyConstants.extraParam);
   }
 
   @override

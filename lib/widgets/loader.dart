@@ -201,26 +201,28 @@ class ContentPlaceholder extends StatelessWidget {
 
 
 class ShimmerLoader extends StatelessWidget {
-
-  ShimmerLoader({Key? key}) : super(key: key);
+  RxBool loader;
+  ShimmerLoader({Key? key,required this.loader}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Obx(
       ()=> Visibility(
-        visible: showLoader.value,
+        visible: loader.value,
         child: Container(
           padding: const EdgeInsets.all(16.0),
-          height: SizeConfig.screenHeight,
+          //height: SizeConfig.screenHeight,
           width: SizeConfig.screenWidth,
-          color: Colors.white,
+
+          clipBehavior: Clip.antiAlias,
+          decoration: BoxDecoration(
+            color: Colors.white,
+          ),
           child: Shimmer.fromColors(
               baseColor: Colors.grey.shade300,
               highlightColor: Colors.grey.shade100,
               enabled: true,
               child: Column(
-                /*shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),*/
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [

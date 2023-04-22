@@ -8,7 +8,6 @@ import 'apiUtils.dart';
 import 'extensionHelper.dart';
 
 Future<List> getMasterDrp(String page,String typeName, dynamic refId,dynamic refTypeName,  dynamic hiraricalId,String spName,{String extraParam=""}) async {
-
   List<ParamModel> parameters= await getParamEssential(extraParam: extraParam);
   parameters.add(ParamModel(Key: "SpName", Type: "String", Value: spName));
   parameters.add(ParamModel(Key: "TypeName", Type: "String", Value: typeName));
@@ -16,15 +15,11 @@ Future<List> getMasterDrp(String page,String typeName, dynamic refId,dynamic ref
   parameters.add(ParamModel(Key: "RefId", Type: "String", Value: refId));
   parameters.add(ParamModel(Key: "RefTypeName", Type: "String", Value: refTypeName??typeName));
   parameters.add(ParamModel(Key: "HiraricalId", Type: "String", Value: hiraricalId));
-
-  //print(jsonEncode(parameters));
   var result=[];
   try{
     await FlutterUtilsPlatform.apiInstance.getInvokeLazy(parameters).then((value) {
-      // print(value);
       if(value[0]){
         var parsed=jsonDecode(value[1]);
-        //print(parsed);
         var table=parsed['Table'] as List;
         if(table.isNotEmpty){
           result=table;
@@ -35,7 +30,6 @@ Future<List> getMasterDrp(String page,String typeName, dynamic refId,dynamic ref
   }
   catch(e){
     return result;
-    //CustomAlert().commonErrorAlert(Get.context!, "Error G01", "Contact Administration");
   }
 }
 Future<Map> getMasterDrpMap(String page,String typeName, dynamic refId,  dynamic hiraricalId) async {
@@ -48,28 +42,18 @@ Future<Map> getMasterDrpMap(String page,String typeName, dynamic refId,  dynamic
   parameters.add(ParamModel(Key: "RefTypeName", Type: "String", Value: typeName));
   parameters.add(ParamModel(Key: "HiraricalId", Type: "String", Value: hiraricalId));
 
-  var body={
-    "Fields": parameters.map((e) => e.toJson()).toList()
-  };
- // print(body);
   var result={};
   try{
     await FlutterUtils().getInvoke(parameters,).then((value) {
-      // print(value);
       if(value[0]){
         var parsed=jsonDecode(value[0]);
         result=parsed;
-        // var table=parsed['Table'] as List;
-        // if(table.isNotEmpty){
-        //   result=table;
-        // }
       }
     });
     return result;
   }
   catch(e){
     return result;
-    //CustomAlert().commonErrorAlert(Get.context!, "Error G01", "Contact Administration");
   }
 }
 

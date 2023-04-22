@@ -381,7 +381,7 @@ class _CommonViewGridState extends State<CommonViewGrid> {
                 children: [
                   SizedBox(height: 70,),
                   Text("No Data Found",style: TextStyle(fontSize: 18,fontFamily:'RMI',color: AppTheme.addNewTextFieldText),),
-                  SvgPicture.asset("assets/nodata.svg",height: 350,),
+                  //SvgPicture.asset("assets/nodata.svg",height: 350,),
 
                 ],
               ),

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsForm.dart';
 import '../../widgets/inventoryWidgets.dart';
+import '../../widgets/loader.dart';
 import '../commonView.dart';
 import '/pages/purchaseOrder/purchaseForm.dart';
 import '/widgets/expandedSection.dart';
@@ -30,7 +31,7 @@ class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements Ha
 
   Map widgets={};
   var totalCount=0.obs;
-
+  RxBool loader=RxBool(false);
   RxList<dynamic> purchaseOrders=RxList<dynamic>();
   RxList<dynamic> filterPurchaseOrders=RxList<dynamic>();
   RxList<dynamic> innerPurchaseOrders=RxList<dynamic>();
@@ -212,7 +213,9 @@ class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements Ha
                 );
               },
             )),
-          )
+          ),
+          Obx(() => NoData(show: filterPurchaseOrders.isEmpty && !loader.value,)),
+          ShimmerLoader(loader: loader,),
         ],
       ),
     );
@@ -232,7 +235,7 @@ class _GoodsGridState extends State<GoodsGrid> with HappyExtension implements Ha
         totalCount.value=filterPurchaseOrders.length;
 
       }catch(e){}
-    },loader: showLoader,dataJson: jsonEncode(dj),extraParam: MyConstants.extraParam);
+    },loader: loader,dataJson: jsonEncode(dj),extraParam: MyConstants.extraParam);
   }
 
   @override

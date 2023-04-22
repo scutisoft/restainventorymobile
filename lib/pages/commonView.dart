@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import '../widgets/fittedText.dart';
+import '../widgets/loader.dart';
 import '/utils/utilWidgets.dart';
 import '/api/apiUtils.dart';
 import '/utils/colorUtil.dart';
@@ -31,7 +32,7 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
   var billFooter={}.obs;
   var notes="".obs;
   var amtInWords="".obs;
-
+  RxBool loader=RxBool(false);
   List<CommonViewGridStyleModel> columnList=[];
   RxList<dynamic> gridData=RxList();
 
@@ -205,7 +206,8 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
                 )
               ],
             ),
-          )
+          ),
+          Positioned(top: 80,child: ShimmerLoader(loader: loader)),
         ],
       ),
     );
@@ -383,7 +385,7 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
 
     setState(() {});
     parseJson([], "",traditionalParam: TraditionalParam(getByIdSp: widget.spName),needToSetValue: false,resCb: (res){
-      console(res);
+      //console(res);
       try{
         setFrmValues(header, res['Table']);
         setFrmValues(fromStore, res['Table']);
@@ -410,6 +412,6 @@ class _CommomViewState extends State<CommomView> with HappyExtension{
       }catch(e,t){
         assignWidgetErrorToastLocal(e, t);
       }
-    },loader: showLoader,dataJson: widget.dataJson,extraParam: MyConstants.extraParam);
+    },loader: loader,dataJson: widget.dataJson,extraParam: MyConstants.extraParam);
   }
 }
