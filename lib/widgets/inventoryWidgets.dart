@@ -126,13 +126,15 @@ class UnitDropDown extends StatelessWidget implements ExtensionCallback{
   }
 }
 
-getUnitIdNameList(String id,String name){
+getUnitIdNameList(String id,String name, {String value = ""}){
   List finalArr=[];
   List idList=id.split(",");
   List nameList=name.split(",");
+  List valueList=value.isEmpty?[]:value.split(",");
+
   if(idList.length==nameList.length){
     for (int i = 0; i < idList.length; i++) {
-      finalArr.add({ "Id": idList[i], "Text": nameList[i] });
+      finalArr.add({ "Id": idList[i], "Text": nameList[i],"Value":valueList.isEmpty?"":valueList[i] });
     }
   }
   else{

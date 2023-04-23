@@ -72,7 +72,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
     {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
     {"Title":'Department Distribution',"PageNumber":6,"accessId": 100},
-    //{"Title": 'Recipe', "PageNumber": 8, "accessId": 100},
+    {"Title": 'Recipe', "PageNumber": 8, "accessId": 100},
     {"Title":'Report',"PageNumber":7,"accessId": 100},
   ];
 

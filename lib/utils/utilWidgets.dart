@@ -288,8 +288,11 @@ class AddNewLabelTextField extends StatelessWidget {
     return textEditingController.text;
   }
 
-  setValue(var value){
+  setValue(var value,{bool needSelection=false}){
     textEditingController.text=value.toString();
+    if(needSelection){
+      textEditingController.selection = TextSelection.fromPosition(TextPosition(offset: textEditingController.text.length));
+    }
   }
 
   String getDataName(){

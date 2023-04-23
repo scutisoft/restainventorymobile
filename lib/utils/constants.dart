@@ -28,6 +28,7 @@ class MyConstants{
 
   static String dbDateFormat="yyyy-MM-dd";
   static String decimalReg=r'^\d+\.?\d{0,3}';
+  static String timeReg=r'^\d{0,2}\:?\d{0,2}';
   static int phoneNoLength=10;
   static int zipcodeLength=6;
   static String digitRegEx='[0-9]';
