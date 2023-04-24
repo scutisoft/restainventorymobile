@@ -141,7 +141,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   login() async{
-    var result = await Permission.storage.request();
+    try{
+      var result = await Permission.storage.request();
+    }catch(E){}
     if(true) {
       await setSharedPrefStringUtil(getDeviceId(), SP_DEVICEID);
       await setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
+import 'package:restainventorymobile/pages/production/productionGrid.dart';
 import 'package:restainventorymobile/pages/purchaseOrder/purchaseGrid.dart';
 import 'package:restainventorymobile/pages/report/reportSelection.dart';
 import 'package:restainventorymobile/pages/transfer/transferGrid.dart';
@@ -73,6 +74,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
     {"Title":'Department Distribution',"PageNumber":6,"accessId": 100},
     {"Title": 'Recipe', "PageNumber": 8, "accessId": 100},
+    {"Title": 'Production', "PageNumber": 9, "accessId": 100},
     {"Title":'Report',"PageNumber":7,"accessId": 100},
   ];
 
@@ -206,6 +208,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                               navCallback: openDrawer,
                               )
             : menuSel.value == 8 ? RecipeMasterGrid(
+                                        navCallback: openDrawer,
+                                      )
+            : menuSel.value == 9 ? ProductionGrid(
                                         navCallback: openDrawer,
                                       )
             : Container()),

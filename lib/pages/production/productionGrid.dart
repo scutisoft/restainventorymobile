@@ -5,26 +5,24 @@ import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
 import '../commonView.dart';
-import '/pages/transfer/transferForm.dart';
-import '/widgets/inventoryWidgets.dart';
 import '/utils/constants.dart';
 import '/utils/utils.dart';
-import '/api/apiUtils.dart';
 import '/utils/colorUtil.dart';
 import '/widgets/listView/HE_ListView.dart';
 import '/widgets/loader.dart';
 import '/utils/sizeLocal.dart';
 import '/widgets/customAppBar.dart';
+import 'productionForm.dart';
 
-class TransferGrid extends StatefulWidget {
+class ProductionGrid extends StatefulWidget {
   VoidCallback navCallback;
-  TransferGrid({Key? key,required this.navCallback}) : super(key: key);
+  ProductionGrid({Key? key,required this.navCallback}) : super(key: key);
 
   @override
-  State<TransferGrid> createState() => _TransferGridState();
+  State<ProductionGrid> createState() => _ProductionGridState();
 }
 
-class _TransferGridState extends State<TransferGrid> with HappyExtension implements HappyExtensionHelperCallback{
+class _ProductionGridState extends State<ProductionGrid> with HappyExtension implements HappyExtensionHelperCallback{
 
 
   Map widgets={};
@@ -37,13 +35,13 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
     he_listViewBody=HE_ListViewBody(
       data: [],
       getWidget: (e){
-        return HE_TransferContent(
+        return HE_ProductionContent(
           data: e,
           onDelete: (dataJson){
             //sysDeleteHE_ListView(he_listViewBody, "LandId",dataJson: dataJson);
           },
           onEdit: (updatedMap){
-            he_listViewBody.updateArrById("TransferOrderId", updatedMap);
+            he_listViewBody.updateArrById("ProductionId", updatedMap);
           },
           globalKey: GlobalKey(),
         );
@@ -61,15 +59,15 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
       child: Column(
         children: [
           CustomAppBar(
-            title: "Transfer Material",
+            title: "Production",
             onTap: widget.navCallback,
           ),
           CustomAppBar2(
-            title:  "Total Transfer",
-            subTitle: "Transfer Available",
+            title:  "Total Production",
+            subTitle: "Production Available",
             count: totalCount,
             addCb: (){
-              fadeRoute(TransferForm(closeCb: (e){
+              fadeRoute(ProductionForm(closeCb: (e){
                 he_listViewBody.addData(e['Table'][0]);
                 totalCount.value=he_listViewBody.data.length;
               },));
@@ -83,12 +81,10 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
     );
   }
 
-
-
   @override
   void assignWidgets() {
-    var dj={"TransferOrderId":null };
-    parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Transfer_GetTransferOrderDetail"),needToSetValue: false,resCb: (res){
+    var dj={"ProductionId":null };
+    parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_Production_GetProductionDetail"),needToSetValue: false,resCb: (res){
       console(res);
       try{
         totalCount.value=res['Table'].length;
@@ -96,6 +92,8 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
       }catch(e){}
     },loader: loader,dataJson:  jsonEncode(dj),extraParam: MyConstants.extraParam);
   }
+
+
 
   @override
   void dispose(){
@@ -106,12 +104,12 @@ class _TransferGridState extends State<TransferGrid> with HappyExtension impleme
 }
 
 
-class HE_TransferContent extends StatelessWidget implements HE_ListViewContentExtension{
+class HE_ProductionContent extends StatelessWidget implements HE_ListViewContentExtension{
   Map data;
   Function(Map)? onEdit;
   Function(String)? onDelete;
   GlobalKey globalKey;
-  HE_TransferContent({Key? key,required this.data,this.onEdit,this.onDelete,required this.globalKey}) : super(key: key){
+  HE_ProductionContent({Key? key,required this.data,this.onEdit,this.onDelete,required this.globalKey}) : super(key: key){
     dataListener.value=data;
   }
 
@@ -142,57 +140,46 @@ class HE_TransferContent extends StatelessWidget implements HE_ListViewContentEx
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("${dataListener['TransferOrderNumber']}",style: ts20M(ColorUtil.red),),
+                    Text("${dataListener['Date']}",style: ts20M(ColorUtil.red,fontfamily: 'AH',fontsize: 18),),
                     inBtwHei(),
-                    Text("${dataListener['Source']}",style: ts20M(ColorUtil.themeBlack),),
+                    gridCardText("Production Quantity: ", dataListener['TotalProductionQty']),
                     inBtwHei(),
-                    Text("${dataListener['Destination']}",style: ts20M(ColorUtil.themeBlack),),
+                    gridCardText("Production Price: ", dataListener['TotalCost']),
                     inBtwHei(),
-                    StatusTxt(status: dataListener['Status']??""),
-
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text("${dataListener['Date']}",style: ts20M(ColorUtil.red,fontfamily: 'AH',fontsize: 18),),
-                  //inBtwHei(height: 3),
-                  //Text("${dataListener['DeliveryType']}",style: ts20M(ColorUtil.red,fontfamily: 'AH',fontsize: 18),),
-                  inBtwHei(),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      EyeIcon(
-                        onTap: (){
-                          fadeRoute(CommomView(
-                            pageTitle: "Transfer Order",
-                            spName: "IV_Transfer_GetTransferOrderViewDetail",
-                            page: "Transfer",
-                            dataJson: getDataJsonForGrid({
-                              "TransferOrderId":dataListener['TransferOrderId'],
-                            }),
-                          ));
-                        },
-                      ),
-                      GridEditIcon(
-                        hasAccess: dataListener['IsEdit']??false,
-                        onTap: (){
-                          /*fadeRoute(IndentForm(
-                            isEdit: true,
-                            dataJson: getDataJsonForGrid({"IndentOrderId":dataListener['IndentOrderId']}),
-                            closeCb: (e){
-                              updateDataListener(e['Table'][0]);
-                              onEdit!(e['Table'][0]);
-                            },
-                          ));*/
-                        },
-                      ),
-                      GridDeleteIcon(hasAccess: dataListener['IsDelete']??false,),
-                    ],
-                  )
-                ],
-              )
+             /* EyeIcon(
+                onTap: (){
+                  fadeRoute(CommomView(
+                    pageTitle: "Department Distribution",
+                    spName: "IV_DepartmentDistribution_ViewDepartmentDistributionDetail",
+                    page: "DepartmentDistribution",
+                    dataJson: getDataJsonForGrid({
+                      "DepartmentDistributionId":dataListener['DepartmentDistributionId'],
+                    }),
+                  ));
+                },
+              ),*/
+              GridEditIcon(
+                hasAccess: dataListener['IsEdit']??false,
+                onTap: (){
+                  fadeRoute(ProductionForm(
+                    isEdit: true,
+                    dataJson: getDataJsonForGrid({"ProductionId":dataListener['ProductionId']}),
+                    closeCb: (e){
+                      updateDataListener(e['Table'][0]);
+                      onEdit!(e['Table'][0]);
+                    },
+                  ));
+                },
+              ),
+              /* GridDeleteIcon(
+                hasAccess: true,
+                onTap: (){
+                  onDelete!(getDataJsonForGrid({"DepartmentDistributionId":dataListener['DepartmentDistributionId']}));
+                },
+              ),*/
 
             ],
           ),

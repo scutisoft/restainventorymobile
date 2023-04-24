@@ -52,7 +52,7 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
   Map vesselForm = {};
   String page = "Recipe";
   TraditionalParam traditionalParam = TraditionalParam(
-      getByIdSp: "IV_Recipe_GetByRecipeIdDetail",
+      getByIdSp: "IV_Recipe_GetRecipeIdDetail",
       insertSp: "IV_Recipe_InsertRecipeDetail",
       updateSp: "IV_Recipe_UpdateRecipeDetail");
   var isKeyboardVisible = false.obs;
@@ -123,7 +123,7 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
           child: Column(
             children: [
               CustomAppBar(
-                title: "Add Recipe Master",
+                title: "${widget.isEdit?"Update":"Add"} Recipe Master",
                 width: SizeConfig.screenWidth! - 100,
                 prefix: ArrowBack(
                   onTap: () {
@@ -334,7 +334,6 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
             });
           },
         ),
-
 
         SlidePopUp(
           isOpen: isCartOpen,
@@ -674,7 +673,7 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
     );
     widgets['RecipeTypeId'] = SlideSearch(
         dataName: "RecipeTypeId",
-        selectedValueFunc: (e) {},
+        selectedValueFunc: (e) {console("RecipeTypeId $e");},
         hinttext: "Select Recipe Type",
         data: []);
     widgets['RecipeCategoryId'] = SlideSearch(
@@ -857,43 +856,43 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(widgets, "CuisineId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(widgets, "UnitId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(widgets, "RecipeChefId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(vesselForm, "VesselId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(staffForm, "StaffCategoryId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(materialForm, "MaterialId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "",);
+        refId: "",clearValues: false);
 
 
     await parseJson(widgets, "",
@@ -903,7 +902,15 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
         loader: showLoader, resCb: (e) {
       try {
         console("parseJson $e");
-
+        if(e['Table'].length>0){
+          totalCostDetail['MaterialCost']=e['Table'][0]['MaterialCost'];
+          totalCostDetail['StaffCost']=e['Table'][0]['StaffCost'];
+          totalCostDetail['VesselEssentialCost']=e['Table'][0]['VesselEssentialCost'];
+          totalCostDetail['TotalCost']=e['Table'][0]['TotalCost'];
+        }
+        recipeMaterialMappingList.value=e['Table1'];
+        recipeStaffMappingList.value=e['Table2'];
+        recipeVesselMappingList.value=e['Table3'];
       } catch (e, t) {
         assignWidgetErrorToastLocal(e, t);
       }
@@ -933,8 +940,6 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
     double mPrice=parseDouble(e['Price']);
     foundWidgetByKey(materialForm, "MaterialPrice",needSetValue: true,value: mPrice>0?mPrice:"");
   }
-
-
 
   void onMaterialAdd() async {
     List<ParamModel> a = await getFrmCollection(materialForm);
@@ -1079,9 +1084,6 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
 
   }
 
-
-
-
   void deleteHandler(int type,int index){
     if(type==1){
       recipeMaterialMappingList.removeAt(index);
@@ -1093,7 +1095,6 @@ class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerPr
     }
     totalCostCalc();
   }
-
 
   void updateHandler(int type,int index){
     if(type==1){

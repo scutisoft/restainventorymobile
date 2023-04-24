@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,overlays: [SystemUiOverlay.bottom,SystemUiOverlay.top]);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-    //  navigate();
+      navigate();
       if(Platform.isAndroid){
         _checkBiometrics();
       }

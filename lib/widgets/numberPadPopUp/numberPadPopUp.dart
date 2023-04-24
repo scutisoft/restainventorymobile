@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:restainventorymobile/utils/colorUtil.dart';
 import 'package:restainventorymobile/utils/constants.dart';
+import 'package:restainventorymobile/widgets/fittedText.dart';
 
 import '../../utils/sizeLocal.dart';
 
@@ -11,6 +12,7 @@ class NumberPadPopUp extends StatefulWidget {
   bool? isOpen;
   String? title;
   String subTitle;
+  String unit;
   String? value;
   VoidCallback? onPercentageClick;
   VoidCallback? onAmountClick;
@@ -22,7 +24,7 @@ class NumberPadPopUp extends StatefulWidget {
   VoidCallback? onDone;
   bool isSevenInch;
   NumberPadPopUp({this.isOpen,this.title,this.value,this.isPercentage,this.onPercentageClick,this.onAmountClick,this.onClear,this.onClearAll,
-    this.numberTap,this.onCancel,this.onDone,required this.isSevenInch,this.subTitle=""
+    this.numberTap,this.onCancel,this.onDone,required this.isSevenInch,this.subTitle="",this.unit=""
   });
   @override
   _NumberPadPopUpState createState() => _NumberPadPopUpState();
@@ -102,6 +104,27 @@ class _NumberPadPopUpState extends State<NumberPadPopUp> {
                         ),
                       ),
 
+                      Align(
+                        alignment: Alignment.centerRight,
+                       child: Visibility(
+                         visible: widget.unit.isNotEmpty,
+                         child: Padding(
+                           padding: const EdgeInsets.only(right: 20),
+                           child: FittedText(
+                             textStyle: ts20M(ColorUtil.red2,fontfamily: 'AH'),
+                             alignment: Alignment.centerRight,
+                             text: widget.unit,
+                             width: 80,
+                           ),
+                         ),
+                       ),
+                       /* child: Container(
+                            width:100,
+                            alignment: Alignment.centerRight,
+                            margin: EdgeInsets.only(right: 20),
+                            child: Text("Kg",style: ts20M(ColorUtil.red2,fontfamily: 'AH'),)
+                        ),*/
+                      )
                     ]
                 )
             ),
