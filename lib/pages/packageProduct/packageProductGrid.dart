@@ -4,6 +4,7 @@ import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
+import 'package:restainventorymobile/pages/packageProduct/packageProductForm.dart';
 import '../../utils/utilWidgets.dart';
 import '../commonView.dart';
 import '/utils/constants.dart';
@@ -67,6 +68,7 @@ class _PackageProductGridState extends State<PackageProductGrid>
             title: "Total Package Product",
             subTitle: "Available",
             count: totalCount,
+            hasAdd: false,
             addCb: () {
              /* fadeRoute(ReceipeForm(
                 closeCb: (e) {
@@ -171,16 +173,17 @@ class HE_PackageProductContent extends StatelessWidget
           GridEditIcon(
             hasAccess: true,
             onTap: () {
-              /* fadeRoute(ReceipeForm(
+               fadeRoute(PackageProductForm(
                           isEdit: true,
                           dataJson: getDataJsonForGrid({
-                            "RecipeId": dataListener['RecipeId']
+                            "PackageId": dataListener['PackageId']
                           }),
                           closeCb: (e) {
                             updateDataListener(e['Table'][0]);
                             onEdit!(e['Table'][0]);
                           },
-                        ));*/
+                 packageName:dataListener['PackageName'],
+                        ));
             },
           ),
         ],
