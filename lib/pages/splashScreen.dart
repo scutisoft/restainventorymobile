@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,overlays: [SystemUiOverlay.bottom,SystemUiOverlay.top]);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      navigate();
+
       if(Platform.isAndroid){
         _checkBiometrics();
       }
@@ -46,6 +46,7 @@ class _SplashScreenState extends State<SplashScreen> {
           setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);
         }catch(e){}
         checkUserData();
+        navigate();
       });
 
     });
