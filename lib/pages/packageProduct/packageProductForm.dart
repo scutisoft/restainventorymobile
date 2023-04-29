@@ -40,7 +40,7 @@ class _PackageProductFormState extends State<PackageProductForm> with HappyExten
 
   var isCartOpen=false.obs;
 
-  final FlutterUtils _flutterUtils=FlutterUtils();
+
 
   List primaryProductList=[];
   RxList<dynamic> productList=RxList<dynamic>();

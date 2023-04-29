@@ -1,10 +1,8 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
-
 import '../utils/colorUtil.dart';
 import '../utils/constants.dart';
 import '../utils/sizeLocal.dart';
@@ -218,7 +216,6 @@ class StatusTxt extends StatelessWidget {
     );
   }
 }
-
 
 class SlidePopUp extends StatelessWidget {
   RxBool isOpen;

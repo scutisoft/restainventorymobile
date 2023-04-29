@@ -515,7 +515,8 @@ class SaveCloseBtn extends StatelessWidget {
   VoidCallback onSave;
   VoidCallback? onClose;
   RxBool isKeyboardVisible;
-  SaveCloseBtn({Key? key,required this.isEdit,required this.onSave,required this.isKeyboardVisible,this.onClose}) : super(key: key);
+  String? saveBtnText;
+  SaveCloseBtn({Key? key,required this.isEdit,required this.onSave,required this.isKeyboardVisible,this.onClose,this.saveBtnText}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -557,7 +558,7 @@ class SaveCloseBtn extends StatelessWidget {
                   borderRadius: BorderRadius.circular(3),
                   color: ColorUtil.primary,
                 ),
-                child:Center(child: Text(isEdit?Language.update:Language.save,style: ts16(ColorUtil.themeWhite,), )) ,
+                child:Center(child: Text(isEdit?saveBtnText??Language.update:Language.save,style: ts16(ColorUtil.themeWhite,), )) ,
               ),
             ),
           ],
