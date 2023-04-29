@@ -467,9 +467,12 @@ SwipeAction swipeActionDelete(Function(Function(bool)) ontap,{bool hasAccess=tru
   return   SwipeAction(
     title: "",
     icon: Padding(
-      padding:  const EdgeInsets.only(top: 11),
+      padding:  const EdgeInsets.only(top: 0),
       child: Container(
-        padding: const EdgeInsets.all(8),
+        height: 50,
+        width: 50,
+        alignment: Alignment.center,
+        //padding: const EdgeInsets.all(8),
           decoration: needBG?BoxDecoration(
             color: hasAccess?ColorUtil.red:ColorUtil.red.withOpacity(0.2),
             borderRadius: BorderRadius.circular(50)
@@ -488,9 +491,12 @@ SwipeAction swipeActionEdit(Function(Function(bool)) ontap,{bool needBG=false}){
   return   SwipeAction(
     title: "",
     icon: Padding(
-      padding:const  EdgeInsets.only(top: 11),
+      padding:const  EdgeInsets.only(top: 0),
       child: Container(
-          padding: const EdgeInsets.all(8),
+          // padding: const EdgeInsets.all(8),
+          height: 50,
+          width: 50,
+          alignment: Alignment.center,
           decoration: needBG?BoxDecoration(
               color: Color(0xff125ac6),
               borderRadius: BorderRadius.circular(50)
@@ -509,7 +515,8 @@ class SaveCloseBtn extends StatelessWidget {
   VoidCallback onSave;
   VoidCallback? onClose;
   RxBool isKeyboardVisible;
-  SaveCloseBtn({Key? key,required this.isEdit,required this.onSave,required this.isKeyboardVisible,this.onClose}) : super(key: key);
+  String? saveBtnText;
+  SaveCloseBtn({Key? key,required this.isEdit,required this.onSave,required this.isKeyboardVisible,this.onClose,this.saveBtnText}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -551,7 +558,7 @@ class SaveCloseBtn extends StatelessWidget {
                   borderRadius: BorderRadius.circular(3),
                   color: ColorUtil.primary,
                 ),
-                child:Center(child: Text(isEdit?Language.update:Language.save,style: ts16(ColorUtil.themeWhite,), )) ,
+                child:Center(child: Text(isEdit?saveBtnText??Language.update:Language.save,style: ts16(ColorUtil.themeWhite,), )) ,
               ),
             ),
           ],

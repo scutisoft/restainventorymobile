@@ -4,6 +4,7 @@ import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
+import '../../utils/utilWidgets.dart';
 import '../commonView.dart';
 import '/utils/constants.dart';
 import '/utils/utils.dart';
@@ -37,7 +38,12 @@ class _RecipeMasterGridState extends State<RecipeMasterGrid>
       getWidget: (e) {
         return HE_DepDisContent(
           data: e,
-          onDelete: (dataJson) {},
+          onDelete: (dataJson) {
+            gridDelete(() {
+              sysDeleteHE_ListView(he_listViewBody, "RecipeId",dataJson: dataJson,loader: showLoader,
+                  traditionalParam: TraditionalParam(executableSp: "IV_Recipe_DeleteRecipeDetail"),isCustomDialog: true,successCallback: deleteCallback);
+            });
+          },
           onEdit: (updatedMap) {
             he_listViewBody.updateArrById("ReceipeId", updatedMap);
           },
@@ -183,13 +189,13 @@ class HE_DepDisContent extends StatelessWidget
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      "${dataListener['YieldQuantity']}",
+                      "${dataListener['YieldQuantity']} ${dataListener['UnitShortCode']}",
                       style:
                           ts20M(ColorUtil.red, fontfamily: 'AH', fontsize: 18),
                     ),
                     inBtwHei(),
                     Text(
-                      "${dataListener['TotalCost']}",
+                      getRupeeString(dataListener['TotalCost']),
                       style:
                           ts20M(ColorUtil.red, fontfamily: 'AH', fontsize: 18),
                     ),
@@ -214,17 +220,16 @@ class HE_DepDisContent extends StatelessWidget
                         GridEditIcon(
                           hasAccess: true,
                           onTap: () {
-                            // fadeRoute(DepartmentDistributionForm(
-                            //   isEdit: true,
-                            //   dataJson: getDataJsonForGrid({
-                            //     "DepartmentDistributionId":
-                            //         dataListener['DepartmentDistributionId']
-                            //   }),
-                            //   closeCb: (e) {
-                            //     updateDataListener(e['Table'][0]);
-                            //     onEdit!(e['Table'][0]);
-                            //   },
-                            // ));
+                            fadeRoute(ReceipeForm(
+                              isEdit: true,
+                              dataJson: getDataJsonForGrid({
+                                "RecipeId": dataListener['RecipeId']
+                              }),
+                              closeCb: (e) {
+                                updateDataListener(e['Table'][0]);
+                                onEdit!(e['Table'][0]);
+                              },
+                            ));
                           },
                         ),
                         GridDeleteIcon(

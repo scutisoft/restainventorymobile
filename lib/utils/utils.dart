@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../helper/language.dart';
 import '../widgets/alertDialog.dart';
+import '../widgets/calculation.dart';
 import '../widgets/recase.dart';
 
 import '../utils/colorUtil.dart';
@@ -306,4 +307,24 @@ class PageBody extends StatelessWidget {
 
 Widget inBtwHei({double height=5}){
   return SizedBox(height: height,);
+}
+
+
+//Inventory Utils
+double getUnitTypePrice(double primaryPrice,String unitQuantityType){
+  double price=0.0;
+  List unitUtils=unitQuantityType.split("_");
+  if(unitUtils[0].toString()=="1"){
+    price=primaryPrice;
+  }
+  else if(unitUtils[0].toString()=="2"){
+    price=Calculation().div(primaryPrice, parseDouble(unitUtils[1]));
+  }
+  return price;
+}
+
+void updateTimeFormat(widget,v){
+  if(v.length>2 && !v.contains(":")){
+    widget.setValue("${v.substring(0,2)}:${v.substring(2,v.length)}",needSelection:true);
+  }
 }

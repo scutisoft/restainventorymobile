@@ -51,5 +51,5 @@ abstract class FlutterUtilsPlatform extends PlatformInterface {
 
   void clearOnDisposeV1(){ throw UnimplementedError('clearOnDisposeV1() has not been implemented.'); }
 
-  void sysDeleteHE_ListViewV1(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="", String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional, TraditionalParam? traditionalParam,RxBool? loader,bool isCustomDialog=false}){ throw UnimplementedError('sysDeleteHE_ListViewV1() has not been implemented.'); }
+  void sysDeleteHE_ListViewV1(dynamic he_listViewBody,String primaryKey,{Function? successCallback,String dataJson="", String content="Are you sure want to delete ?",DevelopmentMode developmentMode=DevelopmentMode.traditional, TraditionalParam? traditionalParam,RxBool? loader,bool isCustomDialog=false,String extraParam=""}){ throw UnimplementedError('sysDeleteHE_ListViewV1() has not been implemented.'); }
 }

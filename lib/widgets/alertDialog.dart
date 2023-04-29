@@ -20,10 +20,6 @@ class CustomAlert{
   VoidCallback? cancelCallback;
   CustomAlert({this.callback,this.cancelCallback});
 
-
-
-
-
   void commonErrorAlert(String title,String des){
     showDialog(
         context: Get.context!,
@@ -62,11 +58,6 @@ class CustomAlert{
         )
     );
   }
-
-
-
-
-
 
   void yesOrNoDialog2(String img,String title,bool isSvg,
       {double imgHeight=50.0,EdgeInsets pad=const EdgeInsets.all(20),double hei=360,double textWidth=200}){
@@ -173,6 +164,114 @@ class CustomAlert{
           ),
         )
     );
+  }
+
+  Future<bool> exitAppAlert(String img,String title,bool isSvg,
+      {double imgHeight=50.0,EdgeInsets pad=const EdgeInsets.all(20),double hei=360,double textWidth=200}) async{
+    bool? exit=await showDialog(
+        barrierDismissible: false,
+        context: Get.context!,
+        builder: (ctx) => Dialog(
+          shape: alertRadius,
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            //height:hei,
+              width:SizeConfig.screenWidth!-40,
+              decoration:BoxDecoration(
+                color:Colors.white,
+              ),
+              padding: pad,
+              child:Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:[
+                    //SizedBox(height:20),
+                    // SvgPicture.asset(img),
+                    isSvg?SvgPicture.asset(img,height: imgHeight,):Image.asset(img,height: imgHeight,),
+                    const SizedBox(height:30),
+                    Container(
+                      width: textWidth,
+                      child: Text(title,
+                        style:const TextStyle(fontFamily:'AM',fontSize:23,color:Color(0xFF787878),letterSpacing: 0.5,
+                            height: 1.5),textAlign: TextAlign.center,
+                      ),
+                    ),
+
+                    const SizedBox(height:30),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+
+                        GestureDetector(
+                          onTap:(){
+                            Get.back(result: false);
+                            cancelCallback!();
+                          },
+                          child: Container(
+                            height: 50.0,
+                            width: (SizeConfig.screenWidth!-80)*0.4,
+                            //margin: EdgeInsets.only(bottom: 0,top:20),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: Color(0xFFE4E4E4),
+                              // boxShadow: [
+                              //   BoxShadow(
+                              //     color:Color(0xFF808080).withOpacity(0.6),
+                              //     offset: const Offset(0, 8.0),
+                              //     blurRadius: 15.0,
+                              //     // spreadRadius: 2.0,
+                              //   ),
+                              // ]
+                            ),
+                            child: Center(
+                              child: Text(Language.no,
+                                style: TextStyle(fontFamily:'AM',color: Color(0xFF808080),fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ),
+
+
+
+                        GestureDetector(
+                          onTap:(){
+                            Get.back(result: true);
+                            callback!();
+                          },
+                          child: Container(
+                            height: 50.0,
+                            width: (SizeConfig.screenWidth!-80)*0.4,
+                            // margin: EdgeInsets.only(bottom: 0,top:20),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              color: ColorUtil.red,
+                              // boxShadow: [
+                              //   BoxShadow(
+                              //     color:ColorUtil.red.withOpacity(0.6),
+                              //     offset: const Offset(0, 8.0),
+                              //     blurRadius: 15.0,
+                              //     // spreadRadius: 2.0,
+                              //   ),
+                              // ]
+                            ),
+                            child: Center(
+                              child: Text(Language.yes,
+                                style: TextStyle(fontFamily:'AM',color: Colors.white,fontSize: 16),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+
+
+                  ]
+              )
+          ),
+        )
+    );
+    return exit??false;
   }
 
   void clearDiscountyesOrNoDialog(BuildContext context,String img,String title,){
@@ -358,7 +457,6 @@ class CustomAlert{
         style: TextStyle(fontSize: 18,fontFamily: Language.regularFF),),
     ));
   }
-
 
   void paymentAlert(bool isSuccess,String orderId,String amount,String date){
 

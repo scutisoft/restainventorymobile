@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/model/parameterModel.dart';
 import 'package:flutter_utils/utils/apiUtils.dart';
@@ -44,28 +45,36 @@ class ReceipeForm extends StatefulWidget {
   State<ReceipeForm> createState() => _ReceipeFormState();
 }
 
-class _ReceipeFormState extends State<ReceipeForm>
-    with HappyExtension, TickerProviderStateMixin
-    implements HappyExtensionHelperCallback {
+class _ReceipeFormState extends State<ReceipeForm> with HappyExtension, TickerProviderStateMixin implements HappyExtensionHelperCallback {
   Map widgets = {};
   Map materialForm = {};
   Map staffForm = {};
   Map vesselForm = {};
   String page = "Recipe";
   TraditionalParam traditionalParam = TraditionalParam(
-      getByIdSp: "IV_Recipe_GetByRecipeIdDetail",
-      insertSp: "IV_Recipe_InsertReceipeDetail",
+      getByIdSp: "IV_Recipe_GetRecipeIdDetail",
+      insertSp: "IV_Recipe_InsertRecipeDetail",
       updateSp: "IV_Recipe_UpdateRecipeDetail");
   var isKeyboardVisible = false.obs;
 
-  Rxn<DateTime> expectedDate = Rxn<DateTime>();
+
   var unitName = "Unit".obs;
-  var batchNo = "".obs;
+
 
   UnitDropDown unitDropDown = UnitDropDown();
 
-  RxList<dynamic> purchaseList = RxList<dynamic>();
-  RxList<dynamic> indentMappingList = RxList<dynamic>();
+  var isCartOpen = false.obs;
+  var selectedIndex=(-1).obs;
+
+  RxList<dynamic> recipeMaterialMappingList = RxList<dynamic>();
+  RxList<dynamic> recipeStaffMappingList = RxList<dynamic>();
+  RxList<dynamic> recipeVesselMappingList = RxList<dynamic>();
+  var totalCostDetail={
+    "MaterialCost":0.0,
+    "StaffCost":0.0,
+    "VesselEssentialCost":0.0,
+    "TotalCost":0.0
+  }.obs;
 
   var activeTab = 0;
 
@@ -81,6 +90,13 @@ class _ReceipeFormState extends State<ReceipeForm>
     "numPadType": 0
   }.obs;
 
+  List tabList=['Material','Staff','Vessel','Cost'];
+  var reloadTab=false.obs;
+
+
+  double sw=SizeConfig.screenWidth!-30;
+  double col1Wid=0.0,col2Wid=0.0,col3Wid=0.0;
+  final FlutterUtils _flutterUtils=FlutterUtils();
   @override
   void initState() {
     tabController = TabController(length: 4, vsync: this);
@@ -88,6 +104,9 @@ class _ReceipeFormState extends State<ReceipeForm>
       selectedIndexPathsChangeCallback:
           (changedIndexPaths, selected, currentCount) {},
     );
+    col1Wid=sw*0.5;
+    col2Wid=sw*0.25;
+    col3Wid=sw*0.25;
     assignWidgets();
     super.initState();
   }
@@ -104,7 +123,7 @@ class _ReceipeFormState extends State<ReceipeForm>
           child: Column(
             children: [
               CustomAppBar(
-                title: "Add Recipe Master",
+                title: "${widget.isEdit?"Update":"Add"} Recipe Master",
                 width: SizeConfig.screenWidth! - 100,
                 prefix: ArrowBack(
                   onTap: () {
@@ -133,82 +152,69 @@ class _ReceipeFormState extends State<ReceipeForm>
                     widgets['PreParationTime'],
                     LeftHeader(title: "Yield Quantity"),
                     widgets['YieldQuantity'],
-                    inBtwHei(height: 30),
-                    Stack(
+                    inBtwHei(height: 20),
+
+                    Row(
                       children: [
-                        Container(
-                          width: SizeConfig.screenWidth,
-                          margin: MyConstants.LRPadding,
-                          decoration: BoxDecoration(
-                            // border: Border.all(color: ColorUtil.red2),
-                            borderRadius: BorderRadius.circular(7),
-                            color: Color(0xffFCE2E2),
-                          ),
-                          child: TabBar(
-                              controller: tabController,
-                              isScrollable: true,
-                              unselectedLabelColor: ColorUtil.red2,
-                              unselectedLabelStyle:
-                                  ts20M(ColorUtil.red2, fontsize: 18),
-                              labelStyle:
-                                  ts20M(ColorUtil.themeWhite, fontsize: 18),
-                              // onTap: (i) {
-                              //   if (i != activeTab &&
-                              //       (materialMappingList.isNotEmpty ||
-                              //           recipeMappingList.isNotEmpty)) {
-                              //     CustomAlert(callback: () {
-                              //       activeTab = i;
-                              //       // materialMappingList.clear();
-                              //       // recipeMappingList.clear();
-                              //       // recipeInnerProductList.clear();
-                              //       // recipeParentList.clear();
-                              //     }, cancelCallback: () {
-                              //       tabController.animateTo(activeTab);
-                              //     }).yesOrNoDialog2("assets/icons/delete.svg",
-                              //         "Are you sure want to leave ?", true);
-                              //   } else {
-                              //     activeTab = i;
-                              //   }
-                              //   // clearMaterialForm();
-                              //   // clearRecipeForm();
-                              // },
-                              indicator: BoxDecoration(
+                        LeftHeader(title: "Recipe Production Usage",width: SizeConfig.screenWidth!-140,),
+                        const Spacer(),
+                        Obx(() => cartIcon(
+                            onTap:(){
+                              isCartOpen.value=true;
+                            },
+                            count: recipeMaterialMappingList.length
+                        )),
+                        const SizedBox(width: 20,)
+                      ],
+                    ),
+                    inBtwHei(height: 20),
+                    SizedBox(
+                      //margin: MyConstants.LRPadding,
+                      //padding: EdgeInsets.only(left: 15,right: 15),
+                      width: SizeConfig.screenWidth,
+                      height: 70,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        itemCount: tabList.length,
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (ctx,i){
+                          return GestureDetector(
+                            onTap: (){
+                              tabController.animateTo(i);
+                              reloadTab.value=!reloadTab.value;
+                            },
+                            child: Obx(() => Container(
+                              height: reloadTab.value?50:50,
+                              padding: EdgeInsets.only(left: 15,right: 15),
+                              margin: EdgeInsets.only(bottom: 15,right: 15,left: i==0?15:0,top: 0),
+                              alignment: Alignment.center,
+                              constraints: BoxConstraints(
+                                minWidth: 100
+                              ),
+                              decoration:tabController.index==i? BoxDecoration(
                                   color: ColorUtil.red2,
-                                  borderRadius: BorderRadius.circular(7),
+                                  borderRadius: BorderRadius.circular(19),
                                   boxShadow: [
                                     BoxShadow(
                                         color: ColorUtil.red2.withOpacity(0.2),
-                                        spreadRadius: 5,
-                                        blurRadius: 30,
-                                        offset: Offset(0, 15))
-                                  ]),
-                              tabs: [
-                                Tab(
-                                  text: "Material",
-                                  iconMargin: EdgeInsets.zero,
-                                  height: ColorUtil.formContainerHeight,
-                                ),
-                                Tab(
-                                  text: "Staff",
-                                  iconMargin: EdgeInsets.zero,
-                                  height: ColorUtil.formContainerHeight,
-                                ),
-                                Tab(
-                                  text: "vessel",
-                                  iconMargin: EdgeInsets.zero,
-                                  height: ColorUtil.formContainerHeight,
-                                ),
-                                Tab(
-                                  text: "cost",
-                                  iconMargin: EdgeInsets.zero,
-                                  height: ColorUtil.formContainerHeight,
-                                ),
-                              ]),
-                        ),
-                      ],
+                                        spreadRadius: -1,
+                                        blurRadius: 20,
+                                        offset: Offset(1, 10))
+                                  ]
+                              ):BoxDecoration(
+                                color: Color(0xFFE6E6E6),
+                                borderRadius: BorderRadius.circular(19),
+                              ),
+                              child: Text("${tabList[i]}",style: ts20M(tabController.index==i?ColorUtil.themeWhite:ColorUtil.red2),),
+                            )),
+                          );
+                        },
+                      ),
                     ),
-                    Container(
-                      height: 570,
+
+                    SizedBox(
+                      height: 450,
                       child: TabBarView(
                           controller: tabController,
                           physics: const NeverScrollableScrollPhysics(),
@@ -223,7 +229,7 @@ class _ReceipeFormState extends State<ReceipeForm>
                                 inBtwHei(height: 10),
                                 materialForm['Quantity'],
                                 inBtwHei(height: 30),
-                                DoneBtn(onDone: () {}, title: "Add"),
+                                DoneBtn(onDone: onMaterialAdd, title: "Add"),
                               ],
                             ),
                             Column(
@@ -238,7 +244,7 @@ class _ReceipeFormState extends State<ReceipeForm>
                                 inBtwHei(height: 10),
                                 staffForm['SalaryCost'],
                                 inBtwHei(height: 30),
-                                DoneBtn(onDone: () {}, title: "Add"),
+                                DoneBtn(onDone: onStaffAdd, title: "Add"),
                               ],
                             ),
                             Column(
@@ -247,73 +253,41 @@ class _ReceipeFormState extends State<ReceipeForm>
                                 inBtwHei(height: 20),
                                 vesselForm['VesselId'],
                                 inBtwHei(height: 10),
-                                vesselForm['UsageTime'],
+                                Obx(() => Visibility(visible:vesselCategoryId.value==2,child: vesselForm['UsageTime'])),
                                 inBtwHei(height: 10),
-                                vesselForm['VesselQuantity'],
+                                Obx(() => Visibility(visible:vesselCategoryId.value==1,child: vesselForm['VesselQuantity'])),
                                 inBtwHei(height: 30),
-                                DoneBtn(onDone: () {}, title: "Add"),
+                                DoneBtn(onDone: onVesselAdd, title: "Add"),
                               ],
                             ),
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 inBtwHei(height: 30),
+                                LeftHeader(title: "Over all Cost Info ${MyConstants.rupeeString}"),
+                                inBtwHei(),
+                                Obx(() => getCostCard("Material Cost", totalCostDetail['MaterialCost'])),
+                                Obx(() => getCostCard("Staff Cost", totalCostDetail['StaffCost'])),
+                                Obx(() => getCostCard("Vessel & Essential Cost", totalCostDetail["VesselEssentialCost"])),
                                 Container(
-                                  width: SizeConfig.screenWidth,
-                                  margin: EdgeInsets.only(left: 15, right: 15),
-                                  child: Center(
-                                      child: Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: <Widget>[
-                                        Container(
-                                          margin: EdgeInsets.all(10),
-                                          child: Table(
-                                            border: TableBorder.all(),
-                                            children: [
-                                              TableRow(children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text('Category',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text('Product Cost',
-                                                      textAlign:
-                                                          TextAlign.center,
-                                                      style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.bold)),
-                                                ),
-                                              ]),
-                                              TableRow(children: [
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text('Material Cost',
-                                                      textAlign:
-                                                          TextAlign.center),
-                                                ),
-                                                Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text('11',
-                                                      textAlign:
-                                                          TextAlign.center),
-                                                ),
-                                              ]),
-                                            ],
-                                          ),
-                                        ),
-                                      ])),
-                                ),
+                                  height: ColorUtil.formContainerHeight,
+                                  //decoration: ColorUtil.formContBoxDec,
+                                  margin: const EdgeInsets.only(left:15,right:15,bottom:5,),
+                                  padding: const EdgeInsets.only(left: 15,right: 15),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      FlexFittedText(
+                                        text: "Total Cost",
+                                        textStyle: ts20M(ColorUtil.themeBlack),
+                                      ),
+                                      Obx(() => FlexFittedText(
+                                        text: getRupeeString(totalCostDetail['TotalCost']),
+                                        textStyle: ts20M(ColorUtil.red2,fontfamily: "AH",fontWeight: FontWeight.bold),
+                                      )),
+                                    ],
+                                  ),
+                                )
                               ],
                             ),
                           ]),
@@ -340,328 +314,322 @@ class _ReceipeFormState extends State<ReceipeForm>
                 needCustomValidation: true,
                 traditionalParam: traditionalParam,
                 loader: showLoader,
-                extraParam: MyConstants.extraParam, onCustomValidation: () {
-              if (purchaseList.isEmpty) {
-                CustomAlert()
-                    .cupertinoAlert("Select Material to Distribute...");
-                return false;
-              }
-              foundWidgetByKey(widgets, "DepartmentDistributionMaterialJson",
-                  needSetValue: true, value: jsonEncode(purchaseList));
-              foundWidgetByKey(widgets, "DepartmentDistributionDate",
-                  needSetValue: true,
-                  value: DateFormat(MyConstants.dbDateFormat)
-                      .format(expectedDate.value!));
-              return true;
-            }, successCallback: (e) {
-              console("sysSubmit $e");
-              if (widget.closeCb != null) {
-                widget.closeCb!(e);
-              }
+                extraParam: MyConstants.extraParam,
+                onCustomValidation: () {
+                  if (recipeMaterialMappingList.isEmpty) {
+                    CustomAlert()
+                        .cupertinoAlert("Select Material to Prepare Recipe...");
+                    return false;
+                  }
+                  foundWidgetByKey(widgets, "RecipeMaterialMappingList", needSetValue: true, value: jsonEncode(recipeMaterialMappingList));
+                  foundWidgetByKey(widgets, "RecipeStaffMappingList", needSetValue: true, value: jsonEncode(recipeStaffMappingList));
+                  foundWidgetByKey(widgets, "RecipeVesselMappingList", needSetValue: true, value: jsonEncode(recipeVesselMappingList));
+                  return true;
+                },
+                successCallback: (e) {
+                  console("sysSubmit $e");
+                  if (widget.closeCb != null) {
+                    widget.closeCb!(e);
+                  }
             });
           },
         ),
-        // SlidePopUp(
-        //   isOpen: isCartOpen,
-        //   onBack: () {
-        //     selectedIndex.value = -1;
-        //   },
-        //   widgets: [
-        //     inBtwHei(height: 15),
-        //     const SwipeNotes(),
-        //     Expanded(
-        //       child: Obx(() => ListView.builder(
-        //             shrinkWrap: true,
-        //             itemCount: purchaseList.length,
-        //             itemBuilder: (ctx, i) {
-        //               return Padding(
-        //                 padding: const EdgeInsets.only(bottom: 5.0),
-        //                 child: Column(
-        //                   mainAxisSize: MainAxisSize.min,
-        //                   children: [
-        //                     GestureDetector(
-        //                       onTap: () {
-        //                         if (selectedIndex.value == i) {
-        //                           selectedIndex.value = -1;
-        //                         } else {
-        //                           selectedIndex.value = i;
-        //                         }
-        //                       },
-        //                       child: Container(
-        //                         margin: const EdgeInsets.only(
-        //                             bottom: 10, left: 0, right: 0),
-        //                         padding: const EdgeInsets.all(10),
-        //                         width: SizeConfig.screenWidth! * 1,
-        //                         decoration: BoxDecoration(
-        //                           borderRadius: BorderRadius.circular(10),
-        //                           color: const Color(0XFFffffff),
-        //                         ),
-        //                         clipBehavior: Clip.antiAlias,
-        //                         child: Row(
-        //                           crossAxisAlignment: CrossAxisAlignment.center,
-        //                           children: [
-        //                             Expanded(
-        //                               flex: 2,
-        //                               child: Column(
-        //                                 crossAxisAlignment:
-        //                                     CrossAxisAlignment.start,
-        //                                 children: [
-        //                                   Text(
-        //                                     "${purchaseList[i]['DepartmentName']}",
-        //                                     style: ts20M(ColorUtil.red),
-        //                                   ),
-        //                                   inBtwHei(),
-        //                                   gridCardText(
-        //                                       "Materials",
-        //                                       (purchaseList[i]['MaterialList']
-        //                                           .length)),
-        //                                 ],
-        //                               ),
-        //                             ),
-        //                             Column(
-        //                               crossAxisAlignment:
-        //                                   CrossAxisAlignment.end,
-        //                               children: [
-        //                                 Row(
-        //                                   mainAxisSize: MainAxisSize.min,
-        //                                   children: [
-        //                                     GridDeleteIcon(
-        //                                       hasAccess: purchaseList[i]
-        //                                               ['IsDelete'] ??
-        //                                           false,
-        //                                       onTap: () {
-        //                                         CustomAlert(
-        //                                                 cancelCallback: () {},
-        //                                                 callback: () {
-        //                                                   purchaseList
-        //                                                       .removeAt(i);
-        //                                                 })
-        //                                             .yesOrNoDialog2(
-        //                                                 "assets/icons/delete.svg",
-        //                                                 "Are you sure want to Delete ?",
-        //                                                 true);
-        //                                       },
-        //                                     ),
-        //                                     const SizedBox(
-        //                                       width: 5,
-        //                                     ),
-        //                                     Obx(
-        //                                       () => ArrowAnimation(
-        //                                         openCb: (value) {},
-        //                                         isclose:
-        //                                             selectedIndex.value != i,
-        //                                       ),
-        //                                     )
-        //                                   ],
-        //                                 )
-        //                               ],
-        //                             )
-        //                           ],
-        //                         ),
-        //                       ),
-        //                     ),
-        //                     Obx(() => ExpandedSection(
-        //                           expand: selectedIndex.value == i,
-        //                           child: ListView.builder(
-        //                             itemCount:
-        //                                 purchaseList[i]['MaterialList'].length,
-        //                             physics:
-        //                                 const NeverScrollableScrollPhysics(),
-        //                             shrinkWrap: true,
-        //                             itemBuilder: (ctx1, index) {
-        //                               return SwipeActionCell(
-        //                                 controller: controller,
-        //                                 index: i,
-        //                                 key: UniqueKey(),
-        //                                 normalAnimationDuration: 500,
-        //                                 deleteAnimationDuration: 400,
-        //                                 backgroundColor: Colors.transparent,
-        //                                 swipeCallBack: (j) {},
-        //                                 closeCallBack: () {},
-        //                                 firstActionWillCoverAllSpaceOnDeleting:
-        //                                     false,
-        //                                 trailingActions: [
-        //                                   swipeActionEdit((handler) async {
-        //                                     numPadUtils["isNumPadOpen"] = true;
-        //                                     if (needReturnQty.value) {
-        //                                       numPadUtils[
-        //                                           "numPadVal"] = purchaseList[i]
-        //                                                   ['MaterialList']
-        //                                               [index]['ReturnQuantity']
-        //                                           .toString();
-        //                                       numPadUtils["numPadSubTitle"] =
-        //                                           "Return Quantity";
-        //                                       numPadUtils["numPadType"] = 2;
-        //                                     } else {
-        //                                       numPadUtils["numPadVal"] =
-        //                                           purchaseList[i]
-        //                                                       ['MaterialList']
-        //                                                   [index]['Quantity']
-        //                                               .toString();
-        //                                       numPadUtils["numPadSubTitle"] =
-        //                                           "Quantity";
-        //                                       numPadUtils["numPadType"] = 1;
-        //                                     }
-        //
-        //                                     numPadUtils["numPadTitle"] =
-        //                                         purchaseList[i]['MaterialList']
-        //                                                 [index]['MaterialName']
-        //                                             .toString();
-        //                                     numPadUtils['departmentIndex'] = i;
-        //                                     numPadUtils['productIndex'] = index;
-        //                                     controller.closeAllOpenCell();
-        //                                   }, needBG: true),
-        //                                   swipeActionDelete((
-        //                                     handler,
-        //                                   ) async {
-        //                                     if (purchaseList[i]['MaterialList']
-        //                                             [index]['IsDelete'] ??
-        //                                         false) {
-        //                                       CustomAlert(
-        //                                               cancelCallback: () {},
-        //                                               callback: () async {
-        //                                                 purchaseList[i]
-        //                                                         ['MaterialList']
-        //                                                     .removeAt(index);
-        //                                                 if (purchaseList[i][
-        //                                                             'MaterialList']
-        //                                                         .length ==
-        //                                                     0) {
-        //                                                   selectedIndex.value =
-        //                                                       -1;
-        //                                                   purchaseList
-        //                                                       .removeAt(i);
-        //                                                 }
-        //                                                 purchaseList.refresh();
-        //                                                 await handler(true);
-        //                                               })
-        //                                           .yesOrNoDialog2(
-        //                                               "assets/icons/delete.svg",
-        //                                               "Are you sure want to Delete ?",
-        //                                               true);
-        //                                     }
-        //                                   },
-        //                                       hasAccess: purchaseList[i]
-        //                                                   ['MaterialList']
-        //                                               [index]['IsDelete'] ??
-        //                                           false,
-        //                                       needBG: true),
-        //                                 ],
-        //                                 child: Container(
-        //                                   margin: const EdgeInsets.only(
-        //                                       left: 7, right: 7),
-        //                                   padding: const EdgeInsets.fromLTRB(
-        //                                       0, 10, 0, 10),
-        //                                   decoration: BoxDecoration(
-        //                                       border: Border(
-        //                                           bottom: BorderSide(
-        //                                               color: ColorUtil
-        //                                                   .greyBorder))),
-        //                                   //  decoration:ColorUtil.formContBoxDec,
-        //                                   child: Column(
-        //                                     mainAxisSize: MainAxisSize.min,
-        //                                     crossAxisAlignment:
-        //                                         CrossAxisAlignment.start,
-        //                                     children: [
-        //                                       Text(
-        //                                         "${purchaseList[i]['MaterialList'][index]['MaterialName']}",
-        //                                         style: ts20M(
-        //                                             ColorUtil.themeBlack,
-        //                                             fontsize: 18),
-        //                                       ),
-        //                                       Visibility(
-        //                                         visible: purchaseList[i]
-        //                                                         ['MaterialList']
-        //                                                     [index]
-        //                                                 ['MaterialBrandName']
-        //                                             .toString()
-        //                                             .isNotEmpty,
-        //                                         child: Text(
-        //                                           "${purchaseList[i]['MaterialList'][index]['MaterialBrandName']}",
-        //                                           style: ts20M(ColorUtil.red2,
-        //                                               fontsize: 15),
-        //                                         ),
-        //                                       ),
-        //                                       inBtwHei(),
-        //                                       Row(
-        //                                         mainAxisSize: MainAxisSize.min,
-        //                                         children: [
-        //                                           gridCardText(
-        //                                               "Qty",
-        //                                               purchaseList[i]
-        //                                                       ['MaterialList']
-        //                                                   [index]['Quantity']),
-        //                                           Text(
-        //                                             "  ${purchaseList[i]['MaterialList'][index]['PrimaryUnitName']}",
-        //                                             style: ts20M(
-        //                                                 ColorUtil.text2,
-        //                                                 fontfamily: 'ALO',
-        //                                                 fontsize: 15),
-        //                                           ),
-        //                                           const Spacer(),
-        //                                           gridCardText(
-        //                                               "Return Qty",
-        //                                               purchaseList[i]['MaterialList']
-        //                                                           [index][
-        //                                                       'ReturnQuantity'] ??
-        //                                                   0),
-        //                                           Text(
-        //                                             "  ${purchaseList[i]['MaterialList'][index]['PrimaryUnitName']}",
-        //                                             style: ts20M(
-        //                                                 ColorUtil.text2,
-        //                                                 fontfamily: 'ALO',
-        //                                                 fontsize: 15),
-        //                                           ),
-        //                                         ],
-        //                                       ),
-        //                                       inBtwHei(),
-        //                                       /*Row(
-        //                                     children: [
-        //                                       gridCardText("Qty",purchaseList[i]['MaterialList'][index]['Quantity']),
-        //                                       Text("  ${purchaseList[i]['MaterialList'][index]['UnitName']}",style: ts20M(ColorUtil.text2,fontfamily: 'ALO',fontsize: 15),),
-        //                                       const Spacer(),
-        //                                       gridCardText("SubTotal",getRupeeString(purchaseList[i]['MaterialList'][index]['SubTotal'])),
-        //                                     ],
-        //                                   ),
-        //                                   inBtwHei(),*/
-        //                                     ],
-        //                                   ),
-        //                                 ),
-        //                               );
-        //                             },
-        //                           ),
-        //                         ))
-        //                   ],
-        //                 ),
-        //               );
-        //             },
-        //           )),
-        //     )
-        //   ],
-        // ),
-        // Obx(() => Blur(
-        //       value: numPadUtils['isNumPadOpen'] as bool,
-        //     )),
-        // Obx(() => NumberPadPopUp(
-        //       isSevenInch: true,
-        //       isOpen: numPadUtils['isNumPadOpen'] as bool,
-        //       value: numPadUtils['numPadVal'].toString(),
-        //       title: numPadUtils['numPadTitle'].toString(),
-        //       subTitle: numPadUtils['numPadSubTitle'].toString(),
-        //       onCancel: () {
-        //         numPadUtils['isNumPadOpen'] = false;
-        //         clearNumPadUtils();
-        //       },
-        //       numberTap: (e) {
-        //         numPadUtils['numPadVal'] = e;
-        //       },
-        //       onDone: () {
-        //         onProductQtyUpdate();
-        //       },
-        //     )),
-        Obx(() => Loader(
-              value: showLoader.value,
+
+        SlidePopUp(
+          isOpen: isCartOpen,
+          onBack: (){
+            selectedIndex.value=-1;
+          },
+          appBar: Obx(() => FlexFittedText(
+            flex: 3,
+            text: "Materials (${recipeMaterialMappingList.length} Numbers)",
+            textStyle: ts20M(ColorUtil.themeBlack,fontsize: 18),
+          )),
+          widgets: [
+            Expanded(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  Obx(() => ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: recipeMaterialMappingList.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (ctx,i){
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 5.0),
+                        child: SwipeActionCell(
+                          controller: controller,
+                          index: i,
+                          key: UniqueKey(),
+                          normalAnimationDuration: 500,
+                          deleteAnimationDuration: 400,
+                          backgroundColor: Colors.transparent,
+                          swipeCallBack: (i){
+                            // updateSlideItemIndex(i);
+                          },
+                          closeCallBack: (){
+                            //updateSlideItemIndex(-1);
+                          },
+                          firstActionWillCoverAllSpaceOnDeleting: false,
+                          trailingActions: [
+                            /*swipeActionEdit((handler) async{
+                              updateHandler(1,i);
+                              controller.closeAllOpenCell();
+                            },needBG: true),*/
+                            swipeActionDelete((handler) async {
+                              deleteHandler(1,i);
+                              await handler(true);
+                            },needBG: true),
+                          ],
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 0),
+                            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            decoration:ColorUtil.formContBoxDec,
+                            constraints: BoxConstraints(
+                                minHeight: 60
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width:col1Wid-20,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("${recipeMaterialMappingList[i]['MaterialName']}",
+                                        style: ts20M(ColorUtil.themeBlack,fontsize: 18),
+                                      ),
+                                      Visibility(
+                                        visible: !checkNullEmpty(recipeMaterialMappingList[i]['MaterialBrandName']),
+                                        child: Text("${recipeMaterialMappingList[i]['MaterialBrandName']}",
+                                          style: ts20M(ColorUtil.red2,fontsize: 15),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:col2Wid-11,
+                                  alignment: Alignment.centerLeft,
+                                  text: "${recipeMaterialMappingList[i]['Quantity']} ${recipeMaterialMappingList[i]['UnitName']} ",
+                                  textStyle: ts20M(ColorUtil.red2,fontsize: 16),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:col2Wid-11+20,
+                                  alignment: Alignment.centerRight,
+                                  text: getRupeeString(recipeMaterialMappingList[i]['Cost']),
+                                  textStyle: ts20M(ColorUtil.red2,fontsize: 18,fontfamily: 'AH'),
+                                ),
+
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  )),
+                  getTotalFooter('MaterialCost'),
+                  inBtwHei(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Obx(()=>
+                        Text("Vessels (${recipeVesselMappingList.length} Numbers)",
+                          style: ts20M(ColorUtil.themeBlack),
+                        )
+                    ),
+                  ),
+                  inBtwHei(height: 10),
+                  Obx(() => ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: recipeVesselMappingList.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (ctx,i){
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 5.0),
+                        child: SwipeActionCell(
+                          controller: controller,
+                          index: i,
+                          key: UniqueKey(),
+                          normalAnimationDuration: 500,
+                          deleteAnimationDuration: 400,
+                          backgroundColor: Colors.transparent,
+                          swipeCallBack: (i){
+                            // updateSlideItemIndex(i);
+                          },
+                          closeCallBack: (){
+                            //updateSlideItemIndex(-1);
+                          },
+                          firstActionWillCoverAllSpaceOnDeleting: false,
+                          trailingActions: [
+                            /*swipeActionEdit((handler) async{
+                              updateHandler(1,i);
+                              controller.closeAllOpenCell();
+                            },needBG: true),*/
+                            swipeActionDelete((handler) async {
+                              deleteHandler(2,i);
+                              await handler(true);
+                            },needBG: true),
+                          ],
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 0),
+                            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            decoration:ColorUtil.formContBoxDec,
+                            constraints: BoxConstraints(
+                                minHeight: 60
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width:col1Wid-20,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text("${recipeVesselMappingList[i]['VesselName']}",
+                                        style: ts20M(ColorUtil.themeBlack,fontsize: 18),
+                                      ),
+                                      Text("${recipeVesselMappingList[i]['VesselCategoryName']}",
+                                        style: ts20M(ColorUtil.text4,fontsize: 15),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:col2Wid-11,
+                                  alignment: Alignment.centerLeft,
+                                  text: "${parseInt(recipeVesselMappingList[i]['VesselQuantity'])>0?recipeVesselMappingList[i]['VesselQuantity']:""} ${recipeVesselMappingList[i]['EssentialTime']} ",
+                                  textStyle: ts20M(ColorUtil.red2,fontsize: 16),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:col2Wid-11+20,
+                                  alignment: Alignment.centerRight,
+                                  text: getRupeeString(recipeVesselMappingList[i]['UsageCost']),
+                                  textStyle: ts20M(ColorUtil.red2,fontsize: 18,fontfamily: 'AH'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  )),
+                  getTotalFooter('VesselEssentialCost'),
+                  inBtwHei(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Obx(()=>
+                        Text("Staff (${recipeStaffMappingList.length} Numbers)",
+                          style: ts20M(ColorUtil.themeBlack),
+                        )
+                    ),
+                  ),
+                  inBtwHei(height: 10),
+                  Obx(() => ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: recipeStaffMappingList.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemBuilder: (ctx,i){
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 5.0),
+                        child: SwipeActionCell(
+                          controller: controller,
+                          index: i,
+                          key: UniqueKey(),
+                          normalAnimationDuration: 500,
+                          deleteAnimationDuration: 400,
+                          backgroundColor: Colors.transparent,
+                          swipeCallBack: (i){
+                            // updateSlideItemIndex(i);
+                          },
+                          closeCallBack: (){
+                            //updateSlideItemIndex(-1);
+                          },
+                          firstActionWillCoverAllSpaceOnDeleting: false,
+                          trailingActions: [
+                            /*swipeActionEdit((handler) async{
+                              updateHandler(1,i);
+                              controller.closeAllOpenCell();
+                            },needBG: true),*/
+                            swipeActionDelete((handler) async {
+                              deleteHandler(3,i);
+                              await handler(true);
+                            },needBG: true),
+                          ],
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 0),
+                            padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                            decoration:ColorUtil.formContBoxDec,
+                            constraints: BoxConstraints(
+                                minHeight: 60
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width:(col1Wid-20)*0.7,
+                                  child: Text("${recipeStaffMappingList[i]['StaffCategoryName']}",
+                                    style: ts20M(ColorUtil.themeBlack,fontsize: 18),
+                                  ),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:(col1Wid-20)*0.3,
+                                  alignment: Alignment.centerLeft,
+                                  text: "${recipeStaffMappingList[i]['TotalStaff']}",
+                                  textStyle: ts20M(ColorUtil.themeBlack,fontsize: 16),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:col2Wid-11,
+                                  alignment: Alignment.centerLeft,
+                                  text: "${recipeStaffMappingList[i]['WorkingTime']} Hrs",
+                                  textStyle: ts20M(ColorUtil.themeBlack,fontsize: 16),
+                                ),
+                                FittedText(
+                                  height: 25,
+                                  width:col2Wid-11+20,
+                                  alignment: Alignment.centerRight,
+                                  text: getRupeeString(recipeStaffMappingList[i]['SalaryCost']),
+                                  textStyle: ts20M(ColorUtil.red2,fontsize: 18,fontfamily: 'AH'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  )),
+                  getTotalFooter("StaffCost"),
+                ],
+              ),
+            )
+          ],
+        ),
+
+        Obx(() => Blur(
+              value: numPadUtils['isNumPadOpen'] as bool,
             )),
+        Obx(() => NumberPadPopUp(
+              isSevenInch: true,
+              isOpen: numPadUtils['isNumPadOpen'] as bool,
+              value: numPadUtils['numPadVal'].toString(),
+              title: numPadUtils['numPadTitle'].toString(),
+              subTitle: numPadUtils['numPadSubTitle'].toString(),
+              onCancel: () {
+                numPadUtils['isNumPadOpen'] = false;
+                clearNumPadUtils();
+              },
+              numberTap: (e) {
+                numPadUtils['numPadVal'] = e;
+              },
+              onDone: () {
+
+              },
+            )),
+        Obx(() => Loader(  value: showLoader.value )),
       ],
     ));
   }
@@ -672,35 +640,40 @@ class _ReceipeFormState extends State<ReceipeForm>
       unitName.value = e['Text'];
     };
     widgets.clear();
+    widgets['RecipeId']=HiddenController(dataname: "RecipeId");
+    widgets["RecipeMaterialMappingList"]=HiddenController(dataname: "RecipeMaterialMappingList");
+    widgets["RecipeStaffMappingList"]=HiddenController(dataname: "RecipeStaffMappingList");
+    widgets["RecipeVesselMappingList"]=HiddenController(dataname: "RecipeVesselMappingList");
+    widgets["TotalCost"]=HiddenController(dataname: "TotalCost");
+    widgets["VesselEssentialCost"]=HiddenController(dataname: "VesselEssentialCost");
+    widgets["StaffCost"]=HiddenController(dataname: "StaffCost");
+    widgets["MaterialCost"]=HiddenController(dataname: "MaterialCost");
     widgets['YieldQuantity'] = AddNewLabelTextField(
       dataname: 'YieldQuantity',
       hasInput: true,
-      required: false,
+      required: true,
       labelText: "Yield Quantity",
-      regExp: null,
+      regExp: MyConstants.digitRegEx,
       textInputType: TextInputType.number,
       onChange: (v) {},
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
-      maxlines: null,
     );
     widgets['RecipeName'] = AddNewLabelTextField(
       dataname: 'RecipeName',
       hasInput: true,
-      required: false,
+      required: true,
       labelText: "Recipe Name",
       regExp: null,
       onChange: (v) {},
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
-      maxlines: null,
     );
-
     widgets['RecipeTypeId'] = SlideSearch(
         dataName: "RecipeTypeId",
-        selectedValueFunc: (e) {},
+        selectedValueFunc: (e) {console("RecipeTypeId $e");},
         hinttext: "Select Recipe Type",
         data: []);
     widgets['RecipeCategoryId'] = SlideSearch(
@@ -714,15 +687,13 @@ class _ReceipeFormState extends State<ReceipeForm>
       selectedValueFunc: (e) {},
       hinttext: "Select Cuisine",
       data: [],
-      propertyName: "value",
     );
     widgets['UnitId'] = SlideSearch(
       dataName: "UnitId",
-      required: false,
+      required: true,
       selectedValueFunc: (e) {},
       hinttext: "Select Unit",
       data: [],
-      propertyName: "value",
     );
     widgets['RecipeChefId'] = SlideSearch(
       dataName: "RecipeChefId",
@@ -730,25 +701,17 @@ class _ReceipeFormState extends State<ReceipeForm>
       selectedValueFunc: (e) {},
       hinttext: "Select Recipe Chef",
       data: [],
-      propertyName: "value",
     );
-    widgets['RecipeChefId'] = SlideSearch(
-      dataName: "RecipeChefId",
-      required: false,
-      selectedValueFunc: (e) {},
-      hinttext: "Select Recipe Chef",
-      data: [],
-      propertyName: "value",
-    );
+
     widgets['PreParationTime'] = AddNewLabelTextField(
       dataname: 'PreParationTime',
       hasInput: true,
       required: true,
-      labelText: "PreParation Time",
+      labelText: "Preparation Time (hh:mm)",
       scrollPadding: 150,
-      regExp: MyConstants.decimalReg,
+      regExp: MyConstants.timeReg,
       textInputType: TextInputType.number,
-      onChange: (v) {},
+      onChange: (v) {updateTimeFormat(widgets['PreParationTime'], v);},
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
@@ -769,19 +732,22 @@ class _ReceipeFormState extends State<ReceipeForm>
           ),
         ),
       ),
-      textLength: MyConstants.maximumQty,
+      minLength: 5,
+      needMinLengthCheck: true,
     );
 
     materialForm['MaterialId'] = SlideSearch(
         dataName: "MaterialId",
-        selectedValueFunc: (e) {},
+        selectedValueFunc: onMaterialChange,
         hinttext: "Select Material",
-        data: []);
+        data: [],
+      propertyName: "value",
+    );
     materialForm['MaterialBrandId'] = SlideSearch(
         dataName: "MaterialBrandId",
-        selectedValueFunc: (e) {},
+        selectedValueFunc: (e) {    updateMPrice(e);},
         hinttext: "Select Material Brand",
-        data: []);
+        data: [],propertyName: "value",);
     materialForm['Quantity'] = AddNewLabelTextField(
       dataname: 'Quantity',
       hasInput: true,
@@ -797,6 +763,7 @@ class _ReceipeFormState extends State<ReceipeForm>
       suffixIcon: unitDropDown,
       textLength: MyConstants.maximumQty,
     );
+    materialForm['MaterialPrice']=HiddenController(dataname: "MaterialPrice");
 
     staffForm['StaffCategoryId'] = SlideSearch(
         dataName: "StaffCategoryId",
@@ -806,55 +773,63 @@ class _ReceipeFormState extends State<ReceipeForm>
     staffForm['TotalStaff'] = AddNewLabelTextField(
       dataname: 'TotalStaff',
       hasInput: true,
-      required: false,
+      required: true,
       labelText: "Count",
-      regExp: null,
+      regExp: MyConstants.digitRegEx,
+      textInputType: TextInputType.number,
       onChange: (v) {},
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
-      maxlines: null,
+      textLength: MyConstants.maximumQty,
     );
     staffForm['WorkingTime'] = AddNewLabelTextField(
       dataname: 'WorkingTime',
       hasInput: true,
-      required: false,
+      required: true,
       labelText: "hh:mm",
-      regExp: null,
-      onChange: (v) {},
+      regExp: MyConstants.timeReg,
+      textInputType: TextInputType.number,
+      onChange: (v) {
+        updateTimeFormat(staffForm['WorkingTime'],v);
+      },
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
-      maxlines: null,
+      minLength: 5,
+      needMinLengthCheck: true,
     );
     staffForm['SalaryCost'] = AddNewLabelTextField(
       dataname: 'SalaryCost',
       hasInput: true,
-      required: false,
+      required: true,
       labelText: "Cost",
-      regExp: null,
+      regExp: MyConstants.decimalReg,
+      textInputType: TextInputType.number,
       onChange: (v) {},
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
-      maxlines: null,
+      textLength: MyConstants.maximumQty,
     );
+
     vesselForm['VesselId'] = SlideSearch(
         dataName: "VesselId",
-        selectedValueFunc: (e) {},
+        selectedValueFunc: (e) {vesselForm['UsageTime'].setValue("");vesselForm['VesselQuantity'].setValue("");onVesselIdChg(e);},
         hinttext: "Select",
         data: []);
     vesselForm['UsageTime'] = AddNewLabelTextField(
       dataname: 'UsageTime',
       hasInput: true,
       required: false,
-      labelText: "UsageTime",
-      regExp: null,
-      onChange: (v) {},
+      labelText: "UsageTime (hh:mm)",
+      regExp: MyConstants.timeReg,
+      onChange: (v) {updateTimeFormat(vesselForm['UsageTime'], v);},
       onEditComplete: () {
         FocusScope.of(context).unfocus();
       },
-      maxlines: null,
+      minLength: 5,
+      needMinLengthCheck: true,
     );
     vesselForm['VesselQuantity'] = AddNewLabelTextField(
       dataname: 'VesselQuantity',
@@ -869,6 +844,7 @@ class _ReceipeFormState extends State<ReceipeForm>
       maxlines: null,
     );
 
+
     fillTreeDrp(widgets, "RecipeTypeId",
         page: page,
         spName: Sp.masterSp,
@@ -880,49 +856,44 @@ class _ReceipeFormState extends State<ReceipeForm>
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(widgets, "CuisineId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(widgets, "UnitId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(widgets, "RecipeChefId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(vesselForm, "VesselId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(staffForm, "StaffCategoryId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
+        refId: "",clearValues: false);
     fillTreeDrp(materialForm, "MaterialId",
         page: page,
         spName: Sp.masterSp,
         extraParam: MyConstants.extraParam,
         refType: "",
-        refId: "");
-    fillTreeDrp(materialForm, "MaterialBrandId",
-        page: page,
-        spName: Sp.masterSp,
-        extraParam: MyConstants.extraParam,
-        refType: "",
-        refId: "");
+        refId: "",clearValues: false);
+
 
     await parseJson(widgets, "",
         dataJson: widget.dataJson,
@@ -931,14 +902,15 @@ class _ReceipeFormState extends State<ReceipeForm>
         loader: showLoader, resCb: (e) {
       try {
         console("parseJson $e");
-        batchNo.value = " - ${e['Table'][0]['BatchNumber']}";
-        expectedDate.value =
-            checkNullEmpty(e['Table'][0]['DepartmentDistributionDate'])
-                ? DateTime.now()
-                : DateTime.parse(e['Table'][0]['DepartmentDistributionDate']);
-        if (!checkNullEmpty(e['Table'][0]['OutPutJson'])) {
-          purchaseList.value = jsonDecode(e['Table'][0]['OutPutJson']);
+        if(e['Table'].length>0){
+          totalCostDetail['MaterialCost']=e['Table'][0]['MaterialCost'];
+          totalCostDetail['StaffCost']=e['Table'][0]['StaffCost'];
+          totalCostDetail['VesselEssentialCost']=e['Table'][0]['VesselEssentialCost'];
+          totalCostDetail['TotalCost']=e['Table'][0]['TotalCost'];
         }
+        recipeMaterialMappingList.value=e['Table1'];
+        recipeStaffMappingList.value=e['Table2'];
+        recipeVesselMappingList.value=e['Table3'];
       } catch (e, t) {
         assignWidgetErrorToastLocal(e, t);
       }
@@ -948,12 +920,13 @@ class _ReceipeFormState extends State<ReceipeForm>
   void onMaterialChange(e) {
     unitDropDown.clearValues();
     if (!checkNullEmpty(e['UnitId'])) {
-      unitDropDown.setValue(getUnitIdNameList(e['UnitId'], e['UnitName']));
+      unitDropDown.setValue(getUnitIdNameList(e['UnitId'], e['UnitName'],value: e['UnitQuantityType']));
       if (unitDropDown.unitList.isNotEmpty) {
         unitDropDown.setValue(unitDropDown.unitList[0]);
         unitName.value = unitDropDown.selectedUnit.value['Text'];
       }
     }
+    updateMPrice(e);
     fillTreeDrp(materialForm, "MaterialBrandId",
         page: page,
         spName: Sp.masterSp,
@@ -963,95 +936,170 @@ class _ReceipeFormState extends State<ReceipeForm>
         needToDisable: true);
   }
 
+  void updateMPrice(e){
+    double mPrice=parseDouble(e['Price']);
+    foundWidgetByKey(materialForm, "MaterialPrice",needSetValue: true,value: mPrice>0?mPrice:"");
+  }
+
   void onMaterialAdd() async {
     List<ParamModel> a = await getFrmCollection(materialForm);
     if (a.isNotEmpty) {
       FocusScope.of(context).unfocus();
-      Map vDrp = materialForm['DepartmentId'].getValueMap();
       Map mDrp = materialForm['MaterialId'].getValueMap();
       Map mbDrp = materialForm['MaterialBrandId'].getValueMap();
       var brandId = mbDrp.isEmpty ? null : mbDrp['Id'];
-      console(vDrp);
-      console(mDrp);
-      console(mbDrp);
-      int existsVendorIndex = purchaseList
-          .indexWhere((element) => element['DepartmentId'] == vDrp['Id']);
-      int rNo = purchaseList.length;
-      if (existsVendorIndex == -1) {
-        var obj = {
-          "DepartmentId": vDrp['Id'],
-          "DepartmentName": vDrp['Text'],
-          "IsDelete": true,
-          "MaterialList": []
-        };
-        purchaseList.add(obj);
-      } else {
-        rNo = existsVendorIndex;
-      }
 
-      List productList = purchaseList[rNo]['MaterialList'];
-      int existsProductIndex = productList.indexWhere((element) =>
-          element['MaterialId'] == mDrp['Id'] &&
-          element['MaterialBrandId'] == brandId);
+      double price=getUnitTypePrice(parseDouble(materialForm['MaterialPrice'].getValue()), unitDropDown.selectedUnit.value['Value']);
+      double qty=parseDouble(materialForm['Quantity'].getValue());
+      double cost=Calculation().mul(price, qty);
+
+      int existsProductIndex = recipeMaterialMappingList.indexWhere((element) =>element['MaterialId'] == mDrp['Id'] && element['MaterialBrandId'] == brandId);
       if (existsProductIndex == -1) {
         var pObj = {
-          "DepartmentDistributionMaterialMappingId": null,
+          "RecipeId": null,
           "MaterialId": mDrp['Id'],
           "MaterialName": mDrp['value'],
           "MaterialBrandId": brandId,
           "MaterialBrandName": brandId != null ? mbDrp['value'] : "",
-          "PrimaryUnitId": unitDropDown.selectedUnit.value['Id'],
-          "PrimaryUnitName": unitDropDown.selectedUnit.value['Text'],
-          "ReturnQuantity": null,
-          "Quantity": parseDouble(materialForm['MaterialQty'].getValue()),
-          "DepartmentId": purchaseList[rNo]['DepartmentId'],
-          "IsDelete": true,
+          "UnitId": unitDropDown.selectedUnit.value['Id'],
+          "UnitName": unitDropDown.selectedUnit.value['Text'],
+          "Price": price,
+          "Quantity": qty,
+          "Cost": cost
         };
-        productList.add(pObj);
-        clearAllV2(materialForm);
-        setFrmValues(materialForm, [
-          {"DepartmentId": vDrp['Id']}
-        ]);
-        unitDropDown.clearValues();
-        unitName.value = "Unit";
+        recipeMaterialMappingList.add(pObj);
+        totalCostCalc();
       } else {
         CustomAlert().cupertinoAlert("Material Already Exits");
       }
+      clearAllV2(materialForm);
+      unitDropDown.clearValues();
+      unitName.value = "Unit";
     }
   }
 
-  void onProductQtyUpdate() {
-    double qty = parseDouble(numPadUtils['numPadVal']);
-    if (numPadUtils['departmentIndex'] != -1 &&
-        numPadUtils['productIndex'] != -1) {
-      if (numPadUtils['numPadType'] == 1) {
-        if (qty <= 0) {
-          CustomAlert().cupertinoAlert("Enter Quantity...");
-          return;
-        }
-        purchaseList[numPadUtils['departmentIndex'] as int]['MaterialList']
-            [numPadUtils['productIndex'] as int]['Quantity'] = qty;
-      } else if (numPadUtils['numPadType'] == 2) {
-        if (qty <= 0) {
-          CustomAlert().cupertinoAlert("Enter Return Quantity...");
-          return;
-        }
-        int di = numPadUtils['departmentIndex'] as int;
-        int pi = numPadUtils['productIndex'] as int;
-        double cQty =
-            parseDouble(purchaseList[di]['MaterialList'][pi]['Quantity']);
-        if (qty > cQty) {
-          CustomAlert()
-              .cupertinoAlert("Return Quantity should less than ${cQty}...");
-          return;
-        }
-        purchaseList[di]['MaterialList'][pi]['ReturnQuantity'] = qty;
-      }
-      purchaseList.refresh();
-    }
+  void onStaffAdd() async {
+    List<ParamModel> a = await getFrmCollection(staffForm);
+    if (a.isNotEmpty) {
+      FocusScope.of(context).unfocus();
+      Map sDrp = staffForm['StaffCategoryId'].getValueMap();
+      console(sDrp);
 
-    numPadUtils['isNumPadOpen'] = false;
-    clearNumPadUtils();
+      int existsIndex = recipeStaffMappingList.indexWhere((element) =>element['StaffCategoryId'] == sDrp['Id']);
+      if (existsIndex == -1) {
+        var pObj =   {
+          "RecipeId": null,
+          "StaffCategoryId": sDrp['Id'],
+          "StaffCategoryName": sDrp['Text'],
+          "TotalStaff": parseInt(staffForm['TotalStaff'].getValue()),
+          "WorkingTime": staffForm['WorkingTime'].getValue(),
+          "SalaryCost": parseDouble(staffForm['SalaryCost'].getValue()),
+          "RecipeStaffMappingId": null
+        };
+        recipeStaffMappingList.add(pObj);
+        totalCostCalc();
+      } else {
+        CustomAlert().cupertinoAlert("Staff Category Already Exits");
+      }
+      clearAllV2(staffForm);
+    }
+  }
+
+  void onVesselAdd() async {
+    List<ParamModel> a = await getFrmCollection(vesselForm);
+    if (a.isNotEmpty) {
+      FocusScope.of(context).unfocus();
+      Map vDrp = vesselForm['VesselId'].getValueMap();
+      console(vDrp);
+
+      int existsIndex = recipeVesselMappingList.indexWhere((element) =>element['VesselId'] == vDrp['Id']);
+      if (existsIndex == -1) {
+        int qty= parseInt(vesselForm['VesselQuantity'].getValue());
+        String usageTime=vesselForm['UsageTime'].getValue();
+        double totalMinutes=0;
+        if(usageTime.isNotEmpty){
+          List a=usageTime.split(":");
+          totalMinutes=Calculation().add(Calculation().mul(a[0], 60), a[1]);
+        }
+        double usageCost=Calculation().mul(perMinuteCost.value, totalMinutes);
+        var pObj =   {
+          "RecipeId": null,
+          "VesselId":  vDrp['Id'],
+          "VesselName": vDrp['Text'],
+          "VesselCategoryName": vesselCategoryName.value,
+          "VesselQuantity": qty,
+          "EssentialTime": usageTime,
+          "UsageCost": usageCost,
+          "RecipeVesselMappingId": ""
+        };
+
+        recipeVesselMappingList.add(pObj);
+        totalCostCalc();
+      } else {
+        CustomAlert().cupertinoAlert("Vessel Already Exits");
+      }
+      clearAllV2(vesselForm);
+    }
+  }
+
+  var vesselCategoryId=0.obs;
+  var vesselCategoryName="".obs;
+  var perMinuteCost=(0.0).obs;
+  void onVesselIdChg(e) async{
+    vesselCategoryId.value=0;
+    vesselCategoryName.value="";
+    perMinuteCost.value=0.0;
+    List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
+    parameterList.add(ParamModel(Key: "HiraricalId", Type: "String", Value: ""));
+    parameterList.add(ParamModel(Key: "RefId", Type: "String", Value: e['Id']));
+    parameterList.add(ParamModel(Key: "RefTypeName", Type: "String", Value: ""));
+    parameterList.add(ParamModel(Key: "TypeName", Type: "String", Value: "PerMinuteCost"));
+    parameterList.add(ParamModel(Key: "Page", Type: "String", Value: page));
+    _flutterUtils.getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/MaterialApi/GetUnit").then((value){
+      if(value[0]){
+        var parsed=jsonDecode(value[1]);
+        if(parsed['Unit'].length>0){
+          vesselCategoryId.value=parsed['Unit'][0]['VesselCategoryId'];
+          vesselCategoryName.value=parsed['Unit'][0]['VesselCategoryName'];
+          perMinuteCost.value=parseDouble(parsed['Unit'][0]['PerMinuteCost']);
+
+        }
+        console("$parsed");
+      }
+    });
+  }
+
+  void totalCostCalc(){
+    var materialCost=recipeMaterialMappingList.fold(0.0, (previousValue, element) => Calculation().add(previousValue , element['Cost']));
+    var staff=recipeStaffMappingList.fold(0.0, (previousValue, element) => Calculation().add(previousValue , element['SalaryCost']));
+    var vessel=recipeVesselMappingList.fold(0.0, (previousValue, element) => Calculation().add(previousValue , element['UsageCost']));
+    totalCostDetail['MaterialCost']=materialCost;
+    totalCostDetail['StaffCost']=staff;
+    totalCostDetail['VesselEssentialCost']=vessel;
+    totalCostDetail['TotalCost']=Calculation().add3(totalCostDetail['MaterialCost'], totalCostDetail['StaffCost'], totalCostDetail['VesselEssentialCost']);
+    totalCostDetail.refresh();
+    totalCostDetail.forEach((key, value) {
+      foundWidgetByKey(widgets, key,needSetValue: true,value:value );
+    });
+
+  }
+
+  void deleteHandler(int type,int index){
+    if(type==1){
+      recipeMaterialMappingList.removeAt(index);
+      recipeMaterialMappingList.refresh();
+    }
+    else if(type ==2){
+      recipeVesselMappingList.removeAt(index);
+      recipeVesselMappingList.refresh();
+    }
+    totalCostCalc();
+  }
+
+  void updateHandler(int type,int index){
+    if(type==1){
+    }
+    totalCostCalc();
   }
 
   void clearNumPadUtils() {
@@ -1063,11 +1111,47 @@ class _ReceipeFormState extends State<ReceipeForm>
     numPadUtils['numPadType'] = 0;
   }
 
+  Widget getTotalFooter(String key){
+    return  Padding(
+      padding: const EdgeInsets.only(left: 15,right: 15,top: 10,bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text("TOTAL",style: ts20M(ColorUtil.themeBlack,fontfamily: 'AH',fontWeight: FontWeight.bold,ls: 1),),
+          Obx(() => Text(getRupeeString(totalCostDetail[key]),style: ts20M(ColorUtil.red2,fontfamily: 'AH',fontWeight: FontWeight.bold),)),
+        ],
+      ),
+    );
+  }
+  Widget getCostCard(String title,var value){
+    return   Container(
+      height: ColorUtil.formContainerHeight,
+      decoration: ColorUtil.formContBoxDec,
+      margin: const EdgeInsets.only(left:15,right:15,bottom:5,),
+      padding: const EdgeInsets.only(left: 15,right: 15),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          FlexFittedText(
+            text: title,
+            textStyle: ts20M(ColorUtil.themeBlack),
+          ),
+          FlexFittedText(
+            text: getRupeeString(value),
+            textStyle: ts20M(ColorUtil.red2,fontWeight: FontWeight.bold,fontfamily: 'AH'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void dispose() {
     widgets.clear();
     materialForm.clear();
-    purchaseList.clear();
+    vesselForm.clear();
+    staffForm.clear();
+    recipeMaterialMappingList.clear();
     clearOnDispose();
     super.dispose();
   }

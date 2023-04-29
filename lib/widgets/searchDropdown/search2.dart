@@ -885,6 +885,9 @@ class SlideSearch extends StatelessWidget implements ExtensionCallback{
     else if(HE_IsInt(value)){
       setValues({propertyId:value});
     }
+    else if(value.runtimeType==String){
+      setValues({propertyId:value});
+    }
   }
 
   @override

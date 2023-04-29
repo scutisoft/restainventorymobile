@@ -466,11 +466,11 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                 recipeNumPadSubTitle.value=needApprovedQty.value?'Approved Quantity':'Requested Quantity';
                                 selectedIndex=-1;
                                 controller.closeAllOpenCell();
-                              }),
+                              },needBG: true),
                               swipeActionDelete((handler) async {
                                 materialMappingList.removeAt(i);
                                 await handler(true);
-                              }),
+                              },needBG: true),
                             ],
                             child: Container(
                               margin: const EdgeInsets.only(bottom: 0),
@@ -487,8 +487,11 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                         Text("${materialMappingList[i]['MaterialName']}",
                                           style: ts20M(ColorUtil.themeBlack,fontsize: 18),
                                         ),
-                                        Text("${materialMappingList[i]['MaterialBrandName']}",
-                                          style: ts20M(ColorUtil.red2,fontsize: 15),
+                                        Visibility(
+                                          visible: !checkNullEmpty(materialMappingList[i]['MaterialBrandName']),
+                                          child: Text("${materialMappingList[i]['MaterialBrandName']}",
+                                            style: ts20M(ColorUtil.red2,fontsize: 15),
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -614,7 +617,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                 recipeNumPadSubTitle.value=needApprovedQty.value?'Approved Quantity':'Requested Quantity';
                                 selectedIndex=-1;
                                 controller.closeAllOpenCell();
-                              }),
+                              },needBG: true),
                               swipeActionDelete((handler) async {
                                 recipeMappingList.removeWhere((element) => element['RecipeId']==recipeParentList[i]['RecipeId']);
                                 if(selectedIndex!=-1){
@@ -623,7 +626,7 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
                                 recipeParentList.removeAt(i);
                                 recipeInnerProductList.clear();
                                 await handler(true);
-                              }),
+                              },needBG: true),
                             ],
                             child: Column(
                               mainAxisSize: MainAxisSize.min,

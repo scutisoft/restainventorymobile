@@ -8,6 +8,7 @@ import '../notifier/configuration.dart';
 var showLoader=false.obs;
 
 String GetBaseUrl(){
+  //return MyConstants.isLive?"https://scutisoft.in/Restainventory": "https://scutisoft.in/Restainventory";
   return MyConstants.isLive?"http://45.126.252.78/Restainventory": "http://45.126.252.78/Restainventory";
 }
 String GetImageBaseUrl(){
