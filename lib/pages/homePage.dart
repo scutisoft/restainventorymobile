@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
+import 'package:restainventorymobile/pages/packageDistribution/packageDisGrid.dart';
 import 'package:restainventorymobile/pages/packageMaster/packageMasterGrid.dart';
 import 'package:restainventorymobile/pages/packageProduct/packageProductGrid.dart';
 import 'package:restainventorymobile/pages/physicalStock/physicalStock.dart';
@@ -80,6 +81,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     {"Title": 'Production', "PageNumber": 9, "accessId": 100},
     {"Title": 'Package Master', "PageNumber": 10, "accessId": 100},
     {"Title": 'Package Product', "PageNumber": 11, "accessId": 100},
+    {"Title": 'Package Distribution', "PageNumber": 13, "accessId": 100},
     {"Title": 'Physical Stock', "PageNumber": 12, "accessId": 100},
     {"Title":'Report',"PageNumber":7,"accessId": 100},
   ];
@@ -228,6 +230,9 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             : menuSel.value == 12 ? PhysicalStock(
                                         navCallback: openDrawer,
                                       )
+            : menuSel.value == 13 ? PackageDistribution(
+                                      navCallback: openDrawer,
+                                    )
             : Container()),
 
       ),
