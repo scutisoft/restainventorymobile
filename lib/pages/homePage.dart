@@ -16,6 +16,7 @@ import 'package:restainventorymobile/pages/purchaseOrder/purchaseGrid.dart';
 import 'package:restainventorymobile/pages/report/reportSelection.dart';
 import 'package:restainventorymobile/pages/transfer/transferGrid.dart';
 import 'package:restainventorymobile/utils/constants.dart';
+import 'package:restainventorymobile/widgets/alertDialog.dart';
 import 'package:restainventorymobile/widgets/customAppBar.dart';
 
 import '../notifier/configuration.dart';
@@ -88,153 +89,171 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: MyConstants.bottomSafeArea,
-      child: Scaffold(
-        key: scaffoldkey,
-        backgroundColor: ColorUtil.bgColor,
-        drawer: Container(
-          height: SizeConfig.screenHeight,
-          width: SizeConfig.screenWidth! * 0.8,
-          clipBehavior: Clip.antiAlias,
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(color: Colors.white),
-          child: Column(
-            children: [
-              /*Obx(() => CustomNetworkImg(
-                dbFilePath: profileImage.value,
-                directoryPath:imgPath==null?"": imgPath!.path,
-                width: 100,
-                height: 100,
-                errorBuilder: Icon(Icons.person_outline_outlined,color: ColorUtil.themeWhite,),
-              )),*/
-              Row(
-                children: [
-                  CustomCircle(
-                    hei: 50,
-                    color: ColorUtil.red,
-                    widget: const Icon(
-                      Icons.person_2_outlined,
-                      color: Colors.white,
-                      size: 25,
+    return WillPopScope(
+      onWillPop: () {
+          return CustomAlert(
+            cancelCallback: (){},
+            callback: (){
+
+            }
+          ).exitAppAlert("assets/icons/power-on.png", "Are you sure want to exit the app ?", false);
+        //  return Future.value(false);
+        },
+      child: SafeArea(
+        bottom: MyConstants.bottomSafeArea,
+        child: Scaffold(
+          key: scaffoldkey,
+          backgroundColor: ColorUtil.bgColor,
+          drawer: Container(
+            height: SizeConfig.screenHeight,
+            width: SizeConfig.screenWidth! * 0.8,
+            clipBehavior: Clip.antiAlias,
+            padding: const EdgeInsets.all(20.0),
+            decoration: BoxDecoration(color: Colors.white),
+            child: Column(
+              children: [
+                /*Obx(() => CustomNetworkImg(
+                  dbFilePath: profileImage.value,
+                  directoryPath:imgPath==null?"": imgPath!.path,
+                  width: 100,
+                  height: 100,
+                  errorBuilder: Icon(Icons.person_outline_outlined,color: ColorUtil.themeWhite,),
+                )),*/
+                Row(
+                  children: [
+                    CustomCircle(
+                      hei: 50,
+                      color: ColorUtil.red,
+                      widget: const Icon(
+                        Icons.person_2_outlined,
+                        color: Colors.white,
+                        size: 25,
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: Obx(() => Text(
+                            userName.value,
+                            style: ts20M(ColorUtil.themeBlack),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                    ),
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    CloseBtnV1(
+                      onTap: closeDrawer,
+                    ),
+                  ],
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ListView(
+                  shrinkWrap: true,
+                  children: [
+                    for (int i = 0; i < menuList.length; i++)
+                      AccessWidget(
+                        hasAccess: /*menuList[i]['accessId']==null?true: isHasAccess(menuList[i]['accessId'])*/
+                        true,
+                        needToHide: true,
+                        widget: DrawerContent(
+                          title: menuList[i]['Title'],
+                          Img: '',
+                          pageNumber: menuList[i]['PageNumber'],
+                        ),
+                        onTap: () {
+                          menuSel.value = menuList[i]['PageNumber'];
+                          closeDrawer();
+                        },
+                      ),
+                  ],
+                ),
+                const Spacer(),
+                const Divider(),
+                const SizedBox(
+                  height: 5,
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Obx(() => Text(
+                        storeName.value,
+                        style: ts20(ColorUtil.themeBlack, fontfamily: 'AM'),
+                        textAlign: TextAlign.start,
+                      )),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                const Divider(),
+                GestureDetector(
+                  onTap: () {
+                    clearUserSessionDetail();
+                  },
+                  child: Container(
+                    height: 50,
+                    color: Colors.transparent,
+                    child: Row(
+                      children: [
+                        Text(
+                          "LogOut",
+                          style: ts20M(ColorUtil.red, fontsize: 23),
+                        )
+                      ],
                     ),
                   ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    child: Obx(() => Text(
-                          userName.value,
-                          style: ts20M(ColorUtil.themeBlack),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        )),
-                  ),
-                  const SizedBox(
-                    width: 10,
-                  ),
-                  CloseBtnV1(
-                    onTap: closeDrawer,
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              for (int i = 0; i < menuList.length; i++)
-                AccessWidget(
-                  hasAccess: /*menuList[i]['accessId']==null?true: isHasAccess(menuList[i]['accessId'])*/
-                      true,
-                  needToHide: true,
-                  widget: DrawerContent(
-                    title: menuList[i]['Title'],
-                    Img: '',
-                    pageNumber: menuList[i]['PageNumber'],
-                  ),
-                  onTap: () {
-                    menuSel.value = menuList[i]['PageNumber'];
-                    closeDrawer();
-                  },
-                ),
-              const Spacer(),
-              const Divider(),
-              const SizedBox(
-                height: 5,
-              ),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Obx(() => Text(
-                      storeName.value,
-                      style: ts20(ColorUtil.themeBlack, fontfamily: 'AM'),
-                      textAlign: TextAlign.start,
-                    )),
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              const Divider(),
-              GestureDetector(
-                onTap: () {
-                  clearUserSessionDetail();
-                },
-                child: Container(
-                  height: 50,
-                  color: Colors.transparent,
-                  child: Row(
-                    children: [
-                      Text(
-                        "LogOut",
-                        style: ts20M(ColorUtil.red, fontsize: 23),
-                      )
-                    ],
-                  ),
-                ),
-              )
-            ],
+                )
+              ],
+            ),
           ),
-        ),
 
-        body: Obx(() => menuSel.value == 1 ? Dashboard(
-                navCallback: openDrawer,
-              )
-            : menuSel.value == 2  ? IndentGrid(
-                    navCallback: openDrawer,
-                  )
-            : menuSel.value == 3 ? PurchaseGrid(
-                        navCallback: openDrawer,
-                      )
-            : menuSel.value == 4 ? GoodsGrid(
-                            navCallback: openDrawer,
-                          )
-            : menuSel.value == 5  ? TransferGrid(
-                                navCallback: openDrawer,
-                              )
-            : menuSel.value == 6 ? DepartmentDistributionGrid(
-                                    navCallback: openDrawer,
-                                  )
-            :menuSel.value==7?ReportSelection(
+          body: Obx(() => menuSel.value == 1 ? Dashboard(
+                  navCallback: openDrawer,
+                )
+              : menuSel.value == 2  ? IndentGrid(
+                      navCallback: openDrawer,
+                    )
+              : menuSel.value == 3 ? PurchaseGrid(
+                          navCallback: openDrawer,
+                        )
+              : menuSel.value == 4 ? GoodsGrid(
                               navCallback: openDrawer,
-                              )
-            : menuSel.value == 8 ? RecipeMasterGrid(
-                                        navCallback: openDrawer,
-                                      )
-            : menuSel.value == 9 ? ProductionGrid(
-                                        navCallback: openDrawer,
-                                      )
-            : menuSel.value == 10 ? PackageMasterGrid(
-                                        navCallback: openDrawer,
-                                      )
-            : menuSel.value == 11 ? PackageProductGrid(
-                                        navCallback: openDrawer,
-                                      )
-            : menuSel.value == 12 ? PhysicalStock(
-                                        navCallback: openDrawer,
-                                      )
-            : menuSel.value == 13 ? PackageDistribution(
+
+                            )
+              : menuSel.value == 5  ? TransferGrid(
+                                  navCallback: openDrawer,
+                                )
+              : menuSel.value == 6 ? DepartmentDistributionGrid(
                                       navCallback: openDrawer,
                                     )
-            : Container()),
+              :menuSel.value==7?ReportSelection(
+                                navCallback: openDrawer,
+                                )
+              : menuSel.value == 8 ? RecipeMasterGrid(
+                                          navCallback: openDrawer,
+                                        )
+              : menuSel.value == 9 ? ProductionGrid(
+                                          navCallback: openDrawer,
+                                        )
+              : menuSel.value == 10 ? PackageMasterGrid(
+                                          navCallback: openDrawer,
+                                        )
+              : menuSel.value == 11 ? PackageProductGrid(
+                                          navCallback: openDrawer,
+                                        )
+              : menuSel.value == 12 ? PhysicalStock(
+                                          navCallback: openDrawer,
+                                        )
+                                         : menuSel.value == 13 ? PackageDistribution(
+                                      navCallback: openDrawer,
+                                    )
+              : Container()),
 
+
+        ),
       ),
     );
   }

@@ -12,9 +12,10 @@ class MaterialInnerGrid extends StatefulWidget {
   Widget? scrollableHeaderWidget;
   Widget? staticWidget;
   Widget? staticHeaderWidget;
-  double? height;
-  MaterialInnerGrid({this.drawerCallback,this.title,this.height,this.scrollableWidget,this.scrollableHeaderWidget,
-  this.staticHeaderWidget, this.staticWidget});
+  double height;
+  double staticWidth;
+  MaterialInnerGrid({this.drawerCallback,this.title,required this.height,this.scrollableWidget,this.scrollableHeaderWidget,
+  this.staticHeaderWidget, this.staticWidget,this.staticWidth=250});
 
   @override
   _MaterialInnerGridState createState() => _MaterialInnerGridState();
@@ -30,7 +31,8 @@ class _MaterialInnerGridState extends State<MaterialInnerGrid> {
 
   bool showShadow=false;
 
-  double staticWidth=250;
+
+  double headerHeight=60;
 
   @override
   void initState() {
@@ -74,7 +76,7 @@ class _MaterialInnerGridState extends State<MaterialInnerGrid> {
 
             //Scrollable
             Positioned(
-              left:staticWidth-1,
+              left:widget.staticWidth-1,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,8 +89,8 @@ class _MaterialInnerGridState extends State<MaterialInnerGrid> {
                         color: Color(0XFF353535),
                       ),*/
                       Container(
-                        height: 60,
-                        width: SizeConfig.screenWidth!-staticWidth-1,
+                        height: headerHeight,
+                        width: SizeConfig.screenWidth!-widget.staticWidth-1,
                         clipBehavior: Clip.antiAlias,
                         decoration: BoxDecoration(
                             color: ColorUtil.red,
@@ -105,20 +107,19 @@ class _MaterialInnerGridState extends State<MaterialInnerGrid> {
                     ],
                   ),
                   Container(
-                    height: 1030,
-                    width: SizeConfig.screenWidth!-staticWidth-1,
+                    height: widget.height,
+                    width: SizeConfig.screenWidth!-widget.staticWidth-1,
                     alignment: Alignment.topLeft,
                     clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color:Colors.white,
                     ),
-
                     child: SingleChildScrollView(
                       controller: body,
                       scrollDirection: Axis.horizontal,
                       physics: ClampingScrollPhysics(),
                       child: Container(
-                        height: 1030,
+                        height: widget.height-headerHeight,
                         alignment: Alignment.topCenter,
                         // color:AppTheme.gridbodyBgColor,
                         color:Colors.white,
@@ -152,7 +153,7 @@ class _MaterialInnerGridState extends State<MaterialInnerGrid> {
                     ],
                   ),
                   Container(
-                    height: 1030,
+                    height: widget.height,
                     alignment: Alignment.topCenter,
                     decoration: BoxDecoration(
                       //   color:showShadow? AppTheme.gridbodyBgColor:Colors.transparent,
@@ -167,7 +168,7 @@ class _MaterialInnerGridState extends State<MaterialInnerGrid> {
                         ]
                     ),
                     child: Container(
-                      height: 1030,
+                      height: widget.height-headerHeight,
                       alignment: Alignment.topCenter,
                       child: SingleChildScrollView(
                         controller: verticalLeft,

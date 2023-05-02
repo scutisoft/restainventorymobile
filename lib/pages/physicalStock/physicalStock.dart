@@ -1,8 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
+import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:restainventorymobile/pages/physicalStock/physicalStockForm.dart';
+import '../../widgets/listView/HE_ListView.dart';
+import '../../widgets/loader.dart';
 import '../../widgets/staticColumnScroll/materialInnerGrid.dart';
 import '/api/apiUtils.dart';
 import '/api/sp.dart';
@@ -23,130 +30,185 @@ class PhysicalStock extends StatefulWidget {
   State<PhysicalStock> createState() => _PhysicalStockState();
 }
 
-class _PhysicalStockState extends State<PhysicalStock> {
+class _PhysicalStockState extends State<PhysicalStock>  with HappyExtension implements HappyExtensionHelperCallback{
 
-  RxList<dynamic> productList=RxList();
-
+  Map widgets={};
+  var totalCount=0.obs;
+  late HE_ListViewBody he_listViewBody;
+  RxBool loader=RxBool(false);
 
   @override
-  void initState(){
+  void initState() {
+    he_listViewBody=HE_ListViewBody(
+      data: [],
+      getWidget: (e){
+        return HE_PhyStockContent(
+          data: e,
+          onDelete: (dataJson){
+
+          },
+          onEdit: (updatedMap){
+            he_listViewBody.updateArrById("OverAllPhysicalStockId", updatedMap);
+          },
+          globalKey: GlobalKey(),
+        );
+      },
+    );
+    assignWidgets();
     super.initState();
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return PageBody(
-      body: Column(
+    return SizedBox(
+      height: SizeConfig.screenHeight,
+      width: SizeConfig.screenWidth,
+      child: Column(
         children: [
           CustomAppBar(
             title: "Physical Stock",
             onTap: widget.navCallback,
           ),
-          MaterialInnerGrid(
-            height: SizeConfig.screenHeight!-80,
-            staticHeaderWidget: Container(
-              width: 250,
-              height: 60,
-              padding: EdgeInsets.only(left: 15),
-              alignment: Alignment.centerLeft,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(5)),
-                color: ColorUtil.red,
-              ),
-              child: Text("Item",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),),
-            ),
-            staticWidget: Column(
-              children: productList.asMap().map((key, value) =>MapEntry(key,
-                GestureDetector(
-                  onTap: (){
-                  },
-                  child: Container(
-                    height: 65,
-                    width: 250,
-                    padding: EdgeInsets.only(top: 10,bottom: 10,left: 15),
-                   // margin: EdgeInsets.only(bottom: key==In.PO_purchaseList.length-1?350:0),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border(bottom: BorderSide(color: ColorUtil.greyBorder))
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("${value.MaterialName}", style: TextStyle(fontFamily: 'RR',color: Colors.white,fontSize: 20),),
-                        SizedBox(height: 5,),
-                      //  value.materialBrandName==null?Container():Text("${value.materialBrandName}",style: TextStyle(fontFamily: 'RR',color: selectedMaterialId!=key? AppTheme.restroTheme:Colors.white,fontSize: 14),),
-                      ],
-                    ),
-                  ),
-                ),
-              )
-              ).values.toList(),
-            ),
-            scrollableHeaderWidget: Row(
-              children: [
-                Container(
-                  // height: hei,
-                  width: 120,
-                  child: Text("Purchase Qty",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),textAlign: TextAlign.left,),
-                ),
-                Container(
-                  // height: hei,
-                  width: 120,
-                  child: Text("Price",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),textAlign: TextAlign.center,),
-                ),
-                Container(
-                  // height: hei,
-                  width: 110,
-                  child: Text("Indent Qty",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),textAlign: TextAlign.right,),
-                ),
-              ],
-            ),
-            scrollableWidget: Column(
-              children: productList.asMap().map((key, value) =>MapEntry(key,
-                  GestureDetector(
-                    onTap: (){
-
-                    },
-                    child: Container(
-                      height: 65,
-                      padding: EdgeInsets.only(top: 0,bottom: 0,),
-                    //  margin: EdgeInsets.only(bottom: key==In.PO_purchaseList.length-1?350:0),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border(bottom: BorderSide(color:ColorUtil.greyBorder))
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            // height: hei,
-                            width: 120,
-                            child: Text("Purchase Qty",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),textAlign: TextAlign.left,),
-                          ),
-                          Container(
-                            // height: hei,
-                            width: 120,
-                            child: Text("Price",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),textAlign: TextAlign.center,),
-                          ),
-                          Container(
-                            // height: hei,
-                            width: 110,
-                            child: Text("Indent Qty",style: TextStyle(color:Colors.white, fontFamily:'RR',fontSize: 20),textAlign: TextAlign.right,),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-              )
-              ).values.toList(),
-            ),
-          )
+          CustomAppBar2(
+            title:  "Total Physical Stock",
+            subTitle: "Available",
+            count: totalCount,
+            addCb: (){
+              fadeRoute(PhysicalStockForm(closeCb: (e){
+                he_listViewBody.addData(e['Table'][0]);
+                totalCount.value=he_listViewBody.data.length;
+              },));
+            },
+            needDatePicker: true,
+            onDateSel: (a){
+              dj=a;
+              assignWidgets();
+            },
+          ),
+          Flexible(child:he_listViewBody),
+          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty && !loader.value,)),
+          ShimmerLoader(loader: loader,),
         ],
       ),
     );
   }
 
+  var dj={"FromDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now()),
+    "ToDate":DateFormat(MyConstants.dbDateFormat).format(DateTime.now())
+  };
 
+  @override
+  void assignWidgets() {
+
+    parseJson(widgets, "",traditionalParam: TraditionalParam(getByIdSp: "IV_PhysicalStock_GetOverAllPhysicalStockDetail"),needToSetValue: false,resCb: (res){
+      console(res);
+      try{
+        totalCount.value=res['Table'].length;
+        he_listViewBody.assignWidget(res['Table']);
+      }catch(e){}
+    },loader: showLoader,dataJson:  jsonEncode(dj),extraParam: MyConstants.extraParam);
+  }
+
+  @override
+  void dispose(){
+    he_listViewBody.clearData();
+    clearOnDispose();
+    super.dispose();
+  }
+
+
+}
+class HE_PhyStockContent extends StatelessWidget implements HE_ListViewContentExtension{
+  Map data;
+  Function(Map)? onEdit;
+  Function(String)? onDelete;
+  GlobalKey globalKey;
+  HE_PhyStockContent({Key? key,required this.data,this.onEdit,this.onDelete,required this.globalKey}) : super(key: key){
+    dataListener.value=data;
+  }
+
+  var dataListener={}.obs;
+  //var separatorHeight = 50.0.obs;
+
+  @override
+  Widget build(BuildContext context) {
+    /*WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      separatorHeight.value=parseDouble(globalKey.currentContext!.size!.height)-30;
+    });*/
+    return Obx(
+            ()=> Container(
+          key: globalKey,
+          margin: const EdgeInsets.only(bottom: 10,left: 15,right: 10),
+          padding: const EdgeInsets.all(10),
+          width: SizeConfig.screenWidth!*1,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: const Color(0XFFffffff),
+          ),
+          clipBehavior:Clip.antiAlias,
+          child:  Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                flex: 2,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("${dataListener['PhysicalStockDate']}",style: ts20M(ColorUtil.red,fontfamily: 'AH',fontsize: 18),),
+                    inBtwHei(),
+                    gridCardText("No of Items: ", dataListener['NoOfItems']),
+                    inBtwHei(),
+                    gridCardText("Different Count: ", dataListener['OverAllDifferentCount']),
+                    inBtwHei(),
+                    gridCardText("Different Amount: ", getRupeeString(dataListener['OverAllDifferentValue'])),
+                    inBtwHei(),
+                  ],
+                ),
+              ),
+             /* EyeIcon(
+                onTap: (){
+                  fadeRoute(CommomView(
+                    pageTitle: "Department Distribution",
+                    spName: "IV_DepartmentDistribution_ViewDepartmentDistributionDetail",
+                    page: "DepartmentDistribution",
+                    dataJson: getDataJsonForGrid({
+                      "DepartmentDistributionId":dataListener['DepartmentDistributionId'],
+                    }),
+                  ));
+                },
+              ),*/
+              GridEditIcon(
+                hasAccess: dataListener['IsEdit']??false,
+                onTap: (){
+                  fadeRoute(PhysicalStockForm(
+                    isEdit: true,
+                    dataJson: getDataJsonForGrid({"OverAllPhysicalStockId":dataListener['OverAllPhysicalStockId']}),
+                    closeCb: (e){
+                      updateDataListener(e['Table'][0]);
+                      onEdit!(e['Table'][0]);
+                    },
+                  ));
+                },
+              ),
+              /* GridDeleteIcon(
+                hasAccess: true,
+                onTap: (){
+                  onDelete!(getDataJsonForGrid({"DepartmentDistributionId":dataListener['DepartmentDistributionId']}));
+                },
+              ),*/
+
+            ],
+          ),
+        )
+    );
+  }
+
+  @override
+  updateDataListener(Map data) {
+    data.forEach((key, value) {
+      if(dataListener.containsKey(key)){
+        dataListener[key]=value;
+      }
+    });
+  }
 }
