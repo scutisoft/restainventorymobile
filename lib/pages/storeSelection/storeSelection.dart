@@ -85,6 +85,8 @@ class _StoreSelectionState extends State<StoreSelection> {
   void setStore(e){
     setSharedPrefStringUtil(e['Id'], SP_STOREID);
     setSharedPrefStringUtil(e['Text'], SP_STORENAME);
+    MyConstants.rupeeString=e['Value'];
+    setState(() {});
     Get.close(2);
     fadeRoute(HomePage());
   }

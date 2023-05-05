@@ -1010,10 +1010,10 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
         return;
       }
       recQty=parseDouble(materialMappingList[recipeEditIndex]['RequestedQuantity']);
-      if(qty>recQty){
+      /*if(qty>recQty){
         CustomAlert().cupertinoAlert("Approved Quantity Should be less than Requested Quantity ($recQty)...");
         return;
-      }
+      }*/
       appQty=qty;
       materialMappingList[recipeEditIndex]['ApprovedQuantity']=appQty;
     }
@@ -1067,10 +1067,10 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
         return;
       }
 
-      if(needApprovedQty.value && aprQty>qty){
+      /*if(needApprovedQty.value && aprQty>qty){
         CustomAlert().cupertinoAlert("Approved Quantity Should be less than Requested Quantity...");
         return;
-      }
+      }*/
 
       List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
       parameterList.add(ParamModel(Key: "RecipeId", Type: "String", Value: rDrp['RecipeId']));
@@ -1098,10 +1098,10 @@ class _IndentFormState extends State<IndentForm> with HappyExtension,TickerProvi
         return;
       }
       recQty=parseDouble(recipeParentList[recipeEditIndex]['RequestedQuantity']);
-      if(qty>recQty){
+      /*if(qty>recQty){
         CustomAlert().cupertinoAlert("Approved Quantity Should be less than Requested Quantity ($recQty)...");
         return;
-      }
+      }*/
       appQty=qty;
     }
     else{

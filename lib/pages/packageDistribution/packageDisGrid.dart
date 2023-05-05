@@ -14,20 +14,18 @@ import '/widgets/listView/HE_ListView.dart';
 import '/widgets/loader.dart';
 import '/utils/sizeLocal.dart';
 import '/widgets/customAppBar.dart';
-import 'receipeForm.dart';
-import 'recipeView.dart';
+import 'packageDisForm.dart';
 
-class RecipeMasterGrid extends StatefulWidget {
+
+class PackageDistribution extends StatefulWidget {
   VoidCallback navCallback;
-  RecipeMasterGrid({Key? key, required this.navCallback}) : super(key: key);
+  PackageDistribution({Key? key, required this.navCallback}) : super(key: key);
 
   @override
-  State<RecipeMasterGrid> createState() => _RecipeMasterGridState();
+  State<PackageDistribution> createState() => _PackageDistributionState();
 }
 
-class _RecipeMasterGridState extends State<RecipeMasterGrid>
-    with HappyExtension
-    implements HappyExtensionHelperCallback {
+class _PackageDistributionState extends State<PackageDistribution> with HappyExtension implements HappyExtensionHelperCallback {
   Map widgets = {};
   var totalCount = 0.obs;
   late HE_ListViewBody he_listViewBody;
@@ -41,12 +39,12 @@ class _RecipeMasterGridState extends State<RecipeMasterGrid>
           data: e,
           onDelete: (dataJson) {
             gridDelete(() {
-              sysDeleteHE_ListView(he_listViewBody, "RecipeId",dataJson: dataJson,loader: showLoader,
-                  traditionalParam: TraditionalParam(executableSp: "IV_Recipe_DeleteRecipeDetail"),isCustomDialog: true,successCallback: deleteCallback);
+              sysDeleteHE_ListView(he_listViewBody, "PackageDistributionId",dataJson: dataJson,loader: showLoader,
+                  traditionalParam: TraditionalParam(executableSp: "IV_PackageDistribution_DeletePackageDistributionDetail"),isCustomDialog: true,successCallback: deleteCallback);
             });
           },
           onEdit: (updatedMap) {
-            he_listViewBody.updateArrById("ReceipeId", updatedMap);
+            he_listViewBody.updateArrById("PackageDistributionId", updatedMap);
           },
           globalKey: GlobalKey(),
         );
@@ -64,15 +62,15 @@ class _RecipeMasterGridState extends State<RecipeMasterGrid>
       child: Column(
         children: [
           CustomAppBar(
-            title: "Recipe Master",
+            title: "Package Distribution",
             onTap: widget.navCallback,
           ),
           CustomAppBar2(
-            title: "Total Recipe",
+            title: "Total Package Distribution",
             subTitle: "Available",
             count: totalCount,
             addCb: () {
-              fadeRoute(ReceipeForm(
+              fadeRoute(PackageDisForm(
                 closeCb: (e) {
                   he_listViewBody.addData(e['Table'][0]);
                   totalCount.value = he_listViewBody.data.length;
@@ -81,9 +79,7 @@ class _RecipeMasterGridState extends State<RecipeMasterGrid>
             },
           ),
           Flexible(child: he_listViewBody),
-          Obx(() => NoData(
-                show: he_listViewBody.widgetList.isEmpty,
-              )),
+          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
         ],
       ),
     );
@@ -91,10 +87,10 @@ class _RecipeMasterGridState extends State<RecipeMasterGrid>
 
   @override
   void assignWidgets() {
-    var dj = {"RecipeId": null};
+    var dj = {"PackageDistributionId": null};
     parseJson(widgets, "",
         traditionalParam:
-            TraditionalParam(getByIdSp: "IV_Recipe_GetRecipeDetail"),
+            TraditionalParam(getByIdSp: "IV_PackageDistribution_GetPackageDistributionDetail"),
         needToSetValue: false, resCb: (res) {
       console(res);
       try {
@@ -158,89 +154,21 @@ class HE_DepDisContent extends StatelessWidget
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${dataListener['RecipeName']}",
+                      "${dataListener['PackageName']}",
                       style:
                           ts20M(ColorUtil.red, fontfamily: 'AH', fontsize: 18),
                     ),
                     inBtwHei(),
                     Text(
-                      "${dataListener['RecipeTypeName'] ?? ""}",
+                      "${dataListener['PackageDistributionQuantity'] ?? ""}",
                       style: ts20M(ColorUtil.themeBlack,
                           fontfamily: 'AH', fontsize: 18),
                     ),
                     inBtwHei(),
                     Text(
-                      "${dataListener['RecipeCategoryName'] ?? ""}",
+                      "${dataListener['OutletName'] ?? ""}",
                       style: ts20M(ColorUtil.themeBlack,
                           fontfamily: 'AH', fontsize: 18),
-                    ),
-                    inBtwHei(),
-                    Text(
-                      "${dataListener['CuisineName'] ?? ""}",
-                      style: ts20M(ColorUtil.themeBlack,
-                          fontfamily: 'AH', fontsize: 18),
-                    ),
-                    inBtwHei(),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      "${dataListener['YieldQuantity']} ${dataListener['UnitShortCode']}",
-                      style:
-                          ts20M(ColorUtil.red, fontfamily: 'AH', fontsize: 18),
-                    ),
-                    inBtwHei(),
-                    Text(
-                      getRupeeString(dataListener['TotalCost']),
-                      style:
-                          ts20M(ColorUtil.red, fontfamily: 'AH', fontsize: 18),
-                    ),
-                    inBtwHei(),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        EyeIcon(
-                          onTap: () {
-                            fadeRoute(RecipeViewPage(
-                              /*pageTitle: "Recipe Master",
-                              spName:
-                                  "IV_DepartmentDistribution_ViewDepartmentDistributionDetail",
-                              page: "Recipe",
-                              dataJson: getDataJsonForGrid({
-                                "RecipeId": dataListener['RecipeId'],
-                              }),*/
-                            ));
-                          },
-                        ),
-                        GridEditIcon(
-                          hasAccess: true,
-                          onTap: () {
-                            fadeRoute(ReceipeForm(
-                              isEdit: true,
-                              dataJson: getDataJsonForGrid({
-                                "RecipeId": dataListener['RecipeId']
-                              }),
-                              closeCb: (e) {
-                                updateDataListener(e['Table'][0]);
-                                onEdit!(e['Table'][0]);
-                              },
-                            ));
-                          },
-                        ),
-                        GridDeleteIcon(
-                          hasAccess: true,
-                          onTap: () {
-                            onDelete!(getDataJsonForGrid(
-                                {"RecipeId": dataListener['RecipeId']}));
-                          },
-                        ),
-                      ],
                     ),
                   ],
                 ),

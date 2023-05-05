@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:restainventorymobile/utils/constants.dart';
 import '../api/apiUtils.dart';
@@ -61,7 +62,8 @@ class Blur extends StatelessWidget {
 class NoData extends StatelessWidget {
   bool show;
   double topPadding;
-  NoData({this.show=true,this.topPadding=0});
+  String text;
+  NoData({this.show=true,this.topPadding=20,this.text="No Data Available"});
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +75,10 @@ class NoData extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-         //     Image.asset("assets/Slice/no-data-available.jpg",height: 120,),
-              const SizedBox(height: 10,),
-              Text(Language.noData,
-                style: TextStyle(fontFamily: Language.regularFF,fontSize: 18,color: ColorUtil.text5),
+              SvgPicture.asset("assets/icons/nodata.svg",height: 150,),
+              const SizedBox(height: 20,),
+              Text(text,
+                style: TextStyle(fontFamily: 'AH',fontSize: 18,color: ColorUtil.red2),
               ),
             ],
           )

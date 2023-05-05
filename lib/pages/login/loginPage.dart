@@ -55,8 +55,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void loadCred() async{
-    email.text=await getSharedPrefStringUtil(SP_USEREMAIL);
-    password.text=await getSharedPrefStringUtil(SP_USERPASSWORD);
+    try{
+      email.text=await getSharedPrefStringUtil(SP_USEREMAIL);
+      password.text=await getSharedPrefStringUtil(SP_USERPASSWORD);
+    }catch(e){}
   }
 
   @override
@@ -144,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
     try{
       var result = await Permission.storage.request();
     }catch(E){}
-    if(true) {
+
       await setSharedPrefStringUtil(getDeviceId(), SP_DEVICEID);
       await setSharedPrefStringUtil(GetBaseUrl(), SP_BASEURL);
       if(email.text.isEmpty){
@@ -178,7 +180,7 @@ class _LoginPageState extends State<LoginPage> {
           CustomAlert().cupertinoAlert(value[1]);
         }
       });
-    }
+
 
   }
 
