@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_utils/utils/utils.dart';
 import 'package:get/get.dart';
 import 'package:restainventorymobile/pages/dashboard/Dashboard.dart';
+import 'package:restainventorymobile/pages/directPurchase/directPurchaseGrid.dart';
 import 'package:restainventorymobile/pages/goodsReceived/goodsGrid.dart';
 import 'package:restainventorymobile/pages/indentOrder/indentGrid.dart';
 import 'package:restainventorymobile/pages/packageDistribution/packageDisGrid.dart';
@@ -75,6 +76,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
    // {"Title":'Dashboard',"PageNumber":1,"accessId": 100},
     {"Title":'Indent Order',"PageNumber":2,"accessId": 100},
     {"Title":'Purchase Order',"PageNumber":3,"accessId": 100},
+    {"Title":'Direct Purchase',"PageNumber":14,"accessId": 100},
     {"Title":'Goods Received',"PageNumber":4,"accessId": 100},
     {"Title":'Transfer Material',"PageNumber":5,"accessId": 100},
     {"Title":'Department Distribution',"PageNumber":6,"accessId": 100},
@@ -82,7 +84,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     {"Title": 'Production', "PageNumber": 9, "accessId": 100},
     {"Title": 'Package Master', "PageNumber": 10, "accessId": 100},
     {"Title": 'Package Product', "PageNumber": 11, "accessId": 100},
-    {"Title": 'Package Distribution', "PageNumber": 13, "accessId": 100},
+    //{"Title": 'Package Distribution', "PageNumber": 13, "accessId": 100},
     {"Title": 'Physical Stock', "PageNumber": 12, "accessId": 100},
     {"Title":'Report',"PageNumber":7,"accessId": 100},
   ];
@@ -152,27 +154,29 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
                 const SizedBox(
                   height: 20,
                 ),
-                ListView(
-                  shrinkWrap: true,
-                  children: [
-                    for (int i = 0; i < menuList.length; i++)
-                      AccessWidget(
-                        hasAccess: /*menuList[i]['accessId']==null?true: isHasAccess(menuList[i]['accessId'])*/
-                        true,
-                        needToHide: true,
-                        widget: DrawerContent(
-                          title: menuList[i]['Title'],
-                          Img: '',
-                          pageNumber: menuList[i]['PageNumber'],
+                Expanded(
+                    child: ListView(
+                    shrinkWrap: true,
+                    children: [
+                      for (int i = 0; i < menuList.length; i++)
+                        AccessWidget(
+                          hasAccess: /*menuList[i]['accessId']==null?true: isHasAccess(menuList[i]['accessId'])*/
+                          true,
+                          needToHide: true,
+                          widget: DrawerContent(
+                            title: menuList[i]['Title'],
+                            Img: '',
+                            pageNumber: menuList[i]['PageNumber'],
+                          ),
+                          onTap: () {
+                            menuSel.value = menuList[i]['PageNumber'];
+                            closeDrawer();
+                          },
                         ),
-                        onTap: () {
-                          menuSel.value = menuList[i]['PageNumber'];
-                          closeDrawer();
-                        },
-                      ),
-                  ],
+                    ],
+                  )
                 ),
-                const Spacer(),
+                //const Spacer(),
                 const Divider(),
                 const SizedBox(
                   height: 5,
@@ -247,7 +251,10 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
               : menuSel.value == 12 ? PhysicalStock(
                                           navCallback: openDrawer,
                                         )
-                                         : menuSel.value == 13 ? PackageDistribution(
+              : menuSel.value == 13 ? PackageDistribution(
+                                      navCallback: openDrawer,
+                                    )
+              : menuSel.value == 14 ? DirectPurchaseGrid(
                                       navCallback: openDrawer,
                                     )
               : Container()),

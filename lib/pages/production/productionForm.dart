@@ -203,7 +203,8 @@ class _ProductionFormState extends State<ProductionForm> with HappyExtension, Ti
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  SvgPicture.asset("assets/inventory-white.svg",height: 70,),
+                                  //SvgPicture.asset("assets/inventory-white.svg",height: 70,),
+                                  Image.asset("assets/icons/DefaultProduct.png",height: 70,),
                                   inBtwHei(),
                                   Text("${recipeList[i]['RecipeName']}",textAlign: TextAlign.center,
                                     style: ts20M(ColorUtil.themeBlack,fontsize: 15),

@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../helper/language.dart';
@@ -136,11 +137,26 @@ String getTitleCase(value){
 }
 
 String getRupeeString(value){
-  return "${MyConstants.rupeeString} ${formatCurrency.format(parseDouble(value))}";
+  //return "${MyConstants.rupeeString} ${formatCurrency.format(parseDouble(value))}";
+  double a=parseDouble(value);
+  return "${MyConstants.rupeeString} ${ NumberFormat.currency(locale: 'HI',name: "",decimalDigits: getDecimalDigitLen(a)).format(a)}";
 }
 
 String getRupeeFormat(value){
-  return formatCurrency.format(parseDouble(value));
+  double a=parseDouble(value);
+  return NumberFormat.currency(locale: 'HI',name: "",decimalDigits: getDecimalDigitLen(a)).format(a);
+}
+
+int getDecimalDigitLen(double a){
+  int decimalDigit=2;
+  String parsedDoubleStr=a.toString();
+  List b=parsedDoubleStr.split(".");
+  if(b.length==2){
+    if(b[1].length>2){
+      decimalDigit=b[1].length;
+    }
+  }
+  return decimalDigit;
 }
 
 String getQtyString(value){

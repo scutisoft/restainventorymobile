@@ -18,47 +18,60 @@ class UnitDropDown extends StatelessWidget implements ExtensionCallback{
   var unitList=[].obs;
   Rxn<dynamic> selectedUnit=Rxn<dynamic>();
 
+  var isEnabled=true.obs;
+
   @override
   Widget build(BuildContext context) {
-    return Obx(()=>Container(
-      width: 100,
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.only(top: 10,bottom: 10,right: 5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(50),
-        color:  ColorUtil.red,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.only(left:10.0,right: 10),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<dynamic>(
-              value: selectedUnit.value,
-              hint: Text("Unit",style: ts20M(Colors.white),),
-              style: ts20M(Colors.white),
-              icon: const Icon(
-                Icons.keyboard_arrow_down_outlined,
-                color: Colors.white,
-              ),
-              dropdownColor: ColorUtil.red,
-              items: unitList.value.map((value) {
-                return DropdownMenuItem<dynamic>(
-                  value: value,
-                  child: Text(
-                    "${value['Text']}",
-                    style: ts20M(ColorUtil.themeWhite),
+    return Obx(()=>Stack(
+      children: [
+        Container(
+          width: 100,
+          clipBehavior: Clip.antiAlias,
+          margin: const EdgeInsets.only(top: 10,bottom: 10,right: 5),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(50),
+            color:  isEnabled.value?ColorUtil.red:ColorUtil.red.withOpacity(0.5),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.only(left:10.0,right: 10),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<dynamic>(
+                  value: selectedUnit.value,
+                  hint: Text("Unit",style: ts20M(Colors.white),),
+                  style: ts20M(Colors.white),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_outlined,
+                    color: Colors.white,
                   ),
-                );
-              }).toList(),
-              onChanged: (v) {
-                print(v);
-                selectedUnit.value=v;
-                if(onChange!=null){
-                  onChange!(v);
-                }
-              }
+                  dropdownColor: ColorUtil.red,
+                  items: unitList.value.map((value) {
+                    return DropdownMenuItem<dynamic>(
+                      value: value,
+                      child: Text(
+                        "${value['Text']}",
+                        style: ts20M(ColorUtil.themeWhite),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: (v) {
+                    selectedUnit.value=v;
+                    if(onChange!=null){
+                      onChange!(v);
+                    }
+                  }
+              ),
+            ),
           ),
         ),
-      ),
+        Visibility(
+          visible: !isEnabled.value,
+          child: Container(
+            height: 60,
+            width: 100,
+            color: Colors.transparent,
+          ),
+        )
+      ],
     ));
   }
 

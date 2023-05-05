@@ -25,9 +25,7 @@ class PackageDistribution extends StatefulWidget {
   State<PackageDistribution> createState() => _PackageDistributionState();
 }
 
-class _PackageDistributionState extends State<PackageDistribution>
-    with HappyExtension
-    implements HappyExtensionHelperCallback {
+class _PackageDistributionState extends State<PackageDistribution> with HappyExtension implements HappyExtensionHelperCallback {
   Map widgets = {};
   var totalCount = 0.obs;
   late HE_ListViewBody he_listViewBody;
@@ -81,9 +79,7 @@ class _PackageDistributionState extends State<PackageDistribution>
             },
           ),
           Flexible(child: he_listViewBody),
-          Obx(() => NoData(
-                show: he_listViewBody.widgetList.isEmpty,
-              )),
+          Obx(() => NoData(show: he_listViewBody.widgetList.isEmpty,)),
         ],
       ),
     );
