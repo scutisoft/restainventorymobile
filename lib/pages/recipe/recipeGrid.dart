@@ -208,13 +208,7 @@ class HE_DepDisContent extends StatelessWidget
                         EyeIcon(
                           onTap: () {
                             fadeRoute(RecipeViewPage(
-                              /*pageTitle: "Recipe Master",
-                              spName:
-                                  "IV_DepartmentDistribution_ViewDepartmentDistributionDetail",
-                              page: "Recipe",
-                              dataJson: getDataJsonForGrid({
-                                "RecipeId": dataListener['RecipeId'],
-                              }),*/
+                              recipeId: dataListener['RecipeId'].toString(),
                             ));
                           },
                         ),

@@ -21,7 +21,7 @@ class HE_ListViewBody extends StatelessWidget {
   int maxLength=5;
   int endIndex=5;
 
-
+  final ScrollController _scrollController = ScrollController();
 
   void  scrollListener(ScrollController controller){
     if(scrollController==null){
@@ -114,7 +114,7 @@ class HE_ListViewBody extends StatelessWidget {
         thumbVisibility: true,
         radius:  const Radius.circular(ColorUtil.scrollBarRadius),
         thickness: 6,
-        controller: scrollController,
+        controller: _scrollController,
         trackVisibility: true,
         interactive: true,
         child: Obx(() =>
@@ -130,7 +130,7 @@ class HE_ListViewBody extends StatelessWidget {
         ListView.builder(
           itemCount: widgetList.length,
           shrinkWrap: true,
-          //controller: lv_controller,
+          controller: _scrollController,
           //physics: const NeverScrollableScrollPhysics(),
           itemBuilder: (ctx,i){
             return widgetList[i];

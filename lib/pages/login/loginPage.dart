@@ -16,6 +16,7 @@ import 'package:restainventorymobile/widgets/customCheckBox.dart';
 import 'package:restainventorymobile/widgets/fittedText.dart';
 import 'package:restainventorymobile/widgets/pinWidget.dart';
 import '../../api/sp.dart';
+import '../../helper/appVersionController.dart';
 import '../../helper/language.dart';
 import '../../notifier/configuration.dart';
 import '../../utils/utils.dart';
@@ -39,6 +40,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState(){
+    if(MyConstants.hasAppVersionController){
+      AppVersionController().checkVersion();
+    }
     allowAccess();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       loadCred();

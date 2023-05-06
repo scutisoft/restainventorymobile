@@ -1,9 +1,15 @@
 
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_utils/flutter_utils.dart';
 import 'package:flutter_utils/mixins/extensionMixin.dart';
+import 'package:flutter_utils/model/parameterModel.dart';
+import 'package:flutter_utils/utils/apiUtils.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:get/get.dart';
+import '../../widgets/alertDialog.dart';
 import '../../widgets/numberPadPopUp/numberPadPopUp.dart';
 import '/widgets/loader.dart';
 import '/api/apiUtils.dart';
@@ -37,26 +43,10 @@ class _PackageDisFormState extends State<PackageDisForm> with HappyExtension imp
       updateSp: "IV_PackageDistribution_UpdatePackageDistributionDetail"
   );
   var isKeyboardVisible=false.obs;
-
-  var selectedIndex=(-1).obs;
-
-
-  late SwipeActionController controller;
-
-
-  var numPadUtils={
-    "isNumPadOpen":false,
-    "numPadVal":"",
-    "numPadTitle":"",
-    "numPadSubTitle":"",
-    "departmentIndex":-1,
-    "productIndex":-1,
-    "numPadType":0
-  }.obs;
+  final FlutterUtils _flutterUtils=FlutterUtils();
 
   @override
   void initState(){
-    controller = SwipeActionController(selectedIndexPathsChangeCallback: (changedIndexPaths, selected, currentCount) {},);
     assignWidgets();
     super.initState();
   }
@@ -110,6 +100,7 @@ class _PackageDisFormState extends State<PackageDisForm> with HappyExtension imp
               isEdit: widget.isEdit,
               isKeyboardVisible: isKeyboardVisible,
               onSave: (){
+
                 sysSubmit(widgets,
                     isEdit: widget.isEdit,
                     needCustomValidation: true,
@@ -117,13 +108,15 @@ class _PackageDisFormState extends State<PackageDisForm> with HappyExtension imp
                     loader: showLoader,
                     extraParam: MyConstants.extraParam,
                     onCustomValidation: (){
-                      /*if(purchaseList.isEmpty){
-                        CustomAlert().cupertinoAlert("Select Material to Distribute...");
-                        return false;
-                      }
-                      foundWidgetByKey(widgets, "DepartmentDistributionMaterialJson",needSetValue: true,value: jsonEncode(purchaseList));
-                      foundWidgetByKey(widgets, "DepartmentDistributionDate",needSetValue: true,value: DateFormat(MyConstants.dbDateFormat).format(expectedDate.value!));
-                      return true;*/
+                      var obj={
+                        "PackageDistributionId": null,
+                        "PackageId": widgets['PackageId'].getValue(),
+                        "OutletId": widgets['OutletId'].getValue(),
+                        "ProductId": widgets['ProductId'].getValue(),
+                        "PackageDistributionQuantity": widgets['PackageDistributionQuantity'].getValue(),
+                        "ProductionQuantity": widgets['ProductionQuantity'].getValue(),
+                      };
+                      foundWidgetByKey(widgets, "Datajson",needSetValue: true,value: jsonEncode([obj]));return true;
                     },
                     successCallback: (e){
                       console("sysSubmit $e");
@@ -134,28 +127,6 @@ class _PackageDisFormState extends State<PackageDisForm> with HappyExtension imp
                 );
               },
             ),
-
-
-            Obx(() => Blur(value: numPadUtils['isNumPadOpen'] as bool,)),
-
-            Obx(() => NumberPadPopUp(
-              isSevenInch: true,
-              isOpen:  numPadUtils['isNumPadOpen'] as bool,
-              value:  numPadUtils['numPadVal'].toString(),
-              title: numPadUtils['numPadTitle'].toString(),
-              subTitle: numPadUtils['numPadSubTitle'].toString(),
-              onCancel: (){
-                numPadUtils['isNumPadOpen']=false;
-                clearNumPadUtils();
-              },
-              numberTap: (e){
-                numPadUtils['numPadVal']=e;
-              },
-              onDone: (){
-                // onProductQtyUpdate();
-              },
-            )),
-
             Obx(() => Loader(value: showLoader.value,)),
           ],
         )
@@ -165,59 +136,81 @@ class _PackageDisFormState extends State<PackageDisForm> with HappyExtension imp
   @override
   void assignWidgets() async{
     widgets.clear();
+    widgets['Datajson']=HiddenController(dataname: "Datajson");
     widgets['ProductionQuantity']=AddNewLabelTextField(
       dataname: 'ProductionQuantity',
       hasInput: true,
       required: false,
       labelText: "Production Quantity",
-      regExp: null,
+      regExp: MyConstants.decimalReg,
+      isEnabled: false,
       onChange: (v){},
       onEditComplete: (){
         FocusScope.of(context).unfocus();
       },
       textInputType: TextInputType.number,
-      maxlines: null,
     );
     widgets['PackageDistributionQuantity']=AddNewLabelTextField(
       dataname: 'ProductionQuantity',
       hasInput: true,
-      required: false,
+      required: true,
       labelText: "Quantity",
-      regExp: null,
+      regExp: MyConstants.decimalReg,
       onChange: (v){},
       onEditComplete: (){
         FocusScope.of(context).unfocus();
       },
       textInputType: TextInputType.number,
-      maxlines: null,
+      textLength: MyConstants.maximumQty,
     );
-    widgets['PackageId']=SlideSearch(dataName: "PackageId",selectedValueFunc: (e){ }, hinttext: "Select Package",data: []);
-    widgets['OutletId']=SlideSearch(dataName: "OutletId",selectedValueFunc: (e){ }, hinttext: "Select Outlet",data: []);
-    widgets['ProductId']=SlideSearch(dataName: "ProductId",selectedValueFunc: (e){ }, hinttext: "Select Product",data: []);
+    widgets['PackageId']=SlideSearch(dataName: "PackageId",selectedValueFunc: (e){getProducts(); }, hinttext: "Select Package",data: []);
+    widgets['OutletId']=SlideSearch(dataName: "OutletId",selectedValueFunc: (e){getProducts(); }, hinttext: "Select Outlet",data: []);
+    widgets['ProductId']=SlideSearch(dataName: "ProductId",selectedValueFunc: (e){ }, hinttext: "Select Product",data: [],isEnable: false,);
 
     fillTreeDrp(widgets, "PackageId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
     fillTreeDrp(widgets, "OutletId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
-    fillTreeDrp(widgets, "ProductId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",clearValues: false);
+
 
     await parseJson(widgets, "",dataJson: widget.dataJson,traditionalParam: traditionalParam,extraParam: MyConstants.extraParam,loader: showLoader,
         resCb: (e){
           try{
             // console("parseJson $e");
-            // batchNo.value=" - ${e['Table'][0]['BatchNumber']}";
           }catch(e,t){
             assignWidgetErrorToastLocal(e,t);
           }
         });
-
   }
 
-  void clearNumPadUtils(){
-    numPadUtils['numPadVal']="";
-    numPadUtils['numPadTitle']="";
-    numPadUtils['numPadSubTitle']="";
-    numPadUtils['departmentIndex']=-1;
-    numPadUtils['productIndex']=-1;
-    numPadUtils['numPadType']=0;
+
+  void getProducts(){
+    var outletId=widgets['OutletId'].getValue();
+    var packageId=widgets['PackageId'].getValue();
+    console("outletId $outletId $packageId");
+    if(outletId!=null && packageId!=null){
+      fillTreeDrp(widgets, "ProductId",page: page,spName: Sp.masterSp, extraParam: MyConstants.extraParam,refType: "",
+          clearValues: true,needToDisable: true,refId: outletId,hierarchicalId: packageId);
+    }
+    if(packageId!=null){
+      getProductionQty(packageId);
+    }
+  }
+
+  void getProductionQty(packageId) async{
+    foundWidgetByKey(widgets, "ProductionQuantity",needSetValue: true,value: "0.0");
+    List<ParamModel> parameterList=await getParamEssential(extraParam: MyConstants.extraParam);
+    parameterList.add(ParamModel(Key: "PackageId", Type: "String", Value: packageId));
+
+    _flutterUtils.getInvoke(parameterList,loader: showLoader,url: "${GetBaseUrl()}/api/PackageProductApi/GetPackageProductionDetail").then((value){
+      if(value[0]){
+        var parsed=jsonDecode(value[1]);
+        if(parsed['Table']!=null && parsed['Table'].length>0){
+          foundWidgetByKey(widgets, "ProductionQuantity",needSetValue: true,value: parsed['Table'][0]['PackageQty']);
+        }
+      }
+      else{
+        CustomAlert().cupertinoAlert(value[1]);
+      }
+    });
   }
 
   @override
