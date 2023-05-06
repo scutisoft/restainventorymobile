@@ -9,10 +9,10 @@ class MyConstants{
   static String appName="TreeDonate";
   //static String appName="RadiantECS_Dev";
   static String appVersion="1.0.6";
-  static String appId="com.scutisoft.nammaramnamkadamai";
+  static String appId="com.bridget.restainventory";
   static bool isLive=false;
   static bool fromUrl=true;
-  static bool hasAppVersionController=false;
+  static bool hasAppVersionController=true;
   static bool bottomSafeArea=true;
   static bool defaultActionEnable=true;
   static const PaymentGateway paymentGateway=PaymentGateway.razorpay;

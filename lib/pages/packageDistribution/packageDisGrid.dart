@@ -4,6 +4,7 @@ import 'package:flutter_utils/mixins/extensionMixin.dart';
 import 'package:flutter_utils/utils/extensionHelper.dart';
 import 'package:flutter_utils/utils/extensionUtils.dart';
 import 'package:get/get.dart';
+import 'package:restainventorymobile/widgets/searchDropdown/search2.dart';
 import '../../utils/utilWidgets.dart';
 import '../commonView.dart';
 import '/utils/constants.dart';
@@ -30,12 +31,14 @@ class _PackageDistributionState extends State<PackageDistribution> with HappyExt
   var totalCount = 0.obs;
   late HE_ListViewBody he_listViewBody;
 
+  RxBool loader=RxBool(false);
+
   @override
   void initState() {
     he_listViewBody = HE_ListViewBody(
       data: [],
       getWidget: (e) {
-        return HE_DepDisContent(
+        return HE_PkgDisContent(
           data: e,
           onDelete: (dataJson) {
             gridDelete(() {
@@ -98,7 +101,7 @@ class _PackageDistributionState extends State<PackageDistribution> with HappyExt
         he_listViewBody.assignWidget(res['Table']);
       } catch (e) {}
     },
-        loader: showLoader,
+        loader: loader,
         dataJson: jsonEncode(dj),
         extraParam: MyConstants.extraParam);
   }
@@ -111,19 +114,12 @@ class _PackageDistributionState extends State<PackageDistribution> with HappyExt
   }
 }
 
-class HE_DepDisContent extends StatelessWidget
-    implements HE_ListViewContentExtension {
+class HE_PkgDisContent extends StatelessWidget implements HE_ListViewContentExtension {
   Map data;
   Function(Map)? onEdit;
   Function(String)? onDelete;
   GlobalKey globalKey;
-  HE_DepDisContent(
-      {Key? key,
-      required this.data,
-      this.onEdit,
-      this.onDelete,
-      required this.globalKey})
-      : super(key: key) {
+  HE_PkgDisContent({Key? key, required this.data, this.onEdit, this.onDelete, required this.globalKey}) : super(key: key) {
     dataListener.value = data;
   }
 
@@ -173,6 +169,14 @@ class HE_DepDisContent extends StatelessWidget
                   ],
                 ),
               ),
+              EyeIcon(
+                onTap: (){
+                  fadeRoute(PkgDisItemList(
+                      items:checkNullEmpty(dataListener['LinkedItemCount'])? []:dataListener['LinkedItemCount'].toString().split(","),
+                      title: dataListener['PackageName'])
+                  );
+                },
+              )
             ],
           ),
         ));
@@ -185,5 +189,42 @@ class HE_DepDisContent extends StatelessWidget
         dataListener[key] = value;
       }
     });
+  }
+}
+
+
+class PkgDisItemList extends StatelessWidget {
+  List items;
+  String title;
+  PkgDisItemList({Key? key,required this.items,required this.title}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return PageBody(
+      body: Column(
+        children: [
+          CustomAppBar(
+            title: title,
+            prefix: ArrowBack(
+              onTap: (){
+                Get.back();
+              },
+            ),
+          ),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: items.length,
+            itemBuilder: (ctx,i){
+              return Container(
+                margin: const EdgeInsets.only(left: 10,right: 10,top: 10),
+                padding: const EdgeInsets.all(10),
+                decoration: ColorUtil.formContBoxDec,
+                child: Text("${items[i]}",style: ts20M(ColorUtil.themeBlack,fontsize: 16),),
+              );
+            },
+          )
+        ],
+      ),
+    );
   }
 }

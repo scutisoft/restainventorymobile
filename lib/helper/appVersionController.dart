@@ -68,7 +68,7 @@ class AppVersionController{
       appId: MyConstants.appId,
     );
     _checker.checkUpdate().then((value) {
-      if(value.currentVersion != value.newVersion){
+      if(value.newVersion!=null && value.currentVersion != value.newVersion){
         Get.defaultDialog(
             title: "",
             titleStyle: TextStyle(height: 0),radius: 10,middleText: "New Update Available",middleTextStyle: TextStyle(fontFamily: "RR",fontSize: 20,),

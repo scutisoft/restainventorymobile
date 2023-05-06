@@ -204,7 +204,8 @@ class ContentPlaceholder extends StatelessWidget {
 
 class ShimmerLoader extends StatelessWidget {
   RxBool loader;
-  ShimmerLoader({Key? key,required this.loader}) : super(key: key);
+  double topMargin;
+  ShimmerLoader({Key? key,required this.loader,this.topMargin=0.0}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -213,9 +214,9 @@ class ShimmerLoader extends StatelessWidget {
         visible: loader.value,
         child: Container(
           padding: const EdgeInsets.all(16.0),
+          margin:  EdgeInsets.only(top: topMargin),
           //height: SizeConfig.screenHeight,
           width: SizeConfig.screenWidth,
-
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: Colors.white,
