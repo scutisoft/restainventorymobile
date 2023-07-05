@@ -40,7 +40,6 @@ dependencies:
   flutter_svg:
   geocoding:
   date_format:
-  flutter_date_pickers:
   device_info:
   local_auth:
   url_launcher:

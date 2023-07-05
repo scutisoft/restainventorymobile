@@ -461,13 +461,13 @@ class DayPicker extends StatelessWidget {
             : null;
         if (isSelectedFirstDay &&
             (isSelectedLastDay == null || isSelectedLastDay)) {
-          itemStyle = themeData.accentTextTheme.bodyText1;
+         // itemStyle = themeData.accentTextTheme.bodyText1;
           decoration = new BoxDecoration(
               color: ColorUtil.mdp_SelectedDay, shape: BoxShape.circle
           );
         } else if (isSelectedFirstDay) {
           // The selected day gets a circle background highlight, and a contrasting text color.
-          itemStyle = themeData.accentTextTheme.bodyText1;
+         // itemStyle = themeData.accentTextTheme.bodyText1;
           decoration = new BoxDecoration(
               color: ColorUtil.mdp_SelectedDay,
               borderRadius: BorderRadius.only(
@@ -475,7 +475,7 @@ class DayPicker extends StatelessWidget {
                 bottomLeft: new Radius.circular(50.0),
               ));
         } else if (isSelectedLastDay != null && isSelectedLastDay) {
-          itemStyle = themeData.accentTextTheme.bodyText1;
+        //  itemStyle = themeData.accentTextTheme.bodyText1;
           decoration = new BoxDecoration(
               color: ColorUtil.mdp_SelectedDay,
               borderRadius: BorderRadius.only(

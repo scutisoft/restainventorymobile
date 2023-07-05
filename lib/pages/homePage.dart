@@ -99,7 +99,6 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
 
             }
           ).exitAppAlert("assets/icons/power-on.png", "Are you sure want to exit the app ?", false);
-        //  return Future.value(false);
         },
       child: SafeArea(
         bottom: MyConstants.bottomSafeArea,
